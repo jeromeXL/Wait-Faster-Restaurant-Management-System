@@ -17,8 +17,21 @@ If you want to add a package, make sure to add it to the `requirements.txt`.
 ## Booting up the Database
 
 Create a docker container called 'WaitFaster-MongoDb', exposed on port 27017 (Mongo default)
-`docker run --name WaitFaster-MongoDb mongo:latest -p 27017:27017`
+`docker run --name WaitFaster-MongoDb -p 27017:27017 -d mongo:latest`
 
-## Running Python API
+- The cli for accessing the database is `mongosh` if you need it.
 
-Development (hot reload): `flask --app ./src/backend/__init__ run --debug`
+## Notes on the python api
+
+Development (hot reload): `uvicorn main:app --reload --root-path ./src/backend/`
+Goto: `http://127.0.0.1:8000/docs` for docs
+
+- Technology choices:
+	- Beanie for the ODM (https://github.com/roman-right/beanie)
+	- Pydantic for validation (Beanie uses pydantic under the hood too)
+- Gotchas:
+	- You need to place an empty `__init__.py` file at every level of the file structure if you want that file to be treated like a module.
+- Structure for project copied from `https://github.com/flyinactor91/fastapi-beanie-jwt/`
+- About Beanie
+	- Beanie is a ODM that maps python objects to mongo db collections.
+	- When you want to make a new document in mongo, you declare a new class inheriting from the `Document` class. (See `./src/backend/models/User.py`)
