@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from fastapi_jwt import JwtAuthorizationCredentials, JwtAccessBearer, JwtRefreshBearer
 
-from backend.models.user import User
+from models.user import User
 
 ACCESS_EXPIRES = timedelta(minutes=15)
 REFRESH_EXPIRES = timedelta(days=30)
