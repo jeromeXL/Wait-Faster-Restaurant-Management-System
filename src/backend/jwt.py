@@ -1,22 +1,19 @@
 """FastAPI JWT configuration."""
-
 from datetime import timedelta
-
-from fastapi_jwt import JwtAuthorizationCredentials, JwtAccessBearer, JwtRefreshBearer
-
-from models.user import User
+from config import CONFIG
+from fastapi_jwt import JwtAccessBearer, JwtRefreshBearer
 
 ACCESS_EXPIRES = timedelta(minutes=15)
 REFRESH_EXPIRES = timedelta(days=30)
 
 access_security = JwtAccessBearer(
-    'SUPER SECRET KEY THAT IS A PLACEHOLDER UNTIL CONFIG IF UP AND RUNNING',
+    CONFIG.jwt_secret,
     access_expires_delta=ACCESS_EXPIRES,
     refresh_expires_delta=REFRESH_EXPIRES,
 )
 
 refresh_security = JwtRefreshBearer(
-    'SUPER SECRET KEY THAT IS A PLACEHOLDER UNTIL CONFIG IF UP AND RUNNING',
+    CONFIG.jwt_secret,
     access_expires_delta=ACCESS_EXPIRES,
     refresh_expires_delta=REFRESH_EXPIRES,
 )
