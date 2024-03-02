@@ -24,7 +24,8 @@ Create a docker container called 'WaitFaster-MongoDb', exposed on port 27017 (Mo
 ## Notes on the python api
 
 Development (hot reload): `uvicorn main:app --reload --root-path ./src/backend/`
-
+- Config
+	- Use the .env file for any secrets / settings. There is a .env.TEMPLATE file that needs to be renamed in order for the `decouple` [package](https://pypi.org/project/python-decouple/) to use the settings.
 - Technology choices:
 	- Beanie for the ODM (https://github.com/roman-right/beanie)
 	- Pydantic for validation (Beanie uses pydantic under the hood too)
