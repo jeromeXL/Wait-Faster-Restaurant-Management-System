@@ -24,7 +24,6 @@ Create a docker container called 'WaitFaster-MongoDb', exposed on port 27017 (Mo
 ## Notes on the python api
 
 Development (hot reload): `uvicorn main:app --reload --root-path ./src/backend/`
-Goto: `http://127.0.0.1:8000/docs` for docs
 
 - Technology choices:
 	- Beanie for the ODM (https://github.com/roman-right/beanie)
