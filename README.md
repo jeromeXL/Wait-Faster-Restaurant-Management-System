@@ -7,7 +7,7 @@
 
 Package management is done with pip.
 
-When you first start, make a venv by running `python -m venv .venv` in the `/src/backend` repo. You can active the venv from the root of the project by running `./src/backend/.venv/Scripts/activate`. (There are other forms of the scripts for windows)
+When you first start, make a venv by running `python -m venv .venv` in the `/src/backend` repo. You can activate the venv from the root of the project by running `./src/backend/.venv/Scripts/activate`. (There are other forms of the scripts for windows)
 To deactivate the venv run `deactivate`
 
 Once in the venv, you can run `pipe install -r requirements.txt`, which will download all packages specified.
