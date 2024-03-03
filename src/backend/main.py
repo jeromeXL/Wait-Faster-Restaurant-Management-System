@@ -7,6 +7,8 @@ from models.user import User, UserRole
 from router.auth import router as AuthRouter
 from utils.password import hash_password
 from config import CONFIG
+from starlette.middleware.cors import CORSMiddleware
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):  
     
@@ -37,13 +39,16 @@ app = FastAPI(
 
 app.include_router(AuthRouter)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], 
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 ## Sample routes.
 @app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+def health_check():
+    return "HEALTHY"
 
