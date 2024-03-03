@@ -16,15 +16,14 @@ class User(Document):
 	role: UserRole
 
 	@classmethod
-	async def find_by_username(self, username: str) -> Optional["User"]:
-		return await self.find_one(self.username == username)
-
-	async def create_user(self, currUser: User, newUser: dict) -> Optional["User"]:
-		# newUser dict {username: eg, password: eg, role: 5}
-		if currUser.role != UserRole.USER_ADMIN:
-			return None
-		else:
-			self.insert_one(newUser)
+	async def find_by_username(cls, username: str) -> Optional["User"]:
+		return await cls.find_one(cls.username == username)
+	
+	def get_jwt_details(self) -> dict[str, str]:
 		
-
-
+		userId = str(self.id)
+		return {
+			"userId": userId,
+			"role": str(self.role.value)
+		}
+	
