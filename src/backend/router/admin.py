@@ -1,11 +1,28 @@
 from fastapi import APIRouter
 from models.user import User, UserRole
+from motor.motor_asyncio import AsyncIOMotorClient
+import asyncio
 
-router = APIRouter(prefix="/admin", tags=["Admin"])
+client = AsyncIOMotorClient("mongodb://localhost:27017/")
+db = client["restaurantdatabase"] 
 
-@router.post("/createuser")
+router = APIRouter(prefix="/user", tags=["User"])
+
+# Create User
+@router.post("/")
+async def createUser(userCreator: User, username: str, password: str, role: int) -> User:
+
+    
 
 
-@router.post("/updatepassword")
+# Update Password
+@router.post("/{username}")
+async def updatePassword(newPassword: str) -> bool:
+    user = await User.find_one(User.username == username)
+    await user.set({User.password: newPassword})
 
-@router.post("deleteuser")
+# Delete User
+@router.post("/{username}")
+async def deleteUser() -> bool:
+    user = await User.find_one(User.username == username)
+    await user.delete()
