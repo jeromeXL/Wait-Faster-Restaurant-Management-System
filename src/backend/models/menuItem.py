@@ -1,8 +1,9 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
+from beanie import Document
 
-class MenuItem(BaseModel):
+class MenuItem(Document):
     name: str
     price: float
-    health_requirements: List[str]
+    health_requirements: Optional[str] = None
     description: str
