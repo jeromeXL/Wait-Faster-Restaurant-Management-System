@@ -37,7 +37,7 @@ async def create_menu_item(menu_item: MenuItemCreate):
     if validated_menu_item.price <= 0:
         raise HTTPException(status_code=400, detail="Menu Item Price must be greater than 0")
     # Pydantic Validation
-    new_menu_item = MenuItem(**validated_menu_item.dict())
+    new_menu_item = MenuItem(**validated_menu_item.model_dump())
     await new_menu_item.create()
     return MenuItemResponse(id=str(new_menu_item.id), **new_menu_item.model_dump())
 
