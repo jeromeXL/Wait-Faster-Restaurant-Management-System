@@ -28,15 +28,16 @@ async def get_menu_items(filter: Optional[str] = Query()):
 
 @router.post("/menu-item/", response_model = MenuItemResponse)
 async def create_menu_item(menu_item: MenuItemCreate):
+    validated_menu_item = MenuItem.model_validate(menu_item.model_dump())
     # Menu Item Create Validation Checks
-    if not menu_item.name.strip():
+    if not validated_menu_item.name.strip():
         raise HTTPException(status_code=400, detail="Menu Item Name cannot be empty")
-    if not menu_item.description.strip():
+    if not validated_menu_item.description.strip():
         raise HTTPException(status_code=400, detail="Menu Item Description cannot be empty")
-    if menu_item.price <= 0:
+    if validated_menu_item.price <= 0:
         raise HTTPException(status_code=400, detail="Menu Item Price must be greater than 0")
-    
-    new_menu_item = MenuItem(**menu_item.model_dump())
+    # Pydantic Validation
+    new_menu_item = MenuItem(**validated_menu_item.dict())
     await new_menu_item.create()
     return MenuItemResponse(id=str(new_menu_item.id), **new_menu_item.model_dump())
 
