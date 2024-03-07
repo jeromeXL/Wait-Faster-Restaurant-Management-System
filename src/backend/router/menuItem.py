@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from models.menuItem import MenuItem
 
@@ -18,13 +18,13 @@ class MenuItemResponse(BaseModel):
     health_requirements: List[str]
     description: str
     
-@router.get("/menu-items", response_model = List[MenuItem])
-async def get_menu_items(filter: Optional[str] = None):
+@router.get("/menu-items", response_model = List[MenuItemResponse])
+async def get_menu_items(filter: Optional[str] = Query()):
     if filter:
-        filtered_items = await MenuItem.find('''Passing filters (TODO)''')
+        filtered_items = await MenuItem.find_all(MenuItem.name.__contains__(filter))
     else:
         filtered_items = await MenuItem.find_all()
-    return filtered_items
+    return [MenuItemResponse(id=str(item.id), **item.dict()) for item in filtered_items]
 
 @router.post("/menu-item/", response_model = MenuItemResponse)
 async def create_menu_item(menu_item: MenuItemCreate):
