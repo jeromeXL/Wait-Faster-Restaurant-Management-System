@@ -1,45 +1,44 @@
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-from models.user import User, UserRole
-#from motor.motor_asyncio import AsyncIOMotorClient
-import asyncio
-from utils.user_authentication import admin_user
-from config import CONFIG
+from fastapi import APIRouter, HTTPException, Depends, Response
 from models.user import User
+from utils.user_authentication import admin_user
+from utils.password import hash_password
 
-#client = AsyncIOMotorClient("mongodb://localhost:27017/")
-client = CONFIG.mongo_connection_string
-db = client["restaurantdatabase"] 
+router = APIRouter()
 
-router = APIRouter(prefix="/user", tags=["User"])
+# Get all users
+@router.get("/users")
+async def getUsers():
+    users = await User.find_all()
+    return users
 
-# Create User    
-@router.post("/create")
-async def createUser(user: User, adminUser = Depends(admin_user())) -> User.id:
-    newUser = User(username=user.username, password=user.password, role=user.role)
-    newUser.insert()
-    return newUser.id
+# Create User -> Returns user object
+@router.post("/user/create")
+async def createUser(newUser: User, adminUser = Depends(admin_user())) -> User:
+    if not adminUser:
+        raise HTTPException(status_code=401, detail="Only admins can create users")
+    user = User(username=newUser.username, password=hash_password(newUser.password), role=newUser.role)
+    await user.insert()
+    return user
 
 # Update User (Previously Update Password)
-class UpdateRequest(BaseModel):
-    newUsername: str
-    newPassword: str
-    newRole: UserRole
-    
-@router.patch("/update/{id}")
-async def updateUser(id: str, updateRequest: UpdateRequest, adminUser = Depends(admin_user())) -> bool:
-    if adminUser:
-        user = await User.find_one(User.id == id)
-        await user.set(updateRequest)
+@router.put("/user/update/{user_id}")
+async def updateUser(user_id: str, newUserInfo: User, adminUser = Depends(admin_user())) -> Response:
+    if not adminUser:
+        raise HTTPException(status_code=401, detail="Only admins can update users")
+    user = await User.find_one(User.id == user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User does not exist")
+    hashedUserInfo = User(username=newUserInfo.username, password=hash_password(newUserInfo.password), role=newUserInfo.role)
+    await user.set(hashedUserInfo)
+    return Response(status_code=200)
 
-# Delete User
-@router.delete("/delete/{id}")
-async def deleteUser(id: str) -> bool:
-    user = await User.find_one(User.id == id)
+# Delete User   
+@router.delete("/user/delete/{user_id}")
+async def delete_user(user_id: str, adminUser = Depends(admin_user())) -> Response:
+    if not adminUser:
+        raise HTTPException(status_code=401, detail="Only admins can delete users")
+    user = await User.find_one(User.id == user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User does not exist")
     await user.delete()
-
-# Fetch all users (Helper)
-#@router.get("/all")
-#async def allUsers():
-#    users = await User.find_all()
-#    return users
+    return Response(status_code=200)
