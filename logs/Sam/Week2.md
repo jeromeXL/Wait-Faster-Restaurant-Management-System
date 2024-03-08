@@ -1,0 +1,7 @@
+- Created initial user stores for:
+	- Authentication
+	- User Management
+	- Menu Management
+	- Customer Journey
+- Discussed plan with teammates
+- Worked out how JIRA functioned, and make some sample tasks.
