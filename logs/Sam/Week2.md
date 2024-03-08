@@ -3,5 +3,6 @@
 	- User Management
 	- Menu Management
 	- Customer Journey
+	- Kitchen staff journey
 - Discussed plan with teammates
 - Worked out how JIRA functioned, and make some sample tasks.
