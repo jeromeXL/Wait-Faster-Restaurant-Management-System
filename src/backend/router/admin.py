@@ -8,33 +8,37 @@ router = APIRouter()
 # Get all users
 @router.get("/users")
 async def getUsers():
-    users = await User.find_all()
+    users = await User.find_all().to_list() # Users.find_all() returns a queryable. Then calling .to_list() will transform that into a list. 
     return users
 
 # Create User -> Returns user object
 @router.post("/user/create")
-async def createUser(newUser: User, adminUser = Depends(admin_user())) -> User:
+async def createUser(newUser: User, adminUser = Depends(admin_user)) -> User:
     if not adminUser:
         raise HTTPException(status_code=401, detail="Only admins can create users")
     user = User(username=newUser.username, password=hash_password(newUser.password), role=newUser.role)
-    await user.insert()
+    await user.create() # On an instance, call create.
     return user
 
 # Update User (Previously Update Password)
 @router.put("/user/update/{user_id}")
-async def updateUser(user_id: str, newUserInfo: User, adminUser = Depends(admin_user())) -> Response:
+async def updateUser(user_id: str, newUserInfo: User, adminUser = Depends(admin_user)) -> Response:
     if not adminUser:
         raise HTTPException(status_code=401, detail="Only admins can update users")
     user = await User.find_one(User.id == user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User does not exist")
-    hashedUserInfo = User(username=newUserInfo.username, password=hash_password(newUserInfo.password), role=newUserInfo.role)
-    await user.set(hashedUserInfo)
+    user.username = newUserInfo.username
+    user.password = hash_password(newUserInfo.password)
+    user.role = newUserInfo.role
+    
+    await user.save()
+
     return Response(status_code=200)
 
 # Delete User   
 @router.delete("/user/delete/{user_id}")
-async def delete_user(user_id: str, adminUser = Depends(admin_user())) -> Response:
+async def delete_user(user_id: str, adminUser = Depends(admin_user)) -> Response:
     if not adminUser:
         raise HTTPException(status_code=401, detail="Only admins can delete users")
     user = await User.find_one(User.id == user_id)
