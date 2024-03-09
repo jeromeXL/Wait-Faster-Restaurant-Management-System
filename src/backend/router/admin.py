@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, Response
-from models.user import User
+from models.user import User, UserRole
 from utils.user_authentication import admin_user
 from utils.password import hash_password
+from utils.regex import matchesTablePattern
 
 router = APIRouter()
 
@@ -26,25 +27,35 @@ async def getUser(username: str, adminUser = Depends(admin_user)) -> User:
 async def createUser(newUser: User, adminUser = Depends(admin_user)) -> User:
     if not adminUser:
         raise HTTPException(status_code=401, detail="Only admins can create users")
+    if not matchesTablePattern(newUser.username) and newUser.role == UserRole.CUSTOMER_TABLET:
+        raise HTTPException(status_code=405, detail="Table names must be in format: 'Table<Number>'")
+    newUsernameTaken = await User.find_by_username(newUser.username)
+    if newUsernameTaken:
+        raise HTTPException(status_code=409, detail="New username already exists. Duplicate usernames not allowed")
     user = User(username=newUser.username, password=hash_password(newUser.password), role=newUser.role)
     await user.create() # On an instance, call create.
     return user
 
 # Update User (Previously Update Password)
 @router.put("/user/update/{username}")
-async def updateUser(username: str, newUserInfo: User, adminUser = Depends(admin_user)) -> Response:
+async def updateUser(username: str, newUserInfo: User, adminUser = Depends(admin_user)) -> User:
     if not adminUser:
         raise HTTPException(status_code=401, detail="Only admins can update users")
+    if not matchesTablePattern(newUserInfo.username) and newUserInfo.role == UserRole.CUSTOMER_TABLET:
+        raise HTTPException(status_code=405, detail="Table names must be in format: 'Table<Number>'")
     #user = await User.find_one(User.id == user_id) # cant find by id for some reason
-    user = await User.find_one(User.username == username)
+    user = await User.find_by_username(username)
     if not user:
         raise HTTPException(status_code=404, detail="User does not exist")
+    newUsernameTaken = await User.find_by_username(newUserInfo.username)
+    if newUsernameTaken:
+        raise HTTPException(status_code=409, detail="New username already exists. Duplicate usernames not allowed")
     user.username = newUserInfo.username
     user.password = hash_password(newUserInfo.password)
     user.role = newUserInfo.role
     
     await user.save()
-    return Response(status_code=200)
+    return user
 
 # Delete User   
 @router.delete("/user/delete/{username}")
