@@ -4,7 +4,7 @@ import asyncio
 from user import User, UserRole
 
 client = AsyncIOMotorClient("mongodb://localhost:27017/")
-db = client["restaurantdatabase"] 
+db = client["restaurantDatabase"] 
 
 
 async def main():
@@ -19,7 +19,7 @@ async def main():
     # Update the user's password
     #await user.set({User.password: 'newPassword'})
 
-    # Delete the user
+    # Delete the user               
     #await user.delete()
 
 if __name__ == "__main__":

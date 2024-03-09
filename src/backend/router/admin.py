@@ -9,11 +9,13 @@ router = APIRouter()
 @router.get("/users")
 async def getUsers():
     users = await User.find_all()
+    print("route worked")
+    return("route worked")
     return users
 
 # Create User -> Returns user object
 @router.post("/user/create")
-async def createUser(newUser: User, adminUser = Depends(admin_user())) -> User:
+async def createUser(newUser: User, adminUser = Depends(admin_user)) -> User:
     if not adminUser:
         raise HTTPException(status_code=401, detail="Only admins can create users")
     user = User(username=newUser.username, password=hash_password(newUser.password), role=newUser.role)
