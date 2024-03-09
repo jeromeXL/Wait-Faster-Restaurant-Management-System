@@ -7,9 +7,19 @@ router = APIRouter()
 
 # Get all users
 @router.get("/users")
-async def getUsers():
+async def getUsers(adminUser = Depends(admin_user)) -> list:
+    if not adminUser:
+        raise HTTPException(status_code=401, detail="Only admins can get users info")
     users = await User.find_all().to_list() # Users.find_all() returns a queryable. Then calling .to_list() will transform that into a list. 
     return users
+
+# Get user by username
+@router.get("/user/{username}")
+async def getUser(username: str, adminUser = Depends(admin_user)) -> User:
+    if not adminUser:
+        raise HTTPException(status_code=401, detail="Only admins can get user info")
+    user = await User.find_one(User.username == username)
+    return user
 
 # Create User -> Returns user object
 @router.post("/user/create")
@@ -21,11 +31,12 @@ async def createUser(newUser: User, adminUser = Depends(admin_user)) -> User:
     return user
 
 # Update User (Previously Update Password)
-@router.put("/user/update/{user_id}")
-async def updateUser(user_id: str, newUserInfo: User, adminUser = Depends(admin_user)) -> Response:
+@router.put("/user/update/{username}")
+async def updateUser(username: str, newUserInfo: User, adminUser = Depends(admin_user)) -> Response:
     if not adminUser:
         raise HTTPException(status_code=401, detail="Only admins can update users")
-    user = await User.find_one(User.id == user_id)
+    #user = await User.find_one(User.id == user_id) # cant find by id for some reason
+    user = await User.find_one(User.username == username)
     if not user:
         raise HTTPException(status_code=404, detail="User does not exist")
     user.username = newUserInfo.username
@@ -33,15 +44,15 @@ async def updateUser(user_id: str, newUserInfo: User, adminUser = Depends(admin_
     user.role = newUserInfo.role
     
     await user.save()
-
     return Response(status_code=200)
 
 # Delete User   
-@router.delete("/user/delete/{user_id}")
-async def delete_user(user_id: str, adminUser = Depends(admin_user)) -> Response:
+@router.delete("/user/delete/{username}")
+async def delete_user(username: str, adminUser = Depends(admin_user)) -> Response:
     if not adminUser:
         raise HTTPException(status_code=401, detail="Only admins can delete users")
-    user = await User.find_one(User.id == user_id)
+    #user = await User.find_one(User.id == user_id) cant find by id for some reason
+    user = await User.find_one(User.username == username)
     if not user:
         raise HTTPException(status_code=404, detail="User does not exist")
     await user.delete()
