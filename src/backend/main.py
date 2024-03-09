@@ -10,6 +10,7 @@ from utils.password import hash_password
 from config import CONFIG
 from starlette.middleware.cors import CORSMiddleware
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):  
     
