@@ -11,7 +11,7 @@ When you first start, make a venv by running `python -m venv .venv` in the `/src
 
 To deactivate the venv run `deactivate`
 
-Once in the venv, you can run `pipe install -r requirements.txt`, which will download all packages specified.
+Once in the venv, you can run `pip install -r requirements.txt`, which will download all packages specified.
 
 If you want to add a package, make sure to add it to the `requirements.txt`.
 
