@@ -33,6 +33,7 @@ If there are an errors, try renaming the .env.TEMPLATE to .env
     -   Testing is done with `pytest`
     -   Make files that end in `test_*.py` for pytest to pick them up. `https://docs.pytest.org/en/8.0.x/how-to/usage.html`
     -   Write
+    -   Try 'python3 -m pytest' if pytest does not work for you
 -   Technology choices:
     -   Beanie for the ODM (https://github.com/roman-right/beanie)
     -   Pydantic for validation (Beanie uses pydantic under the hood too)
