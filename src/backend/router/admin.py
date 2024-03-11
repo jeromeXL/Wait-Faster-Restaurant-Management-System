@@ -48,7 +48,7 @@ async def updateUser(username: str, newUserInfo: User, adminUser = Depends(admin
     if not user:
         raise HTTPException(status_code=404, detail="404 Not Found: User does not exist")
     newUsernameTaken = await User.find_by_username(newUserInfo.username)
-    if newUsernameTaken:
+    if newUsernameTaken and newUserInfo.username != username:
         raise HTTPException(status_code=409, detail="409 Conflict: New username already exists. Duplicate usernames not allowed")
     user.username = newUserInfo.username
     user.password = hash_password(newUserInfo.password)
