@@ -1,0 +1,5 @@
+- Integrated User stories into proposal
+- Created all user stories in jira
+- Created tasks that aggregated user stories in JIRA
+- Helped create a functionality list and prepare proposal document
+- Allocated tasks to teammates
