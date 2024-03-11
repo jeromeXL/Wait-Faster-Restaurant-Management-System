@@ -1,0 +1,4 @@
+- Started task for creating Menu Items
+- Understood how the API calls work and how MongoDB works.
+- Defined routes based on task allocation on JIRA
+- Created test files for creation, deletion and updating on menu items based on requirements.

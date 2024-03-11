@@ -1,0 +1,4 @@
+- Created and setup backend with database and api
+- Created documentation on how to setup project
+- Implemented JWT based authentication with a refresh token using FastAPI
+- Helped teammates setup their projects and get started on the backend
