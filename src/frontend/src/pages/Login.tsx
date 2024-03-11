@@ -4,6 +4,7 @@ import WFLogo from '../assets/WFLogo.png';
 import axios from 'axios';
 import { useState } from "react";
 import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from "react-router-dom";
 
 interface LoginRequest {
   username: string;
@@ -17,15 +18,24 @@ interface AuthTokens {
   refresh_token_expires?: string;
 }
 
+enum UserRole {
+  USER_ADMIN = 1,
+  MANAGER = 2,
+  WAIT_STAFF = 3,
+  KITCHEN_STAFF = 4,
+  CUSTOMER_TABLET = 5,
+}
+
 interface DecodedToken {
   userId: string;
-  role: string;
+  role: UserRole;
 }
 
 const Login = () => {
   const [credentials, setCredentials] = useState<LoginRequest>({ username: '', password: '' });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -42,7 +52,27 @@ const Login = () => {
 
       // Decode the JWT to get the user's role
       const decodedToken: DecodedToken = jwtDecode<DecodedToken>(access_token);
-      localStorage.setItem('userRole', decodedToken.role);
+      localStorage.setItem('userRole', decodedToken.role.toString());
+
+      switch (decodedToken.role) {
+        case UserRole.USER_ADMIN:
+          navigate('/admin');
+          break;
+        case UserRole.MANAGER:
+          navigate('/manager');
+          break;
+        case UserRole.WAIT_STAFF:
+          navigate('/wait_staff');
+          break;
+        case UserRole.KITCHEN_STAFF:
+          navigate('/kitchen_staff');
+          break;
+        case UserRole.CUSTOMER_TABLET:
+          navigate('/menu');
+          break;
+        default:
+          navigate('/');
+      }
 
     } catch (error: any) {
       console.error('Login error:', error.response?.data?.detail || 'Unknown error');
