@@ -1,0 +1,5 @@
+- User stories were now defined into what the project was aiming to achieve.
+- Translated user stories into JIRA tasks
+- Assigned tasks to teammates.
+- Started work on the project proposal document and allocated tasks for the document.
+- Created a story board to work on interface design.
