@@ -13,7 +13,12 @@ router = APIRouter(prefix="/Menu", tags=["Menu"])
 
 @router.get("")
 async def getMenu():
-    return await Menu.find_all()
+    # return await Menu.find_all()
+    menu = Menu.find_all()
+    if not menu:
+        # impossible? fatal error?
+        raise HTTPException(status_code=404, detail="Menu not found")
+    return menu
 
 @router.put("")
 async def updateMenu(changedMenu: Menu):
