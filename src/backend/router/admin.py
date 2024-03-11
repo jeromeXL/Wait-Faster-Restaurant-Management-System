@@ -28,7 +28,7 @@ async def createUser(newUser: User, adminUser = Depends(admin_user)) -> User:
     if not adminUser:
         raise HTTPException(status_code=403, detail="403 Forbidden: Only admins can create users")
     if not matchesTablePattern(newUser.username) and newUser.role == UserRole.CUSTOMER_TABLET:
-        raise HTTPException(status_code=405, detail="422 Unprocessable Entity: Table names must be in format 'Table<Number>'")
+        raise HTTPException(status_code=422, detail="422 Unprocessable Entity: Table names must be in format 'Table<Number>'")
     newUsernameTaken = await User.find_by_username(newUser.username)
     if newUsernameTaken:
         raise HTTPException(status_code=409, detail="409 Conflict: New username already exists. Duplicate usernames not allowed")
@@ -42,7 +42,7 @@ async def updateUser(username: str, newUserInfo: User, adminUser = Depends(admin
     if not adminUser:
         raise HTTPException(status_code=401, detail="403 Forbidden: Only admins can update users")
     if not matchesTablePattern(newUserInfo.username) and newUserInfo.role == UserRole.CUSTOMER_TABLET:
-        raise HTTPException(status_code=405, detail="422 Unprocessable Entity: Table names must be in format 'Table<Number>'")
+        raise HTTPException(status_code=422, detail="422 Unprocessable Entity: Table names must be in format 'Table<Number>'")
     #user = await User.find_one(User.id == user_id) # cant find by id for some reason
     user = await User.find_by_username(username)
     if not user:
