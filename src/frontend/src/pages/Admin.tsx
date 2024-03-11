@@ -1,11 +1,38 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography, Tabs } from '@mui/material';
+import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography, Tabs, Snackbar, Alert, Tab, Divider } from '@mui/material';
 import FloatingBottomNav from '../components/AdminBottomBar';
+
+enum UserRole {
+  MANAGER = 2,
+  WAIT_STAFF = 3,
+  KITCHEN_STAFF = 4,
+  CUSTOMER_TABLET = 5,
+}
 
 interface User {
   username: string;
   password: string;
-  role: string;
+  role: UserRole;
+}
+
+// Helper functions
+function getUserRoleEntries() {
+  return Object.entries(UserRole).filter(([key]) => isNaN(Number(key)));
+}
+
+function roleName(role: UserRole): string {
+  switch (role) {
+    case UserRole.MANAGER:
+      return 'Manager';
+    case UserRole.WAIT_STAFF:
+      return 'Wait Staff';
+    case UserRole.KITCHEN_STAFF:
+      return 'Kitchen Staff';
+    case UserRole.CUSTOMER_TABLET:
+      return 'Customer Tablet';
+    default:
+      return 'Unknown Role';
+  }
 }
 
 const getLocalStorageData = (key: string): User[] => JSON.parse(localStorage.getItem(key) || '[]');
@@ -91,10 +118,11 @@ const Admin = () => {
             <Typography variant="body1" color='black'><strong>Role</strong></Typography>
             <Typography variant="body1" color='black'><strong>Edit</strong></Typography>
           </Box>
+          <Divider/>
           {users.map((user, index) => (
             <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Typography variant="body1" color='grey'>{user.username}</Typography>
-              <Typography variant="body1" color='grey'>{user.role}</Typography>
+              <Typography variant="body1" color='grey'>{roleName(user.role)}</Typography>
               <Button variant="outlined" size="small" onClick={() => handleEditUser(index)}>Edit</Button>
             </Box>
           ))}
@@ -117,7 +145,9 @@ const AddUserDialog = ({ open, onClose, onAddUser }: any) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [selectedRole, setSelectedRole] = useState<string>(UserRole.MANAGER.toString());
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>('');
 
   const clearForm = () => {
     setUsername('');
@@ -131,30 +161,48 @@ const AddUserDialog = ({ open, onClose, onAddUser }: any) => {
   };
 
   const handleSubmit = () => {
-    if (password !== confirmPassword) {
-      alert("Passwords don't match");
+    if (!username || !password || !confirmPassword || !selectedRole) {
+      setSnackbarMessage('All fields are required');
+      setSnackbarOpen(true);
       return;
     }
-    onAddUser({ username, password, role: selectedRole });
+
+    if (password !== confirmPassword) {
+      setSnackbarMessage("Passwords don't match");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    onAddUser({ username, password, role: Number(selectedRole) });
     clearForm();
+    onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Create New Account</DialogTitle>
-      <DialogContent>
-        <TextField autoFocus margin="dense" label="Username" type="text" fullWidth variant="outlined" value={username} onChange={(e) => setUsername(e.target.value)} />
-        <TextField margin="dense" label="Password" type="password" fullWidth variant="outlined" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <TextField margin="dense" label="Reconfirm Password" type="password" fullWidth variant="outlined" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-        <Tabs value={selectedRole} onChange={handleRoleChange} variant="scrollable" scrollButtons="auto" aria-label="Roles" indicatorColor="primary" textColor="primary" allowScrollButtonsMobile>
-          {/* Tabs for role selection */}
-        </Tabs>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSubmit}>Confirm</Button>
-      </DialogActions>
-    </Dialog>
+    <>
+      <Dialog open={open} onClose={onClose}>
+        <DialogTitle>Create New Account</DialogTitle>
+        <DialogContent>
+          <TextField autoFocus margin="dense" label="Username" type="text" fullWidth variant="outlined" value={username} onChange={(e) => setUsername(e.target.value)} />
+          <TextField margin="dense" label="Password" type="password" fullWidth variant="outlined" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <TextField margin="dense" label="Reconfirm Password" type="password" fullWidth variant="outlined" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          <Tabs value={selectedRole} onChange={handleRoleChange} variant="scrollable" scrollButtons="auto" aria-label="Roles" indicatorColor="primary" textColor="primary" allowScrollButtonsMobile>
+            {getUserRoleEntries().map(([role, value]) => (
+              <Tab key={value} label={role.replace('_', ' ')} value={value} />
+            ))}
+          </Tabs>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSubmit}>Confirm</Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+        <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
@@ -163,6 +211,8 @@ const EditUserDialog = ({ open, onClose, user, onSave, onDelete }: any) => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('');
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>('');
 
   useEffect(() => {
     if (user) {
@@ -172,31 +222,48 @@ const EditUserDialog = ({ open, onClose, user, onSave, onDelete }: any) => {
   }, [user]);
 
   const handleSave = () => {
-    if (password && password !== confirmPassword) {
-      alert("Passwords don't match");
+    if (!username || !selectedRole) {
+      setSnackbarMessage('Username and role are required');
+      setSnackbarOpen(true);
       return;
     }
-    onSave({ ...user, username, password, role: selectedRole });
+
+    if (password && password !== confirmPassword) {
+      setSnackbarMessage("Passwords don't match");
+      setSnackbarOpen(true);
+      return;
+    }
+
+    onSave({ ...user, username, password: password ? password : user.password, role: selectedRole });
     onClose();
   };
 
   return (
-    <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Edit User</DialogTitle>
-      <DialogContent>
-        <TextField autoFocus margin="dense" label="Username" type="text" fullWidth variant="outlined" value={username} onChange={(e) => setUsername(e.target.value)} />
-        <TextField margin="dense" label="New Password (optional)" type="password" fullWidth variant="outlined" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <TextField margin="dense" label="Reconfirm Password" type="password" fullWidth variant="outlined" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
-        <Tabs value={selectedRole} onChange={(_e, newValue) => setSelectedRole(newValue)} variant="scrollable" scrollButtons="auto" aria-label="Roles" indicatorColor="primary" textColor="primary" allowScrollButtonsMobile>
-          {/* Tabs for role selection */}
-        </Tabs>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleSave}>Save</Button>
-        <Button color="error" onClick={() => onDelete(user)}>Delete</Button>
-      </DialogActions>
-    </Dialog>
+    <>
+      <Dialog open={open} onClose={onClose}>
+        <DialogTitle>Edit User</DialogTitle>
+        <DialogContent>
+          <TextField autoFocus margin="dense" label="Username" type="text" fullWidth variant="outlined" value={username} onChange={(e) => setUsername(e.target.value)} />
+          <TextField margin="dense" label="New Password (optional)" type="password" fullWidth variant="outlined" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <TextField margin="dense" label="Reconfirm Password" type="password" fullWidth variant="outlined" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          <Tabs value={selectedRole} onChange={(_e, newValue) => setSelectedRole(newValue)} variant="scrollable" scrollButtons="auto" aria-label="Roles" indicatorColor="primary" textColor="primary" allowScrollButtonsMobile>
+            {getUserRoleEntries().map(([role, value]) => (
+              <Tab key={value} label={role.replace('_', ' ')} value={value} />
+            ))}
+          </Tabs>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose}>Cancel</Button>
+          <Button onClick={handleSave}>Save</Button>
+          <Button color="error" onClick={() => onDelete(user)}>Delete</Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+        <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
