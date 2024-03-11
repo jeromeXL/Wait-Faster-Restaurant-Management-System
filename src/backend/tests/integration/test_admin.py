@@ -114,6 +114,27 @@ async def test_update_user_password():
         assert hashedOldPassword != update_response.json()["password"]
 
 
-#@pytest.mark.asyncio
-#async def test_admin_can_delete_user():
+@pytest.mark.asyncio
+async def test_delete_user():
+    async with await get_client() as client:
+        login_response = await client.post("/auth/login", json={
+            "username" : CONFIG.default_user_username,
+            "password" : CONFIG.default_user_password
+        })
+        assert login_response.status_code == 200
+        tokens = login_response.json()
+        client.headers = {
+            "Authorization": f"Bearer {tokens['access_token']}"
+        }
 
+        create_response = await client.post("/user/create", json={
+            "username": "Table3",
+            "password": "initialpassword",
+            "role": UserRole.CUSTOMER_TABLET.value 
+        })
+        assert create_response.status_code == 200
+        assert create_response.json()["username"] == "Table3"
+        assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
+
+        delete_response = await client.delete("/user/delete/Table3")
+        assert delete_response.status_code == 200
