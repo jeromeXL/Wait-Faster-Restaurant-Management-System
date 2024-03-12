@@ -15,11 +15,11 @@ async def getUsers(adminUser = Depends(admin_user)) -> list:
     return users
 
 # Get user by username
-@router.get("/user/{username}")
-async def getUser(username: str, adminUser = Depends(admin_user)) -> User:
+@router.get("/user/{userId}")
+async def getUser(userId: str, adminUser = Depends(admin_user)) -> User:
     if not adminUser:
         raise HTTPException(status_code=403, detail="403 Forbidden: Only admins can get user info")
-    user = await User.find_one(User.username == username)
+    user = await User.get(userId)
     return user
 
 # Create User -> Returns user object
