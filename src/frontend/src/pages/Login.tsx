@@ -1,35 +1,10 @@
 import { Box, Button, Container, TextField, Typography, Snackbar, Alert } from "@mui/material";
 import loginBG from '../assets/LoginBG.mp4';
 import WFLogo from '../assets/WFLogo.png';
-import axios from 'axios';
 import { useState } from "react";
-import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from "react-router-dom";
+import { LoginRequest, UserRole, login } from "../utils/useAxios";
 
-interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-interface AuthTokens {
-  access_token: string;
-  access_token_expires: string;
-  refresh_token: string;
-  refresh_token_expires?: string;
-}
-
-enum UserRole {
-  USER_ADMIN = 1,
-  MANAGER = 2,
-  WAIT_STAFF = 3,
-  KITCHEN_STAFF = 4,
-  CUSTOMER_TABLET = 5,
-}
-
-interface DecodedToken {
-  userId: string;
-  role: UserRole;
-}
 
 const Login = () => {
   const [credentials, setCredentials] = useState<LoginRequest>({ username: '', password: '' });
@@ -44,17 +19,9 @@ const Login = () => {
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     try {
-      const response = await axios.post<AuthTokens>('backendURL/auth/login', credentials);
-      const { access_token, refresh_token } = response.data;
+      const response = await login(credentials);
 
-      localStorage.setItem('accessToken', access_token);
-      localStorage.setItem('refreshToken', refresh_token);
-
-      // Decode the JWT to get the user's role
-      const decodedToken: DecodedToken = jwtDecode<DecodedToken>(access_token);
-      localStorage.setItem('userRole', decodedToken.role.toString());
-
-      switch (decodedToken.role) {
+      switch (response.role) {
         case UserRole.USER_ADMIN:
           navigate('/admin');
           break;
@@ -74,10 +41,12 @@ const Login = () => {
           navigate('/');
       }
 
-    } catch (error: any) {
+    } catch (error: Error) {
+
       console.error('Login error:', error.response?.data?.detail || 'Unknown error');
       setError(error.response?.data?.detail || 'An unknown error occurred');
       setSnackbarOpen(true);
+      
     }
   };
 
