@@ -5,9 +5,11 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from models.user import User, UserRole
 from router.auth import router as AuthRouter
+from router.menuItem import router as MenuRouter
 from utils.password import hash_password
 from config import CONFIG
 from starlette.middleware.cors import CORSMiddleware
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  
@@ -38,6 +40,7 @@ app = FastAPI(
 )
 
 app.include_router(AuthRouter)
+app.include_router(MenuRouter)
 
 app.add_middleware(
     CORSMiddleware,
