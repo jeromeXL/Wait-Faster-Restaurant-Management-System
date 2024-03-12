@@ -3,7 +3,8 @@ import loginBG from '../assets/LoginBG.mp4';
 import WFLogo from '../assets/WFLogo.png';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LoginRequest, UserRole, login } from "../utils/useAxios";
+import { LoginRequest, login } from "../utils/api";
+import { UserRole } from "../utils/models/user";
 
 
 const Login = () => {
