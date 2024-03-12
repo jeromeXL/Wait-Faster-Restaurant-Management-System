@@ -1,3 +1,19 @@
+import { UserRole } from "./models/user";
+import {  getAxios } from "./useAxios";
+import { jwtDecode } from 'jwt-decode';
+
+export interface DecodedToken {
+	exp: number,
+	iat: number,
+	jti: string,
+	subject: {
+		userId: string;
+		role: UserRole;
+	},
+	type: string
+}
+
+
 export const login = async (request: LoginRequest) => {
     const response = await getAxios().post<AuthTokens>("/auth/login", request);
     const { access_token, refresh_token } = response.data;

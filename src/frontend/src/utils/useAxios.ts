@@ -1,7 +1,6 @@
 import axios from "axios";
 import { getConfig } from "./config";
-import { jwtDecode } from 'jwt-decode';
-import { UserRole } from "./models/user";
+
 
 const getAuthToken = () => localStorage.getItem("accessToken");
 const instance = axios.create({
@@ -17,18 +16,6 @@ instance.interceptors.request.use((config) => {
 });
 
 export const getAxios = () => instance;
-
-
-export interface DecodedToken {
-	exp: number,
-	iat: number,
-	jti: string,
-	subject: {
-		userId: string;
-		role: UserRole;
-	},
-	type: string
-}
 
 
 
