@@ -16,6 +16,7 @@ import Popover from '@mui/material/Popover';
 import Snackbar from '@mui/material/Snackbar';
 import SnackbarContent from '@mui/material/SnackbarContent';
 import {useNavigate} from 'react-router-dom';
+import Steak from '../assets/Steak.jpeg'
 
 const Menu = () => {
 
@@ -112,6 +113,22 @@ const closeFilters = () => {
 
   const open = Boolean(anchorEl);
   const id = open ? 'filter-popover' : undefined;
+
+  const [quantity, setQuantity] = useState(0);
+
+  const decrementQuantity = () => {
+    if (quantity > 0) {
+      setQuantity(quantity - 1);
+    }
+  };
+
+  const incrementQuantity = () => {
+    setQuantity(quantity + 1);
+  };
+
+  const addToCart = () => { 
+    setQuantity(0); 
+  }
 
   return (
     <Box sx={{bgcolor:"#38353A"}}>
@@ -231,27 +248,130 @@ const closeFilters = () => {
             </Box>
         </AppBar>
         <Box sx={{padding: '20px'}}>
-          <Box>
-            <Card sx={{ maxWidth: 345 }}>
+          <Box sx={{display: 'flex', flexWrap: 'wrap', flexDirection: 'row', justifyContent: 'space-between', rowGap: '15px'}}>
+            <Card sx={{ maxWidth: 300}}>
               <CardHeader
                 title="Angus Rump Steak"
               />
               <CardMedia
                 component="img"
                 height="200"
-                image="LoginBG"
+                image={Steak}
               />
               <CardContent>
-                <Typography variant="h6">
+                <Typography>
                   220g. Grainage black Angus and grain fed one hundred and fifty days. Come MSA assured steaks are served with chips, salad and your choice of sauce.
                 </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                  <Chip label="Nut-Free" />
+                  <Typography> 
+                  $25
+                  </Typography>
+                </Box>
+                <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
+                  <Button variant="outlined" onClick={decrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
+                    -
+                  </Button>
+                  <Typography variant="body1" sx={{ marginX: '10px' }}>{quantity}</Typography>
+                  <Button variant="outlined" onClick={incrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
+                    +
+                  </Button>
+                  <Button variant="contained" onClick={addToCart}>Add To Cart</Button>
+                </Box>
               </CardContent>
-              <Button>
-                -
-              </Button>
-              <Button>
-                +
-              </Button>
+            </Card>
+            <Card sx={{ maxWidth: 300 }}>
+              <CardHeader
+                title="Angus Rump Steak"
+              />
+              <CardMedia
+                component="img"
+                height="200"
+                image={Steak}
+              />
+              <CardContent>
+                <Typography>
+                  220g. Grainage black Angus and grain fed one hundred and fifty days. Come MSA assured steaks are served with chips, salad and your choice of sauce.
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                  <Chip label="Nut-Free" />
+                  <Typography> 
+                  $25
+                  </Typography>
+                </Box>
+                <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
+                  <Button variant="outlined" onClick={decrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
+                    -
+                  </Button>
+                  <Typography variant="body1" sx={{ marginX: '10px' }}>{quantity}</Typography>
+                  <Button variant="outlined" onClick={incrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
+                    +
+                  </Button>
+                  <Button variant="contained" onClick={addToCart}>Add To Cart</Button>
+                </Box>
+              </CardContent>
+            </Card>
+            <Card sx={{ maxWidth: 300 }}>
+              <CardHeader
+                title="Angus Rump Steak"
+              />
+              <CardMedia
+                component="img"
+                height="200"
+                image={Steak}
+              />
+              <CardContent>
+                <Typography>
+                  220g. Grainage black Angus and grain fed one hundred and fifty days. Come MSA assured steaks are served with chips, salad and your choice of sauce.
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                  <Chip label="Nut-Free" />
+                  <Typography> 
+                  $25
+                  </Typography>
+                </Box>
+                <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
+                  <Button variant="outlined" onClick={decrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
+                    -
+                  </Button>
+                  <Typography variant="body1" sx={{ marginX: '10px' }}>{quantity}</Typography>
+                  <Button variant="outlined" onClick={incrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
+                    +
+                  </Button>
+                  <Button variant="contained" onClick={addToCart}>Add To Cart</Button>
+                </Box>
+              </CardContent>
+            </Card>
+            <Card sx={{ maxWidth: 300 }}>
+              <CardHeader
+                title="Angus Rump Steak"
+              />
+              <CardMedia
+                component="img"
+                height="200"
+                image={Steak}
+              />
+              <CardContent>
+                <Typography>
+                  220g. Grainage black Angus and grain fed one hundred and fifty days. Come MSA assured steaks are served with chips, salad and your choice of sauce.
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                  <Chip label="Nut-Free" />
+                  <Typography> 
+                  $25
+                  </Typography>
+                </Box>
+                <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
+                  <Button variant="outlined" onClick={decrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
+                    -
+                  </Button>
+                  <Typography variant="body1" sx={{ marginX: '10px' }}>{quantity}</Typography>
+                  <Button variant="outlined" onClick={incrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
+                    +
+                  </Button>
+                  <Button variant="contained" onClick={addToCart}>Add To Cart</Button>
+                </Box>
+              </CardContent>
             </Card>
           </Box>
       </Box>
