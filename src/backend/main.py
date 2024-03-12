@@ -6,6 +6,8 @@ from beanie import init_beanie
 from models.user import User, UserRole
 from models.menu import Menu
 from router.auth import router as AuthRouter
+from router.menu import router as MenuRouter
+from router.category import router as CategoryRouter
 from utils.password import hash_password
 from config import CONFIG
 from starlette.middleware.cors import CORSMiddleware
@@ -18,7 +20,7 @@ async def lifespan(app: FastAPI):
     # Init beanie with the Product document class
     app.db = AsyncIOMotorClient(CONFIG.mongo_connection_string).account  # type: ignore[attr-defined]
     await init_beanie(app.db, document_models=[User])  # type: ignore[arg-type,attr-defined]
-    await init_beanie(app.db, document_models=[Menu])  # type: ignore[arg-type,attr-defined]
+    await init_beanie(app.db, document_models=[Menu])
 
     # Check if the database has 0 users. If it does, then create a base admin user.
     userCount = await User.count()
@@ -30,6 +32,7 @@ async def lifespan(app: FastAPI):
 
     # Check if the database has existing menu, if not, make empty menu
     menuCount = await Menu.count()
+    print(str(menuCount) + " menuCOUNT")
     if (menuCount == 0):
         print("No Menu in database, creating blank menu")
         menu = Menu(Categories= [])
@@ -47,6 +50,8 @@ app = FastAPI(
 )
 
 app.include_router(AuthRouter)
+app.include_router(MenuRouter)
+app.include_router(CategoryRouter)
 
 app.add_middleware(
     CORSMiddleware,
