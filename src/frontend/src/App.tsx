@@ -5,6 +5,7 @@ import Login from './pages/Login'
 import Menu from './pages/Menu'
 import Admin from './pages/Admin'
 import AdminRoute from './components/AdminRoute';
+import Logout from './components/Logout';
 
 function App() {
 
@@ -20,6 +21,7 @@ function App() {
               <Admin />
             //</AdminRoute>
           } />
+          <Route path="/logout" element={<Logout />} />
         </Routes>
       </Router>
     </>
