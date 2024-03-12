@@ -1,8 +1,62 @@
-import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, TextField, Typography, Snackbar, Alert } from "@mui/material";
 import loginBG from '../assets/LoginBG.mp4';
 import WFLogo from '../assets/WFLogo.png';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { LoginRequest, UserRole, login } from "../utils/useAxios";
+
 
 const Login = () => {
+  const [credentials, setCredentials] = useState<LoginRequest>({ username: '', password: '' });
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    try {
+      const response = await login(credentials);
+
+      switch (response.role) {
+        case UserRole.USER_ADMIN:
+          navigate('/admin');
+          break;
+        case UserRole.MANAGER:
+          navigate('/manager');
+          break;
+        case UserRole.WAIT_STAFF:
+          navigate('/wait_staff');
+          break;
+        case UserRole.KITCHEN_STAFF:
+          navigate('/kitchen_staff');
+          break;
+        case UserRole.CUSTOMER_TABLET:
+          navigate('/menu');
+          break;
+        default:
+          navigate('/');
+      }
+
+    } catch (error: Error) {
+
+      console.error('Login error:', error.response?.data?.detail || 'Unknown error');
+      setError(error.response?.data?.detail || 'An unknown error occurred');
+      setSnackbarOpen(true);
+      
+    }
+  };
+
+  const handleSnackbarClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   return (
     <Box
       sx={{
@@ -51,14 +105,15 @@ const Login = () => {
             height: "200px"
           }}
         />
-        <Typography variant="h5">Welcome to WaitFaster</Typography>
-        <form>
+        <Typography variant="h5">Welcome to WaitFaster.</Typography>
+        <form onSubmit={handleSubmit}>
           <TextField
             label="Username"
             name="username"
             variant="outlined"
             margin="normal"
             fullWidth
+            onChange={handleChange}
           />
           <TextField
             label="Password"
@@ -67,12 +122,19 @@ const Login = () => {
             variant="outlined"
             margin="normal"
             fullWidth
+            onChange={handleChange}
           />
           <Button type="submit" variant="contained" color="primary" fullWidth sx={{ marginTop: "20px" }}>
             Login
           </Button>
         </form>
       </Container>
+
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
+        <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

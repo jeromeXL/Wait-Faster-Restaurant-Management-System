@@ -1,0 +1,6 @@
+- Decided on base structure of the project and how the system would be setup for different clients.
+- Decided on project hierarchy
+- Created a doc to add in thoughts about the system and how customer dissatisfactions would be handled.
+- Mapped out potential use cases through user stories
+- Created JIRA tasks.
+- Worked out how JIRA functioned, and make some sample tasks.
