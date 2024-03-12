@@ -43,7 +43,7 @@ async def updateUser(username: str, newUserInfo: User, adminUser = Depends(admin
         raise HTTPException(status_code=401, detail="403 Forbidden: Only admins can update users")
     if not matchesTablePattern(newUserInfo.username) and newUserInfo.role == UserRole.CUSTOMER_TABLET:
         raise HTTPException(status_code=422, detail="422 Unprocessable Entity: Table names must be in format 'Table<Number>'")
-    #user = await User.find_one(User.id == user_id) # cant find by id for some reason
+    #user = await User.get(userId) # cant find by id for some reason
     user = await User.find_by_username(username)
     if not user:
         raise HTTPException(status_code=404, detail="404 Not Found: User does not exist")

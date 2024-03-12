@@ -1,9 +1,12 @@
+from httpx import AsyncClient
 import pytest
+import pytest_asyncio
+from backend.utils.password import hash_password
 from tests.integration.client import get_client
 from config import CONFIG
 from models.user import  User, UserRole
 
-@pytest.fixture #Fixture not working 
+@pytest_asyncio.fixture() #Fixture not working 
 async def admin_client():
     async with await get_client() as client:
         login_response = await client.post("/auth/login", json={
@@ -15,28 +18,23 @@ async def admin_client():
         client.headers = {
             "Authorization": f"Bearer {tokens['access_token']}"
         }
-        return client 
+        
+        await User.delete_all()
+        adminUser = User(username="ädmin", password=hash_password("admin", role=UserRole.USER_ADMIN))
+        await  adminUser.create()
+
+        #await User.find(User.role != UserRole.USER_ADMIN).delete_all()
+
+        yield client 
 
 @pytest.mark.asyncio
-async def test_get_users():
-    async with await get_client() as client:
-        login_response = await client.post("/auth/login", json={
-            "username" : CONFIG.default_user_username,
-            "password" : CONFIG.default_user_password
-        })
-        assert login_response.status_code == 200
-        tokens = login_response.json()
-        client.headers = {
-            "Authorization": f"Bearer {tokens['access_token']}"
-        }
+async def test_get_users(admin_client: AsyncClient):
+    users_response = await admin_client.get("/users")
+    assert users_response.status_code == 200
 
-        users_response = await client.get("/users")
-        assert users_response.status_code == 200
-
-        data = users_response.json()
-        assert data[0]["username"] == "admin"
-        assert data[0]['role'] == 1
-
+    data = users_response.json()
+    assert data[0]["username"] == "admin"
+    assert data[0]['role'] == 1
 
 @pytest.mark.asyncio 
 async def test_create_user_success(): # Need to manually clear database on MongoDB compass to avoid 409 conflict error
