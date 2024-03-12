@@ -37,18 +37,19 @@ async def createUser(newUser: User, adminUser = Depends(admin_user)) -> User:
     return user
 
 # Update User (Previously Update Password)
-@router.put("/user/update/{username}")
-async def updateUser(username: str, newUserInfo: User, adminUser = Depends(admin_user)) -> User:
+@router.put("/user/update/{userId}")
+async def updateUser(userId: str, newUserInfo: User, adminUser = Depends(admin_user)) -> User:
     if not adminUser:
         raise HTTPException(status_code=401, detail="403 Forbidden: Only admins can update users")
     if not matchesTablePattern(newUserInfo.username) and newUserInfo.role == UserRole.CUSTOMER_TABLET:
         raise HTTPException(status_code=422, detail="422 Unprocessable Entity: Table names must be in format 'Table<Number>'")
-    #user = await User.get(userId) # cant find by id for some reason
-    user = await User.find_by_username(username)
+
+    user = await User.get(userId) 
+
     if not user:
         raise HTTPException(status_code=404, detail="404 Not Found: User does not exist")
     newUsernameTaken = await User.find_by_username(newUserInfo.username)
-    if newUsernameTaken and newUserInfo.username != username:
+    if newUsernameTaken and newUserInfo.username != userId:
         raise HTTPException(status_code=409, detail="409 Conflict: New username already exists. Duplicate usernames not allowed")
     user.username = newUserInfo.username
     user.password = hash_password(newUserInfo.password)
@@ -58,12 +59,12 @@ async def updateUser(username: str, newUserInfo: User, adminUser = Depends(admin
     return user
 
 # Delete User   
-@router.delete("/user/delete/{username}")
-async def delete_user(username: str, adminUser = Depends(admin_user)) -> Response:
+@router.delete("/user/delete/{userId}")
+async def delete_user(userId: str, adminUser = Depends(admin_user)) -> Response:
     if not adminUser:
         raise HTTPException(status_code=401, detail="403 Forbidden: Only admins can delete users")
-    #user = await User.find_one(User.id == user_id) cant find by id for some reason
-    user = await User.find_one(User.username == username)
+    
+    user = await User.get(userId) 
     if not user:
         raise HTTPException(status_code=404, detail="404 Not Found: User does not exist")
     await user.delete()

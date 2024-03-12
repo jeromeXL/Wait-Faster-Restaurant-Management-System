@@ -13,19 +13,22 @@ async def admin_client():
             "username" : CONFIG.default_user_username,
             "password" : CONFIG.default_user_password
         })
+        
         assert login_response.status_code == 200
         tokens = login_response.json()
         client.headers = {
             "Authorization": f"Bearer {tokens['access_token']}"
         }
         
-        await User.delete_all()
-        adminUser = User(username="ädmin", password=hash_password("admin", role=UserRole.USER_ADMIN))
-        await  adminUser.create()
-
+        ## Delete all users and create the default admin user.
         #await User.find(User.role != UserRole.USER_ADMIN).delete_all()
-
+        await User.delete_all()
+        adminUser = User(username="admin",password=hash_password("admin"), role=UserRole.USER_ADMIN)
+        await adminUser.create()
+        
         yield client 
+
+        # Dispose of client
 
 @pytest.mark.asyncio
 async def test_get_users(admin_client: AsyncClient):
@@ -36,103 +39,63 @@ async def test_get_users(admin_client: AsyncClient):
     assert data[0]["username"] == "admin"
     assert data[0]['role'] == 1
 
-@pytest.mark.asyncio 
-async def test_create_user_success(): # Need to manually clear database on MongoDB compass to avoid 409 conflict error
-    async with await get_client() as client:
-        login_response = await client.post("/auth/login", json={
-            "username" : CONFIG.default_user_username,
-            "password" : CONFIG.default_user_password
-        })
-        assert login_response.status_code == 200
-        tokens = login_response.json()
-        client.headers = {
-            "Authorization": f"Bearer {tokens['access_token']}"
-        }
 
-        create_response = await client.post("/user/create", json={
-            "username": "Table1",
-            "password": "initialpassword",
-            "role": UserRole.CUSTOMER_TABLET.value 
-        })
-        assert create_response.status_code == 200
-        assert create_response.json()["username"] == "Table1"
-        assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
+@pytest.mark.asyncio 
+async def test_create_user_success(admin_client): # Need to manually clear database on MongoDB compass to avoid 409 conflict error
+    create_response = await admin_client.post("/user/create", json={
+        "username": "Table1",
+        "password": "initialpassword",
+        "role": UserRole.CUSTOMER_TABLET.value 
+    })
+    assert create_response.status_code == 200
+    assert create_response.json()["username"] == "Table1"
+    assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
 
 
 @pytest.mark.asyncio
-async def test_create_user_invalid_table_name():
-    async with await get_client() as client:
-        login_response = await client.post("/auth/login", json={
-            "username" : CONFIG.default_user_username,
-            "password" : CONFIG.default_user_password
-        })
-        assert login_response.status_code == 200
-        tokens = login_response.json()
-        client.headers = {
-            "Authorization": f"Bearer {tokens['access_token']}"
-        }
-
-        create_response = await client.post("/user/create", json={
-            "username": "InvalidName",
-            "password": "initialpassword",
-            "role": UserRole.CUSTOMER_TABLET.value 
-        })
-        assert create_response.status_code == 422
+async def test_create_user_invalid_table_name(admin_client):
+    create_response = await admin_client.post("/user/create", json={
+        "username": "InvalidName",
+        "password": "initialpassword",
+        "role": UserRole.CUSTOMER_TABLET.value 
+    })
+    assert create_response.status_code == 422
 
 
 @pytest.mark.asyncio 
-async def test_update_user_password():
-    async with await get_client() as client:
-        login_response = await client.post("/auth/login", json={
-            "username" : CONFIG.default_user_username,
-            "password" : CONFIG.default_user_password
-        })
-        assert login_response.status_code == 200
-        tokens = login_response.json()
-        client.headers = {
-            "Authorization": f"Bearer {tokens['access_token']}"
-        }
+async def test_update_user_password(admin_client):
 
-        create_response = await client.post("/user/create", json={
-            "username": "Table2",
-            "password": "initialpassword",
-            "role": UserRole.CUSTOMER_TABLET.value 
-        })
-        assert create_response.status_code == 200
-        assert create_response.json()["username"] == "Table2"
-        assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
-        hashedOldPassword = create_response.json()["password"]
+    create_response = await admin_client.post("/user/create", json={
+        "username": "Table2",
+        "password": "initialpassword",
+        "role": UserRole.CUSTOMER_TABLET.value 
+    })
+    assert create_response.status_code == 200
+    
+    assert create_response.json()["username"] == "Table2"
+    assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
+    hashedOldPassword = create_response.json()["password"]
 
-        update_response = await client.put("/user/update/Table2", json={
-            "username": "Table2",
-            "password": "newpassword",
-            "role": UserRole.CUSTOMER_TABLET.value 
-        })
-        assert update_response.status_code == 200
-        assert hashedOldPassword != update_response.json()["password"]
+    update_response = await admin_client.put(f"/user/update/{create_response.json()['id']}", json={
+        "username": "Table2",
+        "password": "newpassword",
+        "role": UserRole.CUSTOMER_TABLET.value 
+    })
+    assert update_response.status_code == 200
+    assert hashedOldPassword != update_response.json()["password"]
 
 
 @pytest.mark.asyncio
-async def test_delete_user():
-    async with await get_client() as client:
-        login_response = await client.post("/auth/login", json={
-            "username" : CONFIG.default_user_username,
-            "password" : CONFIG.default_user_password
-        })
-        assert login_response.status_code == 200
-        tokens = login_response.json()
-        client.headers = {
-            "Authorization": f"Bearer {tokens['access_token']}"
-        }
+async def test_delete_user(admin_client):
+   
+    create_response = await admin_client.post("/user/create", json={
+        "username": "Table3",
+        "password": "initialpassword",
+        "role": UserRole.CUSTOMER_TABLET.value 
+    })
+    assert create_response.status_code == 200
+    assert create_response.json()["username"] == "Table3"
+    assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
 
-        create_response = await client.post("/user/create", json={
-            "username": "Table3",
-            "password": "initialpassword",
-            "role": UserRole.CUSTOMER_TABLET.value 
-        })
-        assert create_response.status_code == 200
-        assert create_response.json()["username"] == "Table3"
-        assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
-
-        delete_response = await client.delete("/user/delete/Table3")
-        assert delete_response.status_code == 200
+    delete_response = await admin_client.delete(f"/user/delete/{create_response.json()['id']}")
+    assert delete_response.status_code == 200
