@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from models.user import User, UserRole
+from models.menuItem import MenuItem
 from router.auth import router as AuthRouter
 from router.menuItem import router as MenuRouter
 from utils.password import hash_password
@@ -18,7 +19,7 @@ async def lifespan(app: FastAPI):
     
     # Init beanie with the Product document class
     app.db = AsyncIOMotorClient(CONFIG.mongo_connection_string).account  # type: ignore[attr-defined]
-    await init_beanie(app.db, document_models=[User])  # type: ignore[arg-type,attr-defined]
+    await init_beanie(app.db, document_models=[User, MenuItem])  # type: ignore[arg-type,attr-defined]
     
     # Check if the database has 0 users. If it does, then create a base admin user.
     userCount = await User.count()

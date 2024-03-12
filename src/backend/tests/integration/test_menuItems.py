@@ -41,7 +41,7 @@ async def test_create_menu_item(manager_client):
 	response = await manager_client.post("/menu-item/", json={
 		"name": "Test Item",
 		"price": 10.99,
-		"health_requirements": ["Vegetarian"],
+		"dietary_details": ["Vegetarian"],
 		"description": "This is a test menu item."
 	})
 	assert response.status_code == 200
@@ -61,7 +61,7 @@ async def test_update_menu_item(manager_client):
 	response = await manager_client.post("/menu-item/", json={
 		"name": "Test Item",
 		"price": 10.99,
-		"health_requirements": ["Vegetarian"],
+		"dietary_details": ["Vegetarian"],
 		"description": "This is a test menu item."
 	})
 	menu_item = response.json()
@@ -83,7 +83,7 @@ async def test_delete_menu_item(manager_client):
 	response = await manager_client.post("/menu-item/", json={
 		"name": "Test Item",
 		"price": 10.99,
-		"health_requirements": ["Vegetarian"],
+		"dietary_details": ["Vegetarian"],
 		"description": "This is a test menu item."
 	})
 	menu_item = response.json()
