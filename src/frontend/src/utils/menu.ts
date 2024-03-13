@@ -16,6 +16,7 @@ export type MenuItem = {
 }
 
 export type Category = {
+	id: string
 	name: string,
 	items: string[]
 }

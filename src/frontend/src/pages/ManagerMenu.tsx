@@ -8,9 +8,13 @@ import {
     CardContent,
     CardActions,
     Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    TextField,
 } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
-import AccordionActions from "@mui/material/AccordionActions";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import { Category, DietaryDetail, Menu, MenuItem } from "../utils/menu";
@@ -82,25 +86,70 @@ const menuItems: Record<string, MenuItem> = {
         price: 15.0,
     },
 };
-const ManagerMenu = () => {
-    const [menu, setMenu] = useState<Menu | null>({ categories: [] });
-    const [expandedCategoryName, setExpandedCategoryName] = useState<
-        string | undefined
-    >(menu?.categories[0]?.name);
 
+const ManagerMenu = () => {
+    // Edit Category Dialog
+    const EditCategoryDialog = ({
+        showDialog,
+        onClose,
+        onEditCategory,
+        category,
+    }: {
+        showDialog: boolean;
+        onClose: () => void;
+        onEditCategory: (category: Category) => Promise<unknown>;
+        category: Category | undefined;
+    }) => {
+        const [categoryName, setCategoryName] = useState<string | undefined>(category?.name)
+        const onSubmit = () => {
+            // Construct a new category object 
+            const newCategory : Category = {
+                ...category,
+                name: categoryName ?? ""
+            }
+        };
+
+        return (
+            <Dialog open={showDialog} onClose={onClose}>
+                <DialogTitle>Edit Category</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        label="Category Name"
+                        type="text"
+                        fullWidth
+                        variant="outlined"
+                        value={categoryName}
+                        onChange={(e) => setCategoryName(e.target.value)}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={onClose}>Cancel</Button>
+                    <Button onClick={onSubmit}>Confirm</Button>
+                </DialogActions>
+            </Dialog>
+        );
+    };
+
+    // MAIN PAGE
+    const [menu, setMenu] = useState<Menu | null>({ categories: [] });
     useEffect(() => {
         // Todo: replace with an async call to fetch the menu.
         setMenu({
             categories: [
                 {
+                    id: "Veggies1",
                     name: "Veggies",
                     items: ["id_one", "id_two", "id_three"],
                 },
                 {
+                    id: "Meat1",
                     name: "Meat",
                     items: ["id_four", "id_five", "id_six"],
                 },
                 {
+                    id: "OtherItems1",
                     name: "Other Items",
                     items: ["id_seven", "id_eight", "id_nine"],
                 },
@@ -108,14 +157,120 @@ const ManagerMenu = () => {
         });
     }, []);
 
-	const isLastItemInCategory = (category: Category, itemId: string) => {
-		
-	}
+    // Dialog Controls
+    const [showEditCategoryDialog, setShowEditCategoryDialog] =
+        useState<boolean>(false);
+    const [lastClickedEditCategory, setLastClickedEditCategory] =
+        useState<Category | null>(null);
+    const handleEditCategory = (category: Category) => {
+        setLastClickedEditCategory(category);
+        setShowEditCategoryDialog(true);
+    };
+
+    const [expandedCategoryName, setExpandedCategoryName] = useState<
+        string | undefined
+    >(menu?.categories[0]?.name);
+
+    const isLastItemInCategory = (category: Category, itemId: string) =>
+        category.items[category.items.length - 1] == itemId;
+    const isFirstItemInCategory = (category: Category, itemId: string) =>
+        category.items[0] == itemId;
+
+    const isLastCategory = (categoryName: string) =>
+        menu?.categories[menu.categories.length - 1].name == categoryName;
+    const isFirstCategory = (categoryName: string) =>
+        menu?.categories[0].name == categoryName;
 
     const handleReorderCategories = async (
-        categoryName: string,
+        categoryId: string,
         movementDirection: "Up" | "Down"
-    ) => {};
+    ) => {
+        // Get the categories as a list of names
+        const list = menu?.categories.map((x) => x.name);
+        if (list == null) {
+            return Promise.reject("No categories to re-order.");
+        }
+
+        // Get the indexes of the two items that need to be swapped.
+        const targetItemIndex = list?.indexOf(categoryId);
+        const isValidMovement =
+            (movementDirection == "Down" &&
+                targetItemIndex != list.length - 1) ||
+            (movementDirection == "Up" && targetItemIndex != 0);
+        if (!isValidMovement) {
+            return Promise.reject("Cannot move category in that direction.");
+        }
+
+        const indexToMoveTargetTo =
+            targetItemIndex + (movementDirection == "Up" ? -1 : 1);
+
+        // Swap targetItemIndex and indexToMoveTargetTo
+        const temp = list[targetItemIndex];
+        list[targetItemIndex] = list[indexToMoveTargetTo];
+        list[indexToMoveTargetTo] = temp;
+
+        // Send an http request and re-organize the list.
+        // TEMP - SORT THE CATEGORIES
+        console.log(list);
+        const sortedCategories = [];
+        for (const category of list) {
+            sortedCategories.push(
+                menu!.categories.find((x) => x.name == category)!
+            );
+        }
+
+        setMenu({
+            categories: sortedCategories,
+        } satisfies Menu);
+    };
+
+    const handleReorderMenuItems = async (
+        category: Category,
+        itemId: string,
+        movementDirection: "Up" | "Down"
+    ) => {
+        // Get the list of items
+        const items = category.items;
+
+        // Get the indexes of the two items that need to be swapped
+        const targetItemIndex = items.indexOf(itemId);
+        const isValidMovement =
+            (movementDirection == "Down" &&
+                targetItemIndex != items.length - 1) ||
+            (movementDirection == "Up" && targetItemIndex != 0);
+        if (!isValidMovement) {
+            return Promise.reject("Cannot move item in that direction.");
+        }
+
+        const indexToMoveTargetTo =
+            targetItemIndex + (movementDirection == "Up" ? -1 : 1);
+
+        // Swap targetItemIndex and indexToMoveTargetTo
+        const temp = items[targetItemIndex];
+        items[targetItemIndex] = items[indexToMoveTargetTo];
+        items[indexToMoveTargetTo] = temp;
+
+        // Send an http request and re-organize the items.
+        // TEMP - SORT THE CATEGORIES
+        const sortedItems = [];
+        for (const item of items) {
+            sortedItems.push(category.items.find((x) => x == item)!);
+        }
+
+        // Update the category
+        category.items = items;
+        const oldCategoryIndex = menu?.categories.findIndex(
+            (x) => x.name == category.name
+        );
+        const newMenu: Menu = {
+            categories: [
+                ...menu!.categories.slice(0, oldCategoryIndex),
+                category,
+                ...menu!.categories.slice(oldCategoryIndex! + 1),
+            ],
+        };
+        setMenu(newMenu);
+    };
 
     return (
         <Box
@@ -149,7 +304,60 @@ const ManagerMenu = () => {
                         expanded={category.name == expandedCategoryName}
                         onChange={() => setExpandedCategoryName(category.name)}
                     >
-                        <AccordionSummary>{category.name}</AccordionSummary>
+                        <AccordionSummary>
+                            <div class="flex flex-row w-full">
+                                <Typography
+                                    sx={{
+                                        flex: "1",
+                                    }}
+                                >
+                                    {category.name}
+                                </Typography>
+                                <div class="grid grid-cols-3">
+                                    {isFirstCategory(category.name) ? null : (
+                                        <Button
+                                            sx={{
+                                                gridColumnStart: 1,
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                return handleReorderCategories(
+                                                    category.name,
+                                                    "Up"
+                                                );
+                                            }}
+                                        >
+                                            <UpArrowIcon />
+                                        </Button>
+                                    )}
+                                    {isLastCategory(category.name) ? null : (
+                                        <Button
+                                            sx={{
+                                                gridColumnStart: 2,
+                                            }}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                return handleReorderCategories(
+                                                    category.name,
+                                                    "Down"
+                                                );
+                                            }}
+                                        >
+                                            <DownArrowIcon />
+                                        </Button>
+                                    )}
+                                    <Button
+                                        sx={{
+                                            gridColumnStart: 3,
+                                        }}
+                                        size="small"
+                                        onClick={() => handleEditCategory(category)}
+                                    >
+                                        Edit
+                                    </Button>
+                                </div>
+                            </div>
+                        </AccordionSummary>
 
                         <AccordionDetails
                             sx={{
@@ -188,14 +396,58 @@ const ManagerMenu = () => {
                                             </li>
                                         </ol>
                                     </CardContent>
-                                    <CardActions>
-                                        <Button>
-                                            <UpArrowIcon />
+                                    <CardActions class="grid grid-cols-3">
+                                        {isFirstItemInCategory(
+                                            category,
+                                            item
+                                        ) ? null : (
+                                            <Button
+                                                color="secondary"
+                                                sx={{
+                                                    gridColumnStart: 1,
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    return handleReorderMenuItems(
+                                                        category,
+                                                        item,
+                                                        "Up"
+                                                    );
+                                                }}
+                                            >
+                                                <UpArrowIcon />
+                                            </Button>
+                                        )}
+                                        {isLastItemInCategory(
+                                            category,
+                                            item
+                                        ) ? null : (
+                                            <Button
+                                                color="secondary"
+                                                sx={{
+                                                    gridColumnStart: 2,
+                                                }}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    return handleReorderMenuItems(
+                                                        category,
+                                                        item,
+                                                        "Down"
+                                                    );
+                                                }}
+                                            >
+                                                <DownArrowIcon />
+                                            </Button>
+                                        )}
+                                        <Button
+                                            sx={{
+                                                gridColumnStart: 3,
+                                            }}
+                                            size="small"
+                                            color="secondary"
+                                        >
+                                            Edit
                                         </Button>
-                                        <Button>
-                                            <DownArrowIcon />
-                                        </Button>
-                                        <Button size="small">Manage</Button>
                                     </CardActions>
                                 </Card>
                             ))}
@@ -203,6 +455,12 @@ const ManagerMenu = () => {
                     </Accordion>
                 ))}
             </Container>
+            <EditCategoryDialog
+                showDialog={showEditCategoryDialog}
+                onClose={() => setShowEditCategoryDialog(false)}
+                category={lastClickedEditCategory!}
+                onEditCategory={async () => {}}
+            />
         </Box>
     );
 };

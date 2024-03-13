@@ -16,10 +16,4 @@ router = APIRouter(prefix="/menu", tags=["Menu"])
 
 @router.get("")
 async def getMenu():
-    # form the menu based on the categories listed in the menu.json file
-    # make sure each category exists in database
-
-    json_file = open(os.path.dirname(__file__) + '/../menu.json')
-    # with open('menu.json', 'r') as f:
-    data = json.load(json_file)
-    return data
+    pass
