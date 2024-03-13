@@ -21,7 +21,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await login(credentials);
-
+      console.log(response);
       switch (response.role) {
         case UserRole.USER_ADMIN:
           navigate('/admin');
@@ -42,7 +42,7 @@ const Login = () => {
           navigate('/');
       }
 
-    } catch (error: Error) {
+    } catch (error: any) {
 
       console.error('Login error:', error.response?.data?.detail || 'Unknown error');
       setError(error.response?.data?.detail || 'An unknown error occurred');
@@ -97,6 +97,7 @@ const Login = () => {
           flexDirection: 'column',
           overflowY: 'auto',
           zIndex: 2,
+          margin: 2,
         }}
       >
         <Box

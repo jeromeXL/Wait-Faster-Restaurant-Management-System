@@ -7,7 +7,7 @@ const useAuth = () => {
   if (!token) return false;
   try {
     const decodedToken: DecodedToken = jwtDecode<DecodedToken>(token);
-    return decodedToken.subject.role === '1';
+    return decodedToken.subject.role === 1;
   } catch (error) {
     console.error('Error decoding token:', error);
     return false;

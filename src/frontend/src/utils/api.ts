@@ -30,7 +30,7 @@ export const login = async (request: LoginRequest) => {
 
 	// Decode the JWT to get the user's role
 	const decodedToken: DecodedToken = jwtDecode<DecodedToken>(access_token);
-	localStorage.setItem('userRole', decodedToken.subject.role.toString());
+	localStorage.setItem('userRole', decodedToken.subject.role);
 	return decodedToken.subject;
 };
 
