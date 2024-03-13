@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography, Tabs, Snackbar, Alert, Tab, Divider } from '@mui/material';
 import FloatingBottomNav from '../components/AdminBottomBar';
 import { getAxios } from '../utils/useAxios';
-import { UserRole } from "../utils/models/user";
+import { UserRole } from "../utils/user";
 
 interface User {
   userId: string;
