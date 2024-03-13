@@ -8,9 +8,11 @@ from models.menu import Category
 from router.auth import router as AuthRouter
 from router.menu import router as MenuRouter
 from router.category import router as CategoryRouter
+from router.admin import router as AdminRouter
 from utils.password import hash_password
 from config import CONFIG
 from starlette.middleware.cors import CORSMiddleware
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -41,6 +43,7 @@ app = FastAPI(
 )
 
 app.include_router(AuthRouter)
+app.include_router(AdminRouter)
 app.include_router(MenuRouter)
 app.include_router(CategoryRouter)
 
@@ -56,4 +59,3 @@ app.add_middleware(
 @app.get("/")
 def health_check():
     return "HEALTHY"
-
