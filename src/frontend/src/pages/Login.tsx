@@ -47,7 +47,7 @@ const Login = () => {
       console.error('Login error:', error.response?.data?.detail || 'Unknown error');
       setError(error.response?.data?.detail || 'An unknown error occurred');
       setSnackbarOpen(true);
-      
+
     }
   };
 

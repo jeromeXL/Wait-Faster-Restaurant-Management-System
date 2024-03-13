@@ -19,9 +19,9 @@ function App() {
           <Route path='/menu' element={<Menu />} />
           <Route path='/cart' element={<Cart />} />
           <Route path='/admin' element={
-            //<AdminRoute>
+            <AdminRoute>
               <Admin />
-            //</AdminRoute>
+            </AdminRoute>
           } />
           <Route path="/logout" element={<Logout />} />
         </Routes>
