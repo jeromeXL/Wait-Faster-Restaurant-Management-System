@@ -19,7 +19,7 @@ class User(Document):
   async def find_by_username(cls, username: str) -> Optional["User"]:
      return await cls.find_one(cls.username == username)
 
-  def get_jwt_details(self) -> dict[str, str]:
+  def get_jwt_details(self) -> dict[str, str | int]:
     userId = str(self.id)
     return {
       "userId": userId,

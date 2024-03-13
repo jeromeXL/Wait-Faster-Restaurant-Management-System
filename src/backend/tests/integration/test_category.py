@@ -93,12 +93,21 @@ async def test_create_category_valid(manager_client):
 async def test_update_category_invalid_does_not_exist(manager_client):
 
 	# attempt to update any category
-    response = await manager_client.put("/category/notreal", json={
+    response = await manager_client.put("/category/65f22e2c47277444c60898a6", json={
 		"name": "notexist",
 		"menu_items": []
 	})
     assert response.status_code == 404
 
+@pytest.mark.asyncio
+async def test_update_category_category_id_invalid_format(manager_client):
+
+	# attempt to update any category
+    response = await manager_client.put("/category/notreal", json={
+		"name": "notexist",
+		"menu_items": []
+	})
+    assert response.status_code == 400
 
 @pytest.mark.asyncio
 async def test_update_category_invalid_bad_name(manager_client):
