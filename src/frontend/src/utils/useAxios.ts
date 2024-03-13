@@ -9,13 +9,10 @@ const instance = axios.create({
 instance.interceptors.request.use((config) => {
     const token = getAuthToken();
     if (token) {
-        config.headers.Authorization = `Barer ${token}`;
+        config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
 });
 
 export const getAxios = () => instance;
-
-
-
