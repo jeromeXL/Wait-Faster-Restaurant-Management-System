@@ -5,7 +5,7 @@ import Login from './pages/Login'
 import Menu from './pages/Menu'
 import Cart from './pages/Cart'
 import Admin from './pages/Admin'
-import ManagerMenu from "./pages/ManagerMenu"
+import ManagerMenu from "./pages/ManagerMenu";
 import AdminRoute from './components/AdminRoute';
 import Logout from './components/Logout';
 

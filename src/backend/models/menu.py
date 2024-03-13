@@ -4,8 +4,5 @@ from pydantic import BaseModel
 
 class Category(Document):
     name: str
-    menuItem: Set[str]
+    menu_items: Set[str]
     index: int
-
-# class Menu(Document):
-#     Categories: Set[str]

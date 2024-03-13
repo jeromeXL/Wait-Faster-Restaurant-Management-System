@@ -246,6 +246,7 @@ const closeFilters = () => {
   };
 
   const [quantities, setQuantities] = useState({});
+  const [cartCounter, setCartCounter] = useState(0); 
 
   const decrementQuantity = (itemId) => {
     const updatedQuantities = { ...quantities };
@@ -261,6 +262,7 @@ const closeFilters = () => {
   
   const addToCart = (itemId) => { 
     const updatedQuantities = { ...quantities };  
+    setCartCounter(cartCounter + updatedQuantities[itemId]); 
     updatedQuantities[itemId] = 0;
     setQuantities(updatedQuantities); 
   }
@@ -333,18 +335,19 @@ const closeFilters = () => {
             style={{
               backgroundColor: '#F0F0F0', 
               borderRadius: 10, 
-              height: '35px', 
-              width: '35px', 
+              height: '35px',  
               borderColor: "#38353A", 
-              borderWidth: "1.5px"
+              borderWidth: "1.5px",
+              color: "#38353A"
             }}
             onClick={() => {
               navigate('/Cart');
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#38353A" className="w-6 h-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="#38353A" className="w-6 h-6" style={{ marginRight: '5px' }}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
             </svg>
+            Cart ({cartCounter})
           </Button>
         </Toolbar>
         <Box 
@@ -457,49 +460,54 @@ const closeFilters = () => {
             >
               {category.items.map((itemId) => {
                 const item = menuItems[itemId];
-                return (
-                  <Card key={itemId} sx={{ maxWidth: 300}}>
-                    <CardHeader
-                      title={item.name}
-                    />
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={Steak}
-                    />
-                    <CardContent>
-                      <Typography variant="body1" height="60px" sx={{overflowY: "auto"}}>{item.description}</Typography>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
-                        <Box>
-                          {item.dietary_details.map((detail) => (
-                            <Chip size="small" sx={{marginRight: '5px'}} label={detail} />
-                          ))}
-                        </Box>
-                        <Typography>${item.price}</Typography>
-                      </Box>
-                      <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
-                        <Button variant="outlined" 
-                          onClick={() => decrementQuantity(itemId)} 
-                          sx={{ 
-                            paddingInline: '15px', 
-                            minWidth: 0 
-                          }}
-                        >
-                          -
-                        </Button>
-                        <Typography variant="body1" sx={{ marginX: '10px' }}>{quantities[itemId] || 0}</Typography>
-                        <Button variant="outlined" onClick={() => incrementQuantity(itemId)} 
-                          sx={{ paddingInline: '15px',
-                            minWidth: 0 
-                          }}
-                        >
-                          +
-                        </Button>
-                        <Button variant="contained" onClick={() => addToCart(itemId)}>Add To Cart</Button>
-                      </Box>
-                    </CardContent>
-                  </Card>
+                const matchesFilters = selectedFilters.every(filter =>
+                  item.dietary_details.includes(filter)
                 );
+                if (matchesFilters || selectedFilters.length === 0) {
+                  return (
+                    <Card key={itemId} sx={{ maxWidth: 300}}>
+                      <CardHeader
+                        title={item.name}
+                      />
+                      <CardMedia
+                        component="img"
+                        height="200"
+                        image={Steak}
+                      />
+                      <CardContent>
+                        <Typography variant="body1" height="60px" sx={{overflowY: "auto"}}>{item.description}</Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                          <Box>
+                            {item.dietary_details.map((detail) => (
+                              <Chip size="small" sx={{marginRight: '5px'}} label={detail} />
+                            ))}
+                          </Box>
+                          <Typography>${item.price}</Typography>
+                        </Box>
+                        <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
+                          <Button variant="outlined" 
+                            onClick={() => decrementQuantity(itemId)} 
+                            sx={{ 
+                              paddingInline: '15px', 
+                              minWidth: 0 
+                            }}
+                          >
+                            -
+                          </Button>
+                          <Typography variant="body1" sx={{ marginX: '10px' }}>{quantities[itemId] || 0}</Typography>
+                          <Button variant="outlined" onClick={() => incrementQuantity(itemId)} 
+                            sx={{ paddingInline: '15px',
+                              minWidth: 0 
+                            }}
+                          >
+                            +
+                          </Button>
+                          <Button variant="contained" onClick={() => addToCart(itemId)}>Add To Cart</Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  )
+                }
               })}
             </Box>
           </React.Fragment>
