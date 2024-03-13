@@ -1,11 +1,11 @@
-from typing import List, Optional
+from typing import Set, Optional
 from beanie import Document
 from pydantic import BaseModel
 
 class Category(Document):
     name: str
-    menuItem: List[str]
+    menuItem: Set[str]
     index: int
 
 # class Menu(Document):
-#     Categories: List[str]
+#     Categories: Set[str]

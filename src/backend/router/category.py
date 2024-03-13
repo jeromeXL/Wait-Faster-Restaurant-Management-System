@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import List
+from typing import Set
 from fastapi import APIRouter, Depends, HTTPException, Security
 from pydantic import BaseModel
 from utils.user_authentication import admin_user
@@ -15,19 +15,19 @@ router = APIRouter(prefix="/category", tags=["Menu"])
 
 class CategoryCreate(BaseModel):
     name: str
-    menuItem: List[str]
+    menuItem: Set[str]
     index: int = -1
 
 class CategoryResponse(BaseModel):
     id: str
     name: str
-    menuItem: List[str]
+    menuItem: Set[str]
     index: int
 
 class CategoryUpdate(BaseModel):
     id: str
     name: str
-    menuItem: List[str]
+    menuItem: Set[str]
     index: int = -1
 
 @router.post("/new", response_model=CategoryResponse)
@@ -46,7 +46,7 @@ async def createCategory( newCategory: CategoryCreate, manager = Depends(admin_u
 
 @router.put("/{categoryId}", response_model=CategoryResponse)
 async def updateCategory(categoryId: str, updatedCategory: CategoryCreate, manager = Depends(admin_user)):
-    # vUpdateCategory = Category.model_validate(updatedCategory.model_dump())
+    vUpdateCategory = Category.model_validate(updatedCategory.model_dump())
     # category = Category.get_by_id(categoryId)
     # category = Category.find_one(Category.id == categoryId)
     try:
@@ -77,7 +77,7 @@ async def deleteCategory(categoryId: str, manager = Depends(admin_user)):
     return {"message": "Category deleted successfully"}
 
 @router.put("/reorder")
-async def reorderMenu(changedMenu: List[str], manager = Depends(admin_user)):
+async def reorderMenu(changedMenu: Set[str], manager = Depends(admin_user)):
 # for each category name in changedMenu, assign the index that
 # the category appears in in changedMenu: 0,1,2... etc
 #   throw when non-existent category is in changedMenu
