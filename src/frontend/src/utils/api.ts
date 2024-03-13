@@ -1,7 +1,12 @@
 import { UserRole } from "./user";
 import {  getAxios } from "./useAxios";
 import { jwtDecode } from 'jwt-decode';
-
+export interface AuthTokens {
+    access_token: string;
+    access_token_expires: string;
+    refresh_token: string;
+    refresh_token_expires?: string;
+}
 export interface DecodedToken {
 	exp: number,
 	iat: number,
@@ -12,8 +17,10 @@ export interface DecodedToken {
 	},
 	type: string
 }
-
-
+export interface LoginRequest {
+	username: string;
+	password: string;
+}
 export const login = async (request: LoginRequest) => {
     const response = await getAxios().post<AuthTokens>("/auth/login", request);
     const { access_token, refresh_token } = response.data;
@@ -27,14 +34,4 @@ export const login = async (request: LoginRequest) => {
 	return decodedToken.subject;
 };
 
-export interface LoginRequest {
-    username: string;
-    password: string;
-}
-
-export interface AuthTokens {
-    access_token: string;
-    access_token_expires: string;
-    refresh_token: string;
-    refresh_token_expires?: string;
-}
+export const getMenu = async (request : )

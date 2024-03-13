@@ -11,7 +11,6 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle,
     TextField,
 } from "@mui/material";
@@ -87,6 +86,7 @@ const menuItems: Record<string, MenuItem> = {
         price: 15.0,
     },
 };
+
 const ManagerMenu = () => {
     // Edit Category Dialog
     const EditCategoryDialog = ({
@@ -98,17 +98,15 @@ const ManagerMenu = () => {
         showDialog: boolean;
         onClose: () => void;
         onEditCategory: (category: Category) => Promise<unknown>;
-        category: Category;
+        category: Category | undefined;
     }) => {
-        const [categoryName, setCategoryName] = useState<string>(category.name)
+        const [categoryName, setCategoryName] = useState<string | undefined>(category?.name)
         const onSubmit = () => {
             // Construct a new category object 
             const newCategory : Category = {
                 ...category,
-                name: categoryName
+                name: categoryName ?? ""
             }
-
-            
         };
 
         return (
