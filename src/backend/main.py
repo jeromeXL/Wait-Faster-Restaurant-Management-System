@@ -1,10 +1,13 @@
 from contextlib import asynccontextmanager
-from typing import Union
+from typing import Union, List
 from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from models.user import User, UserRole
+from models.menu import Category
 from router.auth import router as AuthRouter
+from router.menu import router as MenuRouter
+from router.category import router as CategoryRouter
 from router.admin import router as AdminRouter
 from utils.password import hash_password
 from config import CONFIG
@@ -12,14 +15,14 @@ from starlette.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):  
-    
+async def lifespan(app: FastAPI):
+
     """Initialize application services."""
-    
+
     # Init beanie with the Product document class
     app.db = AsyncIOMotorClient(CONFIG.mongo_connection_string).account  # type: ignore[attr-defined]
-    await init_beanie(app.db, document_models=[User])  # type: ignore[arg-type,attr-defined]
-    
+    await init_beanie(app.db, document_models=[User, Category])  # type: ignore[arg-type,attr-defined
+
     # Check if the database has 0 users. If it does, then create a base admin user.
     userCount = await User.count()
     print(f"There are {userCount} user(s) in the database.")
@@ -41,10 +44,12 @@ app = FastAPI(
 
 app.include_router(AuthRouter)
 app.include_router(AdminRouter)
+app.include_router(MenuRouter)
+app.include_router(CategoryRouter)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
