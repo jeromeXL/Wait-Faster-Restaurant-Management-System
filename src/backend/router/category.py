@@ -1,5 +1,6 @@
+import asyncio
 from datetime import timedelta
-from typing import Set
+from typing import List, Set
 from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, HTTPException, Security
 from pydantic import BaseModel
@@ -23,6 +24,7 @@ class CategoryResponse(BaseModel):
     name: str
     menu_items: Set[str]
     index: int
+
 
 @router.post("/", response_model=CategoryResponse)
 async def createCategory(createRequest: CategoryCreate, manager = Depends(admin_user)):
@@ -49,18 +51,18 @@ async def createCategory(createRequest: CategoryCreate, manager = Depends(admin_
 @router.put("/{categoryId}", response_model=CategoryResponse)
 async def updateCategory(categoryId: str, updatedCategory: CategoryCreate, manager = Depends(admin_user)):
       
-	category = await Category.find_one(Category.id == PydanticObjectId(categoryId) )
-	if category is None:
-		raise HTTPException(status_code=404, detail="Category not found")   
+    category = await Category.find_one(Category.id == PydanticObjectId(categoryId) )
+    if category is None:
+        raise HTTPException(status_code=404, detail="Category not found")   
 
-	if category is None or not updatedCategory.name.strip():
-		raise HTTPException(status_code=400, detail="Category name cannot be empty")
-	
-	category.name = updatedCategory.name
-	category.menu_items = updatedCategory.menu_items
+    if category is None or not updatedCategory.name.strip():
+        raise HTTPException(status_code=400, detail="Category name cannot be empty")
+    
+    category.name = updatedCategory.name
+    category.menu_items = updatedCategory.menu_items
 
-	await category.save()
-	return CategoryResponse(**category.model_dump())
+    await category.save()
+    return CategoryResponse(**category.model_dump())
 
         
 
@@ -75,9 +77,3 @@ async def deleteCategory(categoryId: str, manager = Depends(admin_user)):
     # remove from menu.json also if it is there
     return {"message": "Category deleted successfully"}
 
-@router.put("/reorder")
-async def reorderMenu(changedMenu: Set[str], manager = Depends(admin_user)):
-# for each category name in changedMenu, assign the index that
-# the category appears in in changedMenu: 0,1,2... etc
-#   throw when non-existent category is in changedMenu
-    return {"message": "Reorder"}

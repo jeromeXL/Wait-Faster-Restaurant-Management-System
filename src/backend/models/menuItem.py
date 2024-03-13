@@ -15,6 +15,6 @@ from beanie import Document
 class MenuItem(Document):
     name: str
     price: float
-    #dietary_details: Optional[List[DietaryDetail]] = None
+    # dietary_details: Optional[List[DietaryDetail]] = None
     health_requirements: Set[str]
     description: str

@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     print(f"There are {userCount} user(s) in the database.")
     if (userCount == 0):
         print("There are no users in the database. Creating seed user with credentials: admin admin")
-        adminUser = User(username="admin",password=hash_password("admin"), role=UserRole.USER_ADMIN)
+        adminUser = User(username="admin", password=hash_password("admin"), role=UserRole.USER_ADMIN)
         await adminUser.create()
 
     print("Startup complete")
