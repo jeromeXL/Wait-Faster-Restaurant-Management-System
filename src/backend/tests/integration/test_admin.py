@@ -72,7 +72,7 @@ async def test_update_user_password(admin_client):
     assert create_response.status_code == 200
     created: UserInfo = UserInfo.model_validate(create_response.json())
     assert created.username == "Table2"
-    assert created.role == UserRole.CUSTOMER_TABLET
+    assert created.role == UserRole.CUSTOMER_TABLET.value
 
     update_response = await admin_client.put(f"/user/update/{created.userId}", json={
         "username": "Table2",
