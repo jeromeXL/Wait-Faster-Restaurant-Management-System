@@ -38,3 +38,18 @@ export interface AuthTokens {
     refresh_token: string;
     refresh_token_expires?: string;
 }
+
+export const menu = async () => {
+	const response = await getAxios().get("/menu");
+	return response.data;
+}
+
+export const menuItems = async () => {
+	const response = await getAxios().get("/menu-items");
+	return response.data;
+}
+
+export const allMenuItems = async() => {
+	const response = await getAxios().get("/allMenuItems");
+	return response.data
+}
