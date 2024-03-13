@@ -30,8 +30,33 @@ export const login = async (request: LoginRequest) => {
 
 	// Decode the JWT to get the user's role
 	const decodedToken: DecodedToken = jwtDecode<DecodedToken>(access_token);
-	localStorage.setItem('userRole', decodedToken.subject.role.toString());
+	localStorage.setItem('userRole', decodedToken.subject.role);
 	return decodedToken.subject;
 };
 
-export const getMenu = async (request : )
+export interface LoginRequest {
+    username: string;
+    password: string;
+}
+
+export interface AuthTokens {
+    access_token: string;
+    access_token_expires: string;
+    refresh_token: string;
+    refresh_token_expires?: string;
+}
+
+export const menu = async () => {
+	const response = await getAxios().get("/menu");
+	return response.data;
+}
+
+export const menuItems = async () => {
+	const response = await getAxios().get("/menu-items");
+	return response.data;
+}
+
+export const allMenuItems = async() => {
+	const response = await getAxios().get("/allMenuItems");
+	return response.data
+}
