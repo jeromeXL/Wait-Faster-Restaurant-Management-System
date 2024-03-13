@@ -4,7 +4,7 @@ import WFLogo from '../assets/WFLogo.png';
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LoginRequest, login } from "../utils/api";
-import { UserRole } from "../utils/models/user";
+import { UserRole } from "../utils/user";
 
 
 const Login = () => {
@@ -47,7 +47,7 @@ const Login = () => {
       console.error('Login error:', error.response?.data?.detail || 'Unknown error');
       setError(error.response?.data?.detail || 'An unknown error occurred');
       setSnackbarOpen(true);
-      
+
     }
   };
 
