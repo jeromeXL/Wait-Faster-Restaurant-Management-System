@@ -1,1 +1,0 @@
-// Manager page for editing menu items
