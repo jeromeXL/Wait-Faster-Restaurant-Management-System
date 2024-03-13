@@ -25,6 +25,10 @@ const Menu = () => {
         {
           "name" : "Featured Items",
           "items" : [
+              "id_two",
+              "id_four",
+              "id_six",
+              "id_eight"
           ]
         },
         {
