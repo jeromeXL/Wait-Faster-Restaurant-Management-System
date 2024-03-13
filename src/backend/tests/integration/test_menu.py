@@ -3,7 +3,7 @@ import pytest
 import pytest_asyncio
 from router.category import CategoryResponse
 from router.menu import Menu, MenuResponse
-from models.menu import Category
+from models.category import Category
 from config import CONFIG
 from models.user import User, UserRole
 from tests.integration.client import get_client

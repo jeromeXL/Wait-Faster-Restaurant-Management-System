@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from utils.user_authentication import admin_user
 from models.auth import AccessToken, RefreshToken
 from models.user import User
-from models.menu import Category
+from models.category import Category
 from utils.password import hash_password
 from jwt import access_security, refresh_security
 from bson.errors import InvalidId

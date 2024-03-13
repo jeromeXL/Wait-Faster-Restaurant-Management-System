@@ -30,7 +30,7 @@ export const login = async (request: LoginRequest) => {
 
 	// Decode the JWT to get the user's role
 	const decodedToken: DecodedToken = jwtDecode<DecodedToken>(access_token);
-	localStorage.setItem('userRole', decodedToken.subject.role);
+	localStorage.setItem('userRole', String(decodedToken.subject.role));
 	return decodedToken.subject;
 };
 
@@ -48,6 +48,8 @@ export interface AuthTokens {
 
 export const menu = async () => {
 	const response = await getAxios().get("/menu");
+
+    
 	return response.data;
 }
 

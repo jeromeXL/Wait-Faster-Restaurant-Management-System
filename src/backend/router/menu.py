@@ -6,7 +6,7 @@ from beanie import PydanticObjectId
 from fastapi import APIRouter, Depends, HTTPException, Security
 from pydantic import BaseModel
 from models.menuItem import MenuItem
-from models.menu import Category
+from models.category import Category
 from utils.user_authentication import admin_user, current_user
 from models.auth import AccessToken, RefreshToken
 from models.user import User
