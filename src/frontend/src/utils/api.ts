@@ -1,4 +1,4 @@
-import { UserRole } from "./models/user";
+import { UserRole } from "./user";
 import {  getAxios } from "./useAxios";
 import { jwtDecode } from 'jwt-decode';
 
