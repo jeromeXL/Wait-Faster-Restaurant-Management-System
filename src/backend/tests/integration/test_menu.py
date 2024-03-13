@@ -2,8 +2,19 @@ import pytest
 from tests.integration.client import get_client
 # from models.menu import Menu
 
+# Tests
+#   Checks for user
+
+#   Get menu
+#       Menu returns correct form
+
+#   Update menu
+#       Menu does not update for items that do not exist in database / duplicated items
+#       Menu permits legal update
+
+
 # @pytest.mark.asyncio
-# async def test_menu_access():
+# async def get_menu_access():
 # 	async with await get_client() as client:
 #      # all members should be able to fetch the menu
 #      # so no login required beforehand
@@ -26,9 +37,3 @@ from tests.integration.client import get_client
 # 	async with await get_client() as client:
 #      # putting a menu is invalid
 #      # requires manager login
-
-# # TODO
-# # - valid objects
-# # - invalid object
-# # - - from adding in invalid categories?
-# # - saves categories

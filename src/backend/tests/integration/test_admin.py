@@ -1,7 +1,7 @@
 from httpx import AsyncClient
 import pytest
 import pytest_asyncio
-from backend.utils.password import hash_password
+from utils.password import hash_password
 from tests.integration.client import get_client
 from config import CONFIG
 from models.user import  User, UserRole

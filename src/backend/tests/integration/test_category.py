@@ -9,7 +9,6 @@ import pytest_asyncio
 from config import CONFIG
 from models.user import User, UserRole
 
-
 @pytest_asyncio.fixture()
 async def manager_client():
 
@@ -32,6 +31,9 @@ async def manager_client():
         for user in non_admin_users:
             await user.delete()
 
+        CategoryList = await Category.find_all().to_list()
+        for category in CategoryList:
+            await category.delete()
         yield client
         # Dispose of client
 
@@ -65,15 +67,14 @@ async def test_create_category_invalid_duplicate(manager_client):
         "index": -1
     })
     assert response.status_code == 200
-    assert response.json() == {'detail': "Category name cannot be empty"}
 
     response2 = await manager_client.post("/category/new", json={
-        "name": "ex3",
+        "name": "ex2",
         "menuItem": [],
         "index": -1
     })
-    assert response.status_code == 400
-    assert response.json() == {'detail': "Category name cannot be duplicated"}
+    assert response2.status_code == 400
+    assert response2.json() == {'detail': "Category name cannot be duplicated"}
 
 @pytest.mark.asyncio
 async def test_create_category_valid(manager_client):
@@ -100,17 +101,18 @@ async def test_update_category_invalid_does_not_exist(manager_client):
 
     # from an empty collection of categories
 
-	# Create a new menu item
-	response = await manager_client.put("/category/notreal", json={
-		"name": "not exist",
-		"menuItem": []
+	# attempt to update any category
+    response = await manager_client.put("/category/notreal", json={
+		"name": "notexist",
+		"menuItem": [],
+        "index": -1
 	})
-	assert response.status_code == 404
-	category = response.json()
-	assert "id" in category
-	assert category["name"] == "Test Item"
-	assert category["menuItem"] == []
-	assert category["index"] == -1
+    assert response.status_code == 404
+	# category = response.json()
+	# assert "id" in category
+	# assert category["name"] == "Test Item"
+	# assert category["menuItem"] == []
+	# assert category["index"] == -1
 
 @pytest.mark.asyncio
 async def test_update_category_invalid_bad_name(manager_client):
@@ -118,11 +120,22 @@ async def test_update_category_invalid_bad_name(manager_client):
     # from an empty collection of categories
 
 	# Create a new valid category
+    response = await manager_client.post("/category/new", json={
+        "name": "Test Item",
+        "menuItem": [],
+        "index": -1
+	})
+    assert response.status_code == 200
     # get id
+    category = response.json()
 
     # update category with new category with no name
-	# assert response.status_code == 400
-    assert False
+    response = await manager_client.put(f"/category/{category['id']}", json={
+		"name": "",
+		"menuItem": [],
+        "index": -1
+	})
+    assert response.status_code == 400
 
 @pytest.mark.asyncio
 async def test_update_category_valid(manager_client):
@@ -130,22 +143,27 @@ async def test_update_category_valid(manager_client):
     # from an empty collection of categories
 
 	# Create a new category item
-	response = await manager_client.put("/category/notreal", json={
-		"name": "not exist",
-		"menuItem": []
+    response = await manager_client.post("/category/new", json={
+        "name": "Test Item",
+        "menuItem": [],
+        "index": -1
 	})
+    assert response.status_code == 200
     # get id
+    category = response.json()
+
  	# Update category item
-	response = await manager_client.put("/category/notreal", json={
-		"name": "not exist",
-		"menuItem": []
+    response = await manager_client.put(f"/category/{category['id']}", json={
+		"name": "Change",
+		"menuItem": [],
+        "index": 2
 	})
-	assert response.status_code == 404
-	category = response.json()
-	assert "id" in category
-	assert category["name"] == "Test Item"
-	assert category["menuItem"] == []
-	assert category["index"] == -1
+    assert response.status_code == 200
+    category = response.json()
+    assert "id" in category
+    assert category["name"] == "Change"
+    assert category["menuItem"] == []
+    assert category["index"] == 2
 
 # Remove category
 #   Catch removing nonexistent category
@@ -157,28 +175,35 @@ async def test_delete_category_valid(manager_client):
     # from an empty collection of categories
 
 	# Create 3 new category items
-	response = await manager_client.post("/category/new", json={
+    response = await manager_client.post("/category/new", json={
 		"name": "del1",
 		"menuItem": []
 	})
-	category1 = response.json()
+    category1 = response.json()
 
-	response = await manager_client.post("/category/new", json={
+    response = await manager_client.post("/category/new", json={
 		"name": "del2",
 		"menuItem": []
 	})
-	category2 = response.json()
+    category2 = response.json()
 
-	response = await manager_client.post("/category/new", json={
+    response = await manager_client.post("/category/new", json={
 		"name": "del3",
 		"menuItem": []
 	})
-	category3 = response.json()
+    category3 = response.json()
 
     # delete 2nd one by id
-	manager_client.delete(f"/category/{category2.id}")
+    await manager_client.delete(f"/category/{category2['id']}")
 
 	# get all categories
-	response = await manager_client.get(f"/category/all")
-	    # check that there isn't a category with the same name as del2
-    	# assert False
+    response = await manager_client.get(f"/category/all")
+    assert response.status_code == 200
+    assert response.json()['count'] == 2
+    # check that there isn't a category with the same name as del2
+    response = await manager_client.post("/category/new", json={
+		"name": "del2",
+		"menuItem": []
+	})
+    # no del2 means we should be able to make it again
+    assert response.status_code == 200
