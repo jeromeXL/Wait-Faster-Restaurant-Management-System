@@ -1,3 +1,5 @@
+import json
+import os.path
 from datetime import timedelta
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Security
@@ -17,8 +19,13 @@ async def getMenu():
     # form the menu based on the categories listed in the menu.json file
     # make sure each category exists in database
 
+    json_file = open(os.path.dirname(__file__) + '/../menu.json')
+    # with open('menu.json', 'r') as f:
+    data = json.load(json_file)
+    return data
+
 @router.put("/reorder")
 async def reorderMenu(changedMenu: List[str]):
-    # token required, use auth stuff
-    # validate changedMenu has valid categories
-    # replace menu.json's item with jsonified menu
+# for each category name in changedMenu, assign the index that
+# the category appears in in changedMenu: 0,1,2... etc
+#   throw when non-existent category is in changedMenu
