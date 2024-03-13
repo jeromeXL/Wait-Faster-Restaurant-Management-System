@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Set
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from models.menuItem import MenuItem
@@ -8,14 +8,14 @@ router = APIRouter()
 class MenuItemCreate(BaseModel):
     name: str
     price: float
-    health_requirements: List[str]
+    health_requirements: Set[str]
     description: str
 
 class MenuItemResponse(BaseModel):
     id: str
     name: str
     price: float
-    health_requirements: List[str]
+    health_requirements: Set[str]
     description: str
     
 @router.get("/menu-items", response_model = List[MenuItemResponse])
@@ -39,20 +39,33 @@ async def create_menu_item(menu_item: MenuItemCreate):
     # Pydantic Validation
     new_menu_item = MenuItem(**validated_menu_item.model_dump())
     await new_menu_item.create()
-    return MenuItemResponse(id=str(new_menu_item.id), **new_menu_item.model_dump())
+    print("ID is: "+ str(new_menu_item.id))
+    print("Created menu item is: "+ str(new_menu_item))
+    print(MenuItemResponse(**new_menu_item.model_dump()))
+    return MenuItemResponse(**new_menu_item.model_dump())
 
-@router.put("/menu-item/{menu_item_id}")
-async def update_menu_item(menu_item_id: str, item: MenuItem):
-    menu_item = await MenuItem.get_by_id(menu_item_id)
+@router.put("/menu-item/{menu_item_id}", response_model = MenuItemResponse)
+async def update_menu_item(menu_item_id: str, updatedMenuItem: MenuItemCreate):
+    menu_item = await MenuItem.get(menu_item_id)
     if not menu_item:
         raise HTTPException(status_code=404, detail="Menu item not found")
-    await menu_item.update(**item.model_dump(exclude_unset=True))
-    return menu_item
+    validated_menu_item = MenuItem.model_validate(updatedMenuItem.model_dump())
+    menu_item.name = validated_menu_item.name
+    menu_item.price = validated_menu_item.price
+    menu_item.health_requirements = validated_menu_item.health_requirements
+    menu_item.description = validated_menu_item.description
+    return MenuItemResponse(**menu_item.model_dump())
 
 @router.delete("/menu-item/{menu_item_id}")
-async def delete_menu_item(menu_item_id: int):
-    menu_item = await MenuItem.get_by_id(menu_item_id)
+async def delete_menu_item(menu_item_id: str):
+    menu_item = await MenuItem.get(menu_item_id)
     if not menu_item:
         raise HTTPException(status_code=404, detail="Menu item not found")
     await menu_item.delete()
     return {"message": "Menu item deleted successfully"}
+
+@router.get("/allMenuItems")
+async def createCategory():
+    MenuItemCount = await MenuItem.count()
+    print(f"There are {MenuItemCount} menu items")
+    return {"count" : MenuItemCount}
