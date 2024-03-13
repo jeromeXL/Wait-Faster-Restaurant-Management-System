@@ -23,9 +23,3 @@ async def getMenu():
     # with open('menu.json', 'r') as f:
     data = json.load(json_file)
     return data
-
-@router.put("/reorder")
-async def reorderMenu(changedMenu: List[str]):
-# for each category name in changedMenu, assign the index that
-# the category appears in in changedMenu: 0,1,2... etc
-#   throw when non-existent category is in changedMenu
