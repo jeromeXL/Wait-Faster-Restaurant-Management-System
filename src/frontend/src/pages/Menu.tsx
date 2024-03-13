@@ -17,8 +17,108 @@ import Snackbar from '@mui/material/Snackbar';
 import SnackbarContent from '@mui/material/SnackbarContent';
 import {useNavigate} from 'react-router-dom';
 import Steak from '../assets/Steak.jpeg'
+import { DietaryDetail } from '../utils/menu';
 
 const Menu = () => {
+   const menu = {
+    "categories" : [
+        {
+          "name" : "Featured Items",
+          "items" : [
+              "id_two",
+              "id_four",
+              "id_six",
+              "id_eight"
+          ]
+        },
+        {
+            "name" : "Starters",
+            "items" : [
+                "id_one",
+                "id_two",
+                "id_three", 
+                "id_four",
+                "id_five"
+            ]
+        },
+        {
+            "name" : "Main",
+            "items" : [
+                "id_six",
+                "id_seven",
+            ]
+        },
+        {
+            "name" : "Dessert",
+            "items" : [
+                "id_eight",
+                "id_nine"
+            ]
+        }
+    ]
+  }
+
+  const currencyFormatter = new Intl.NumberFormat('en-AU', {
+    style: 'currency',
+    currency: 'AUD', 
+  });
+
+  const menuItems: Record<string, MenuItem> = {
+    id_one: {
+      name: "Garlic Bread",
+      price: 7.0,
+      dietary_details: [DietaryDetail.VEGETARIAN],
+      description: "A combination of bread with fresh parsley, parmesan cheese and garlic",
+    }, 
+    id_two: {
+      name: "Bruschetta",
+      price: 15.0,
+      dietary_details: [DietaryDetail.VEGETARIAN],
+      description: "Sourdough topped with freshly diced tomato with garlic, olive oil, oregano and basil",
+    },
+    id_three: {
+      name: "Cheese Stick",
+      description: "Deep fried batter with creamy and stretchy mozarella cheese within",
+      dietary_details: [DietaryDetail.VEGETARIAN],
+      price: 9.0,
+    },
+    id_four: {
+      name: "Calamari Fritti",
+      description: "Salted and pepper calamariwith parmesan aioli sauce and lemon",
+      dietary_details: [],
+      price: 9.0,
+    },
+    id_five: { 
+      name: "Sweet Potato Wedges",
+      price: 25.0,
+      dietary_details: [],
+      description: "Wedges made from sweet potatoes that are crispy on the outside, soft and caramelised inside and coated with sweet and spicy flavours"
+    },
+    id_six: { 
+      name: "Sphagetti Cabonara", 
+      price: 22.0,
+      dietary_details: [DietaryDetail.CONTAINS_EGGS], 
+      description: "Sphaghetti with bacon, onions, egg and parmesan cheese"
+    },
+    id_seven: {
+      name: "Fettuccine",
+      description: "Fettuccine",
+      dietary_details: [DietaryDetail.CONTAINS_NUTS],
+      price: 15.0,
+    },  
+    id_eight: { 
+      name: "Tiramisu", 
+      price: 10.0,
+      dietary_details: [DietaryDetail.CONTAINS_EGGS, DietaryDetail.VEGETARIAN], 
+      description: "Velvety melange of savoiarddi cookies dipped in an espresso, layered with delicately sweetened whipped eggs and mascarpone cheese"
+    },
+    id_nine: { 
+      name: "Lemon Meringue Pie", 
+      price: 10.0,
+      dietary_details: [DietaryDetail.CONTAINS_EGGS, DietaryDetail.VEGETARIAN], 
+      description: "Fresh lemon juice and lemon zest filling with billows of bakedd meringue on top for a deliciously dreamy dessert"
+    }
+  };
 
   const navigate = useNavigate(); 
   const [staffCalled, setStaffCalled] = useState(false);
@@ -101,12 +201,13 @@ const Menu = () => {
   const [selectedFilters, setSelectedFilters] = useState([]);
   const open = Boolean(anchorEl);
   const id = open ? 'filter-popover' : undefined;
+  const dietaryRequirements = Object.values(DietaryDetail);
 
-  const [filterOptions, setFilterOptions] = useState({
-    option1: false,
-    option2: false,
-    option3: false,
-  });
+  const initialFilterOptions = dietaryRequirements.reduce((options, requirement) => {
+    return { ...options, [requirement]: false };
+  }, {});
+  
+  const [filterOptions, setFilterOptions] = useState(initialFilterOptions);
 
   const openFilters = (event) => {
     setAnchorEl(event.currentTarget);
@@ -116,22 +217,26 @@ const closeFilters = () => {
     setAnchorEl(null);
   };
 
-  const handleChange = (event) => {
-    const { name, checked } = event.target;
-    setFilterOptions({ ...filterOptions, [name]: checked });
-    if (checked) {
-      setSelectedFilters([...selectedFilters, name]);
+  const checkFilter = (event, option) => {
+    const isChecked = event.target.checked;
+    setFilterOptions({
+      ...filterOptions,
+      [option]: isChecked
+    });
+
+    if (isChecked) {
+      setSelectedFilters([...selectedFilters, option]);
     } else {
-      setSelectedFilters(selectedFilters.filter(filter => filter !== name));
+      setSelectedFilters(selectedFilters.filter(filter => filter !== option));
     }
   };
 
   const clearFilters = () => {
-    setFilterOptions({
-      option1: false,
-      option2: false,
-      option3: false,
-    });
+    const updatedFilterOptions = {};
+    for (const option in filterOptions) {
+      updatedFilterOptions[option] = false;
+    }
+    setFilterOptions(updatedFilterOptions);
     setSelectedFilters([]);
   };
 
@@ -140,20 +245,24 @@ const closeFilters = () => {
     setSelectedFilters(selectedFilters.filter(selected => selected !== filter));
   };
 
-  const [quantity, setQuantity] = useState(0);
+  const [quantities, setQuantities] = useState({});
 
-  const decrementQuantity = () => {
-    if (quantity > 0) {
-      setQuantity(quantity - 1);
-    }
+  const decrementQuantity = (itemId) => {
+    const updatedQuantities = { ...quantities };
+    updatedQuantities[itemId] = (updatedQuantities[itemId] || 0) - 1;
+    setQuantities(updatedQuantities);
   };
-
-  const incrementQuantity = () => {
-    setQuantity(quantity + 1);
+  
+  const incrementQuantity = (itemId) => {
+    const updatedQuantities = { ...quantities };
+    updatedQuantities[itemId] = (updatedQuantities[itemId] || 0) + 1;
+    setQuantities(updatedQuantities);
   };
-
-  const addToCart = () => { 
-    setQuantity(0); 
+  
+  const addToCart = (itemId) => { 
+    const updatedQuantities = { ...quantities };  
+    updatedQuantities[itemId] = 0;
+    setQuantities(updatedQuantities); 
   }
 
   return (
@@ -296,184 +405,112 @@ const closeFilters = () => {
             }}
           >
             <Box sx={{padding: "20px"}}>
-              <Typography variant="h6">
+              <Typography variant="h6" sx={{fontWeight: 'bold'}}>
                 Filter Options
               </Typography>
-              <FormControlLabel
-                control={
-                  <Checkbox 
-                    checked={filterOptions.option1} 
-                    onChange={(event) => handleChange(event)} 
-                    name="option1" 
-                  />}
-                label="Option 1"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox 
-                    checked={filterOptions.option2} 
-                    onChange={(event) => handleChange(event)} 
-                    name="option2" 
-                  />}
-                label="Option 2"
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox 
-                    checked={filterOptions.option3} 
-                    onChange={(event) => handleChange(event)} 
-                    name="option3" 
-                  />}
-                label="Option 3"
-              />
+              <Box
+                sx={{
+                display: "flex",
+                flexDirection: "row", 
+                flexWrap: "wrap",
+                width: "500px"
+              }}>
+                {Object.keys(filterOptions).map(option => (
+                  <FormControlLabel
+                    key={option}
+                    control={
+                      <Checkbox
+                        checked={filterOptions[option]}
+                        onChange={(event) => checkFilter(event, option)}
+                      />
+                    }
+                    label={option}
+                  />
+                ))} 
+              </Box>
             </Box>
           </Popover>
         </Box>
         <div style={{ overflowX: 'auto' }}> 
           <Box sx={{paddingX: '20px', paddingBottom: '10px', display: 'flex', gap: '10px'}}>
-            <TypeButton>
-              Featured Items
-            </TypeButton>
-            <TypeButton>
-              Entree
-            </TypeButton>
-            <TypeButton>
-              Appetiser
-            </TypeButton>
-            <TypeButton>
-              Main
-            </TypeButton>
-            <TypeButton>
-              Dessert
-            </TypeButton>
-            <TypeButton>
-              Beverages
-            </TypeButton>  
+            {menu.categories.map(category => (
+              <TypeButton key={category.name}>{category.name}</TypeButton>
+            ))}
           </Box>
         </div>
       </AppBar>
       <Box sx={{paddingTop: "150px", paddingX: '20px'}}>
-        <Typography variant="h5" color="#F0F0F0" sx={{fontWeight: "bold", paddingY: "10px"}}>
-          Featured items
-        </Typography>
-        <Box 
-          sx={{
-            display: 'flex', 
-            flexWrap: 'wrap', 
-            flexDirection: 'row', 
-            justifyContent: 'flex-start', 
-            columnGap: '10px', 
-            rowGap: '15px'
-          }}
-        >
-          <Card sx={{ maxWidth: 300}}>
-            <CardHeader
-              title="Angus Rump Steak"
-            />
-            <CardMedia
-              component="img"
-              height="200"
-              image={Steak}
-            />
-            <CardContent>
-              <Typography>
-                220g. Grainage black Angus and grain fed one hundred and fifty days. Come MSA assured steaks are served with chips, salad and your choice of sauce.
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                <Chip label="Nut-Free" />
-                <Typography> 
-                $25
-                </Typography>
-              </Box>
-              <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
-                <Button variant="outlined" onClick={decrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
-                  -
-                </Button>
-                <Typography variant="body1" sx={{ marginX: '10px' }}>{quantity}</Typography>
-                <Button variant="outlined" onClick={incrementQuantity} 
-                  sx={{ paddingInline: '15px',
-                    minWidth: 0 
-                  }}
-                >
-                  +
-                </Button>
-                <Button variant="contained" onClick={addToCart}>Add To Cart</Button>
-              </Box>
-            </CardContent>
-          </Card>
-          <Card sx={{ maxWidth: 300}}>
-            <CardHeader
-              title="Angus Rump Steak"
-            />
-            <CardMedia
-              component="img"
-              height="200"
-              image={Steak}
-            />
-            <CardContent>
-              <Typography>
-                220g. Grainage black Angus and grain fed one hundred and fifty days. Come MSA assured steaks are served with chips, salad and your choice of sauce.
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                <Chip label="Nut-Free" />
-                <Typography> 
-                $25
-                </Typography>
-              </Box>
-              <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
-                <Button variant="outlined" onClick={decrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
-                  -
-                </Button>
-                <Typography variant="body1" sx={{ marginX: '10px' }}>{quantity}</Typography>
-                <Button variant="outlined" onClick={incrementQuantity} 
-                  sx={{ paddingInline: '15px',
-                    minWidth: 0 
-                  }}
-                >
-                  +
-                </Button>
-                <Button variant="contained" onClick={addToCart}>Add To Cart</Button>
-              </Box>
-            </CardContent>
-          </Card>
-          <Card sx={{ maxWidth: 300}}>
-            <CardHeader
-              title="Angus Rump Steak"
-            />
-            <CardMedia
-              component="img"
-              height="200"
-              image={Steak}
-            />
-            <CardContent>
-              <Typography>
-                220g. Grainage black Angus and grain fed one hundred and fifty days. Come MSA assured steaks are served with chips, salad and your choice of sauce.
-              </Typography>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
-                <Chip label="Nut-Free" />
-                <Typography> 
-                $25
-                </Typography>
-              </Box>
-              <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
-                <Button variant="outlined" onClick={decrementQuantity} sx={{ paddingInline: '15px', minWidth: 0 }}>
-                  -
-                </Button>
-                <Typography variant="body1" sx={{ marginX: '10px' }}>{quantity}</Typography>
-                <Button variant="outlined" onClick={incrementQuantity} 
-                  sx={{ paddingInline: '15px',
-                    minWidth: 0 
-                  }}
-                >
-                  +
-                </Button>
-                <Button variant="contained" onClick={addToCart}>Add To Cart</Button>
-              </Box>
-            </CardContent>
-          </Card>
+        {menu.categories.map((category) => (
+          <React.Fragment key={category.name}>
+            <Typography variant="h5" sx={{fontWeight: "bold", color: "#F0F0F0", paddingY: '15px'}}>
+              {category.name}
+            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                flexDirection: "row",
+                justifyContent: "flex-start",
+                columnGap: "10px",
+                rowGap: "15px",
+              }}
+            >
+              {category.items.map((itemId) => {
+                const item = menuItems[itemId];
+                const matchesFilters = selectedFilters.every(filter =>
+                  item.dietary_details.includes(filter)
+                );
+                if (matchesFilters || selectedFilters.length === 0) {
+                  return (
+                    <Card key={itemId} sx={{ maxWidth: 300}}>
+                      <CardHeader
+                        title={item.name}
+                      />
+                      <CardMedia
+                        component="img"
+                        height="200"
+                        image={Steak}
+                      />
+                      <CardContent>
+                        <Typography variant="body1" height="60px" sx={{overflowY: "auto"}}>{item.description}</Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px' }}>
+                          <Box>
+                            {item.dietary_details.map((detail) => (
+                              <Chip size="small" sx={{marginRight: '5px'}} label={detail} />
+                            ))}
+                          </Box>
+                          <Typography>${item.price}</Typography>
+                        </Box>
+                        <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px'}}>
+                          <Button variant="outlined" 
+                            onClick={() => decrementQuantity(itemId)} 
+                            sx={{ 
+                              paddingInline: '15px', 
+                              minWidth: 0 
+                            }}
+                          >
+                            -
+                          </Button>
+                          <Typography variant="body1" sx={{ marginX: '10px' }}>{quantities[itemId] || 0}</Typography>
+                          <Button variant="outlined" onClick={() => incrementQuantity(itemId)} 
+                            sx={{ paddingInline: '15px',
+                              minWidth: 0 
+                            }}
+                          >
+                            +
+                          </Button>
+                          <Button variant="contained" onClick={() => addToCart(itemId)}>Add To Cart</Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  )
+                }
+              })}
+            </Box>
+          </React.Fragment>
+        ))}
         </Box>
       </Box>
-    </Box>
   )
 } 
 
