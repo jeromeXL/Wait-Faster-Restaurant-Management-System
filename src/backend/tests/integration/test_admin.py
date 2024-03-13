@@ -1,6 +1,7 @@
 from httpx import AsyncClient
 import pytest
 import pytest_asyncio
+from router.admin import UpdatedUserInfo, UserInfo
 from utils.password import hash_password
 from tests.integration.client import get_client
 from config import CONFIG
@@ -69,11 +70,11 @@ async def test_update_user_password(admin_client):
         "role": UserRole.CUSTOMER_TABLET.value 
     })
     assert create_response.status_code == 200
-    
-    assert create_response.json()["username"] == "Table2"
-    assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
+    created: UserInfo = UserInfo.model_validate(create_response.json())
+    assert created.username == "Table2"
+    assert created.role == UserRole.CUSTOMER_TABLET
 
-    update_response = await admin_client.put(f"/user/update/{create_response.json()['id']}", json={
+    update_response = await admin_client.put(f"/user/update/{created.userId}", json={
         "username": "Table2",
         "password": "newpassword",
         "role": UserRole.CUSTOMER_TABLET.value 
@@ -97,8 +98,9 @@ async def test_delete_user(admin_client):
         "role": UserRole.CUSTOMER_TABLET.value 
     })
     assert create_response.status_code == 200
-    assert create_response.json()["username"] == "Table3"
-    assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
+    userInfo = UserInfo.model_validate(create_response.json())
+    assert userInfo.username == "Table3"
+    assert userInfo.role == UserRole.CUSTOMER_TABLET.value
 
-    delete_response = await admin_client.delete(f"/user/delete/{create_response.json()['id']}")
+    delete_response = await admin_client.delete(f"/user/delete/{userInfo.userId}")
     assert delete_response.status_code == 200

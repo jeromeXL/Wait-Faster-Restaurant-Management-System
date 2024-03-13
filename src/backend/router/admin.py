@@ -12,7 +12,7 @@ router = APIRouter()
 class UserInfo(BaseModel):
     userId: str
     username: str
-    role: UserRole
+    role: int
 
 # Get all users
 @router.get("/users")
@@ -20,7 +20,7 @@ async def getUsers(adminUser = Depends(admin_user)) -> List[UserInfo]:
     if not adminUser:
         raise HTTPException(status_code=403, detail="403 Forbidden: Only admins can get users info")
     users = await User.find_all().to_list() # Users.find_all() returns a queryable. Then calling .to_list() will transform that into a list. 
-    users_info_list = [UserInfo(userId=str(user.id), username=user.username, role=user.role) for user in users]
+    users_info_list = [UserInfo(userId=str(user.id), username=user.username, role=user.role.value) for user in users]
 
     return users_info_list
 
@@ -46,8 +46,12 @@ async def getUser(userId: str, adminUser = Depends(admin_user)) -> UserInfo:
 
 
 # Create User -> Returns user object
+class CreateUserRequest(BaseModel):
+    username: str
+    password: str 
+    role: UserRole
 @router.post("/user/create")
-async def createUser(newUser: User, adminUser = Depends(admin_user)) -> UserInfo:
+async def createUser(newUser: CreateUserRequest, adminUser = Depends(admin_user)) -> UserInfo:
     if not adminUser:
         raise HTTPException(status_code=403, detail="403 Forbidden: Only admins can create users")
     if not matchesTablePattern(newUser.username) and newUser.role == UserRole.CUSTOMER_TABLET:
@@ -57,7 +61,7 @@ async def createUser(newUser: User, adminUser = Depends(admin_user)) -> UserInfo
         raise HTTPException(status_code=409, detail="409 Conflict: New username already exists. Duplicate usernames not allowed")
     user = User(username=newUser.username, password=hash_password(newUser.password), role=newUser.role)
     await user.create() # On an instance, call create.
-    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role)
+    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role.value)
     return user_info
 
 # Update User (Previously Update Password)
@@ -67,10 +71,11 @@ class UpdatedUserInfo(BaseModel):
     role: Optional[int]
 @router.put("/user/update/{userId}")
 async def updateUser(userId: str, newUserInfo: UpdatedUserInfo, adminUser = Depends(admin_user)) -> UserInfo:
-    if not adminUser:
-        raise HTTPException(status_code=401, detail="403 Forbidden: Only admins can update users")
-  #  if not matchesTablePattern(newUserInfo.username) and newUserInfo.role == UserRole.CUSTOMER_TABLET:
-  #      raise HTTPException(status_code=422, detail="422 Unprocessable Entity: Table names must be in format 'Table<Number>'")
+    
+    # parse the given user role and ensure it is a valid role
+    validRoleValues = [role.value for role in UserRole]
+    if newUserInfo.role not in validRoleValues:
+        raise HTTPException(status_code=400, detail=f"Invalid role. Valid options are {', '.join(map(str, validRoleValues))}")
 
     user = await User.get(userId)
 
@@ -82,10 +87,10 @@ async def updateUser(userId: str, newUserInfo: UpdatedUserInfo, adminUser = Depe
 
     user.username = newUserInfo.username if newUserInfo.username is not None else user.username
     user.password = hash_password(newUserInfo.password) if newUserInfo.password is not None else user.password
-    user.role = newUserInfo.role if newUserInfo.role is not None else user.role
+    user.role = UserRole(newUserInfo.role) if newUserInfo.role is not None else user.role
 
     await user.save()
-    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role)
+    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role.value)
     return user_info
 
 # Delete User   

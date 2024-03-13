@@ -10,7 +10,7 @@ from models.user import User
 from models.menu import Category
 from utils.password import hash_password
 from jwt import access_security, refresh_security
-from bson.objectid import ObjectId
+from bson.errors import InvalidId
 # from fastapi_jwt import JwtAuthorizationCredentials
 
 router = APIRouter(prefix="/category", tags=["Menu"])
@@ -50,19 +50,21 @@ async def createCategory(createRequest: CategoryCreate, manager = Depends(admin_
 
 @router.put("/{categoryId}", response_model=CategoryResponse)
 async def updateCategory(categoryId: str, updatedCategory: CategoryCreate, manager = Depends(admin_user)):
-      
-    category = await Category.find_one(Category.id == PydanticObjectId(categoryId) )
-    if category is None:
-        raise HTTPException(status_code=404, detail="Category not found")   
+    try:
+        category = await Category.find_one(Category.id == PydanticObjectId(categoryId) )
+        if category is None:
+            raise HTTPException(status_code=404, detail="Category not found")   
 
-    if category is None or not updatedCategory.name.strip():
-        raise HTTPException(status_code=400, detail="Category name cannot be empty")
-    
-    category.name = updatedCategory.name
-    category.menu_items = updatedCategory.menu_items
+        if category is None or not updatedCategory.name.strip():
+            raise HTTPException(status_code=400, detail="Category name cannot be empty")
+        
+        category.name = updatedCategory.name
+        category.menu_items = updatedCategory.menu_items
 
-    await category.save()
-    return CategoryResponse(**category.model_dump())
+        await category.save()
+        return CategoryResponse(**category.model_dump())
+    except InvalidId:
+         raise HTTPException(status_code=400, detail="Invalid Id")
 
         
 
