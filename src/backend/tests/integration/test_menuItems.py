@@ -6,7 +6,7 @@ import pytest_asyncio
 from models.user import User, UserRole
 ## Intended to be tested with a fresh database.
 # Test Creating a Menun Item
-@pytest_asyncio.fixture()
+'''@pytest_asyncio.fixture()
 async def manager_client():
 
 	# This fixture will run before and all tests it is registered on
@@ -30,7 +30,7 @@ async def manager_client():
         for item in MenuItemsList:
             await item.delete()
         yield client
-
+'''
 @pytest.mark.asyncio
 async def test_create_menu_item():
 
