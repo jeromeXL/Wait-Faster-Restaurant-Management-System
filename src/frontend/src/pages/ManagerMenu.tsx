@@ -19,6 +19,7 @@ import { getMenu, reorderMenu } from "../utils/api";
 import ManagerMenuCreateCategoryDialog from "../components/ManagerMenuCreateCategoryDialog";
 import ManagerMenuEditCategoryDialog from "../components/ManagerMenuEditCategoryDialog";
 import { useNavigate } from "react-router-dom";
+import ManagerBottomBar from "../components/ManagerBottomBar";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -396,6 +397,7 @@ const ManagerMenu = () => {
                 onClose={() => setShowCreateCategoryDialog(false)}
                 onCreateCategory={handleNewCategoryCreated}
             />
+            <ManagerBottomBar/>
         </Box>
     );
 };
