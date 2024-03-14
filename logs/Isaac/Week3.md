@@ -1,0 +1,4 @@
+- Started on project proposal
+- Helped brainstorming user stories
+- Worked on user interfaces on figma for the proposal
+- Added in graphics for the figma designs
