@@ -25,6 +25,12 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const ManagerMenu = () => {
+    // Setup
+    const navigate = useNavigate();
+    const hanldleGoToManagerItems = () => {
+        navigate("/manager");
+    };
+
     // MAIN PAGE
     const [menu, setMenu] = useState<Menu | null>({ categories: [] });
     const [menuItems, setMenuItems] = useState<Record<string, MenuItem>>({});
@@ -186,7 +192,16 @@ const ManagerMenu = () => {
                 }}
             >
                 <div class="grid grid-cols-3 py-1">
-                    <div></div>
+                    <div>
+                        <Button
+                            sx={{
+                                background: "white",
+                            }}
+                            onClick={handleGoToManagerItems}
+                        >
+                            Edit Items
+                        </Button>
+                    </div>
                     <div class="flex justify-center">
                         <Typography>Categories</Typography>
                     </div>
