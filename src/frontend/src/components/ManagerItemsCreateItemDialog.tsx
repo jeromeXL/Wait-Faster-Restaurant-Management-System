@@ -9,58 +9,82 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
-    CategoryResponse,
-    CreateCategoryRequest,
-    createCategory,
+    CreateMenuItemRequest,
+    MenuItemResponse,
+    createMenuItem,
     stringifyApiError,
 } from "../utils/api";
-import { AxiosError } from "axios";
 
 // Edit Category Dialog
 const ManagerMenuCreateItemDialog = ({
     showDialog,
     onClose,
-    onCreateCategory,
+    onCreateMenuItem,
 }: {
     showDialog: boolean;
     onClose: () => void;
-    onCreateCategory: (category: CategoryResponse) => Promise<unknown>;
+    onCreateMenuItem: (menuItem: MenuItemResponse) => Promise<unknown>;
 }) => {
     const [formError, setFormError] = useState<string | undefined>(undefined);
-    const [categoryName, setCategoryName] = useState<string | undefined>("");
+    const [itemName, setItemName] = useState<string | undefined>("");
+    const [description, setDescription] = useState<string | undefined>("");
+    const [price, setPrice] = useState<number | undefined>(undefined);
+
     const onSubmit = async () => {
         // Construct a new category object
-        const request: CreateCategoryRequest = {
-            name: categoryName ?? "",
-            menu_items: [],
+        const request: CreateMenuItemRequest = {
+            name: itemName ?? "",
+            description: description ?? "",
+            price: price ?? 0,
+            health_requirements: [],
         };
 
         // Make a request to the create category api
-        return await createCategory(request)
-            .then(async (resp) => await onCreateCategory(resp))
+        return await createMenuItem(request)
+            .then(async (resp) => await onCreateMenuItem(resp))
             .catch((error) => {
                 setFormError(stringifyApiError(error));
             });
     };
 
     useEffect(() => {
-        setCategoryName("");
+        setItemName("");
         setFormError("");
     }, [showDialog]);
 
     return (
         <Dialog open={showDialog} onClose={onClose}>
-            <DialogTitle>Create Category</DialogTitle>
+            <DialogTitle>Create Menu Item</DialogTitle>
             <DialogContent>
                 <TextField
                     autoFocus
                     margin="dense"
-                    label="Category Name"
+                    label="Name"
                     type="text"
                     fullWidth
                     variant="outlined"
-                    value={categoryName}
-                    onChange={(e) => setCategoryName(e.target.value)}
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                />
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Price"
+                    type="number"
+                    fullWidth
+                    variant="outlined"
+                    value={price}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                />
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Description"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                 />
                 <Typography color="error"> {formError}</Typography>
             </DialogContent>

@@ -8,74 +8,99 @@ import {
     Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { Category } from "../utils/menu";
+import { MenuItem } from "../utils/menu";
 import {
-    CategoryResponse,
-    CreateCategoryRequest,
-    deleteCategory,
+    CreateMenuItemRequest,
+    MenuItemResponse,
+    deleteMenuItem,
+    editMenuItem,
     stringifyApiError,
-    updateCategory,
 } from "../utils/api";
 
 // Edit Category Dialog
 const ManagerMenuEditItemDialog = ({
     showDialog,
     onClose,
-    onEditCategory,
-    onDeleteCategory,
-    category,
+    onEditMenuItem,
+    onDeleteMenuItem,
+    menuItem,
 }: {
     showDialog: boolean;
     onClose: () => void;
-    onEditCategory: (category: CategoryResponse) => Promise<unknown>;
-    onDeleteCategory: () => Promise<unknown>;
-    category: Category | undefined;
+    onEditMenuItem: (menuItem: MenuItemResponse) => Promise<unknown>;
+    onDeleteMenuItem: () => Promise<unknown>;
+    menuItem: MenuItem | undefined;
 }) => {
     const [formError, setFormError] = useState<string | undefined>(undefined);
-    const [categoryName, setCategoryName] = useState<string | undefined>(
-        category?.name
-    );
+    const [itemName, setItemName] = useState<string | undefined>("");
+    const [description, setDescription] = useState<string | undefined>("");
+    const [price, setPrice] = useState<number | undefined>(undefined);
 
     const onSubmit = async () => {
         // Construct a new category object
-        const updateCategoryRequest: CreateCategoryRequest = {
-            name: categoryName ?? "",
-            menu_items: category?.menu_items ?? [],
+        const request: CreateMenuItemRequest = {
+            name: itemName ?? "",
+            description: description ?? "",
+            price: price ?? 0,
+            health_requirements: [],
         };
 
-        return await updateCategory(category?.id ?? "", updateCategoryRequest)
-            .then(async (resp) => await onEditCategory(resp))
+        // Make a request to the create category api
+        return await editMenuItem(menuItem!.id!, request)
+            .then(async (resp) => await onEditMenuItem(resp))
             .catch((error) => {
                 setFormError(stringifyApiError(error));
             });
     };
 
     const onDelete = async () => {
-        return await deleteCategory(category?.id ?? "")
-            .then(async () => await onDeleteCategory())
+        return await deleteMenuItem(menuItem?.id ?? "")
+            .then(async () => await onDeleteMenuItem())
             .catch((err) => {
                 setFormError(stringifyApiError(err));
             });
     };
 
     useEffect(() => {
-        setCategoryName(category?.name);
+        setItemName(menuItem?.name);
+        setDescription(menuItem?.description);
+        setPrice(menuItem?.price);
         setFormError("");
-    }, [category?.id]);
+    }, [menuItem?.id]);
 
     return (
         <Dialog open={showDialog} onClose={onClose}>
-            <DialogTitle>Edit Category</DialogTitle>
+            <DialogTitle>Edit Menu Item</DialogTitle>
             <DialogContent>
                 <TextField
                     autoFocus
                     margin="dense"
-                    label="Category Name"
+                    label="Name"
                     type="text"
                     fullWidth
                     variant="outlined"
-                    value={categoryName}
-                    onChange={(e) => setCategoryName(e.target.value)}
+                    value={itemName}
+                    onChange={(e) => setItemName(e.target.value)}
+                />
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Price"
+                    type="number"
+                    fullWidth
+                    variant="outlined"
+                    value={price}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                />
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Description"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                 />
                 <Typography color="error"> {formError}</Typography>
             </DialogContent>

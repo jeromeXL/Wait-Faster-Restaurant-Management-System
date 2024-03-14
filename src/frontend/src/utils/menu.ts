@@ -1,5 +1,5 @@
 export enum DietaryDetail {
-	GLUTEN_FREE = "Gluten Free",
+    GLUTEN_FREE = "Gluten Free",
     VEGETARIAN = "Vegetarian",
     VEGAN = "Vegan",
     SPICY = "Spicy",
@@ -9,18 +9,19 @@ export enum DietaryDetail {
 }
 
 export type MenuItem = {
-	name: string,
-	price: number,
-	health_requirements: DietaryDetail[],
-	description: string,
-}
+    id: string;
+    name: string;
+    price: number;
+    health_requirements: DietaryDetail[];
+    description: string;
+};
 
 export type Category = {
-	id: string
-	name: string,
-	menu_items: string[],
-    index: number
-}
+    id: string;
+    name: string;
+    menu_items: string[];
+    index: number;
+};
 export type Menu = {
-	categories : Category[]
-}
+    categories: Category[];
+};

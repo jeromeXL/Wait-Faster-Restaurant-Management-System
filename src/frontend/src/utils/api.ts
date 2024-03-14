@@ -83,6 +83,31 @@ export const getAllMenuItems = async () => {
     return response.data;
 };
 
+export type CreateMenuItemRequest = {
+    name: string;
+    price: number;
+    description: string;
+    health_requirements: string[];
+};
+export type MenuItemResponse = {
+    id: string;
+    name: string;
+    price: number;
+    health_requirements: string[];
+    description: string;
+};
+
+export const createMenuItem = async (req: CreateMenuItemRequest) =>
+    await getAxios()
+        .post("/menu-item", req)
+        .then((resp) => resp.data as MenuItemResponse);
+export const editMenuItem = async (id: string, req: CreateMenuItemRequest) =>
+    await getAxios()
+        .put(`/menu-item/${id}`, req)
+        .then((resp) => resp.data as MenuItemResponse);
+export const deleteMenuItem = async (id: string) =>
+    await getAxios().delete(`/menu-item/${id}`);
+
 export type ReorderMenuRequest = {
     order: string[];
 };
@@ -112,5 +137,4 @@ export const updateCategory = async (id: string, req: CreateCategoryRequest) =>
         .then((resp) => resp.data as CategoryResponse);
 
 export const deleteCategory = async (id: string) =>
-        await getAxios()
-            .delete(`/category/${id}`);
+    await getAxios().delete(`/category/${id}`);
