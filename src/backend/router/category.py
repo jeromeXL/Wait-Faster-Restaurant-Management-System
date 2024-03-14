@@ -17,7 +17,7 @@ from bson.errors import InvalidId
 router = APIRouter(prefix="/category", tags=["Menu"])
 
 
-class xCategoryCreate(BaseModel):
+class CategoryCreate(BaseModel):
     name: str
     menu_items: Set[str]
 
@@ -67,8 +67,8 @@ async def updateCategory(categoryId: str, updatedCategory: CategoryCreate, manag
                 status_code=400, detail="Category name cannot be empty")
 
         # find if it exists
-        category = await Category.find_one(Category.name == updatedCategory.name and Category.id != PydanticObjectId(categoryId))
-        if category:
+        conflictingCategories = await Category.find_one(Category.name == updatedCategory.name)
+        if category is not None and category.id != PydanticObjectId(categoryId):
             raise HTTPException(
                 status_code=400, detail="Category name cannot be duplicated")
 

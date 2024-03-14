@@ -5,29 +5,35 @@ from router.admin import UpdatedUserInfo, UserInfo
 from utils.password import hash_password
 from tests.integration.client import get_client
 from config import CONFIG
-from models.user import  User, UserRole
+from models.user import User, UserRole
 
-@pytest_asyncio.fixture() 
+
+@pytest_asyncio.fixture()
 async def admin_client():
     async with await get_client() as client:
+
+        # Delete all users except default admin user.
+        await User.delete_all()
+
+        # Create the admin user
+        adminUser = User(username=CONFIG.default_user_username, password=hash_password(
+            CONFIG.default_user_password), role=UserRole.USER_ADMIN)
+        await adminUser.create()
+
         login_response = await client.post("/auth/login", json={
-            "username" : CONFIG.default_user_username,
-            "password" : CONFIG.default_user_password
+            "username": CONFIG.default_user_username,
+            "password": CONFIG.default_user_password
         })
-        
+
         assert login_response.status_code == 200
         tokens = login_response.json()
         client.headers = {
             "Authorization": f"Bearer {tokens['access_token']}"
         }
-        
-        ## Delete all users except default admin user.
-        non_admin_users = await User.find(User.role != UserRole.USER_ADMIN).to_list()
-        for user in non_admin_users:
-            await user.delete()
-        
-        yield client 
+
+        yield client
         # Dispose of client
+
 
 @pytest.mark.asyncio
 async def test_get_users(admin_client: AsyncClient):
@@ -39,12 +45,12 @@ async def test_get_users(admin_client: AsyncClient):
     assert data[0]['role'] == 1
 
 
-@pytest.mark.asyncio 
+@pytest.mark.asyncio
 async def test_create_user_success(admin_client):
     create_response = await admin_client.post("/user/create", json={
         "username": "Table1",
         "password": "initialpassword",
-        "role": UserRole.CUSTOMER_TABLET.value 
+        "role": UserRole.CUSTOMER_TABLET.value
     })
     assert create_response.status_code == 200
     assert create_response.json()["username"] == "Table1"
@@ -56,18 +62,18 @@ async def test_create_user_invalid_table_name(admin_client):
     create_response = await admin_client.post("/user/create", json={
         "username": "InvalidName",
         "password": "initialpassword",
-        "role": UserRole.CUSTOMER_TABLET.value 
+        "role": UserRole.CUSTOMER_TABLET.value
     })
     assert create_response.status_code == 422
 
 
-@pytest.mark.asyncio 
+@pytest.mark.asyncio
 async def test_update_user_password(admin_client):
 
     create_response = await admin_client.post("/user/create", json={
         "username": "Table2",
         "password": "initialpassword",
-        "role": UserRole.CUSTOMER_TABLET.value 
+        "role": UserRole.CUSTOMER_TABLET.value
     })
     assert create_response.status_code == 200
     created: UserInfo = UserInfo.model_validate(create_response.json())
@@ -77,10 +83,10 @@ async def test_update_user_password(admin_client):
     update_response = await admin_client.put(f"/user/update/{created.userId}", json={
         "username": "Table2",
         "password": "newpassword",
-        "role": UserRole.CUSTOMER_TABLET.value 
+        "role": UserRole.CUSTOMER_TABLET.value
     })
     assert update_response.status_code == 200
-    
+
     new_password_login_response = await admin_client.post("/auth/login", json={
         "username": "Table2",
         "password": "newpassword"
@@ -91,11 +97,11 @@ async def test_update_user_password(admin_client):
 
 @pytest.mark.asyncio
 async def test_delete_user(admin_client):
-   
+
     create_response = await admin_client.post("/user/create", json={
         "username": "Table3",
         "password": "initialpassword",
-        "role": UserRole.CUSTOMER_TABLET.value 
+        "role": UserRole.CUSTOMER_TABLET.value
     })
     assert create_response.status_code == 200
     userInfo = UserInfo.model_validate(create_response.json())
