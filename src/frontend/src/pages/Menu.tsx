@@ -16,45 +16,63 @@ import Popover from '@mui/material/Popover';
 import Snackbar from '@mui/material/Snackbar';
 import SnackbarContent from '@mui/material/SnackbarContent';
 import {useNavigate} from 'react-router-dom';
-import Steak from '../assets/Steak.jpeg'
 import { DietaryDetail } from '../utils/menu';
+import Item_one from '../assets/menuPhotos/item_one.jpeg'
+import Item_two from '../assets/menuPhotos/Bruschetta.jpeg'
+import Item_three from '../assets/menuPhotos/CheeseSticks.jpeg'
+import Item_four from '../assets/menuPhotos/Calamari.jpeg'
+import Item_five from '../assets/menuPhotos/SweetWedges.jpeg'
+import Item_six from '../assets/menuPhotos/Carbonara.jpeg'
+import Item_seven from '../assets/menuPhotos/Steak.jpeg'
+import Item_eight from '../assets/menuPhotos/Tiramisu.jpeg'
+import Item_nine from '../assets/menuPhotos/LemonPie.jpeg'
+import Item_ten from '../assets/menuPhotos/AppleJuice.jpeg'
+import Item_eleven from '../assets/menuPhotos/OrangeMocktail.jpeg'
 
 const Menu = () => {
-   const menu = {
-    "categories" : [
-        {
-          "name" : "Featured Items",
+
+  const menu = {
+  "categories" : [
+      {
+        "name" : "Featured Items",
+        "items" : [
+            "id_two",
+            "id_four",
+            "id_six",
+            "id_eight"
+        ]
+      },
+      {
+          "name" : "Starters",
           "items" : [
+              "id_one",
               "id_two",
+              "id_three", 
               "id_four",
-              "id_six",
-              "id_eight"
+              "id_five"
           ]
-        },
-        {
-            "name" : "Starters",
-            "items" : [
-                "id_one",
-                "id_two",
-                "id_three", 
-                "id_four",
-                "id_five"
-            ]
-        },
-        {
-            "name" : "Main",
-            "items" : [
-                "id_six",
-                "id_seven",
-            ]
-        },
-        {
-            "name" : "Dessert",
-            "items" : [
-                "id_eight",
-                "id_nine"
-            ]
-        }
+      },
+      {
+          "name" : "Main",
+          "items" : [
+              "id_six",
+              "id_seven",
+          ]
+      },
+      {
+          "name" : "Dessert",
+          "items" : [
+              "id_eight",
+              "id_nine"
+          ]
+      },
+      {
+        "name" : "Beverages",
+        "items" : [
+            "id_ten",
+            "id_eleven"
+        ]
+      },
     ]
   }
 
@@ -69,54 +87,77 @@ const Menu = () => {
       price: 7.0,
       dietary_details: [DietaryDetail.VEGETARIAN],
       description: "A combination of bread with fresh parsley, parmesan cheese and garlic",
+      image: Item_one
     }, 
     id_two: {
       name: "Bruschetta",
       price: 15.0,
       dietary_details: [DietaryDetail.VEGETARIAN],
       description: "Sourdough topped with freshly diced tomato with garlic, olive oil, oregano and basil",
+      image: Item_two
     },
     id_three: {
       name: "Cheese Stick",
       description: "Deep fried batter with creamy and stretchy mozarella cheese within",
       dietary_details: [DietaryDetail.VEGETARIAN],
       price: 9.0,
+      image: Item_three
     },
     id_four: {
       name: "Calamari Fritti",
       description: "Salted and pepper calamariwith parmesan aioli sauce and lemon",
       dietary_details: [],
       price: 9.0,
+      image: Item_four
     },
     id_five: { 
       name: "Sweet Potato Wedges",
       price: 25.0,
       dietary_details: [],
-      description: "Wedges made from sweet potatoes that are crispy on the outside, soft and caramelised inside and coated with sweet and spicy flavours"
+      description: "Wedges made from sweet potatoes that are crispy on the outside, soft and caramelised inside and coated with sweet and spicy flavours",
+      image: Item_five
     },
     id_six: { 
       name: "Sphagetti Cabonara", 
       price: 22.0,
       dietary_details: [DietaryDetail.CONTAINS_EGGS], 
-      description: "Sphaghetti with bacon, onions, egg and parmesan cheese"
+      description: "Sphaghetti with bacon, onions, egg and parmesan cheese",
+      image: Item_six
     },
     id_seven: {
-      name: "Fettuccine",
-      description: "Fettuccine",
-      dietary_details: [DietaryDetail.CONTAINS_NUTS],
-      price: 15.0,
+      name: "Angus Beef Steak",
+      description: "yumyum",
+      dietary_details: [],
+      price: 28.0,
+      image: Item_seven
     },  
     id_eight: { 
       name: "Tiramisu", 
       price: 10.0,
       dietary_details: [DietaryDetail.CONTAINS_EGGS, DietaryDetail.VEGETARIAN], 
-      description: "Velvety melange of savoiarddi cookies dipped in an espresso, layered with delicately sweetened whipped eggs and mascarpone cheese"
+      description: "Velvety melange of savoiarddi cookies dipped in an espresso, layered with delicately sweetened whipped eggs and mascarpone cheese", 
+      image: Item_eight
     },
     id_nine: { 
       name: "Lemon Meringue Pie", 
       price: 10.0,
       dietary_details: [DietaryDetail.CONTAINS_EGGS, DietaryDetail.VEGETARIAN], 
-      description: "Fresh lemon juice and lemon zest filling with billows of bakedd meringue on top for a deliciously dreamy dessert"
+      description: "Fresh lemon juice and lemon zest filling with billows of bakedd meringue on top for a deliciously dreamy dessert",
+      image: Item_nine
+    },
+    id_ten: { 
+      name: "Apple Juice", 
+      price: 6.0,
+      dietary_details: [], 
+      description: "Freshly squeezed apple juice",
+      image: Item_ten
+    },
+    id_eleven: { 
+      name: "Orange Mocktail", 
+      price: 10.0,
+      dietary_details: [], 
+      description: "Orange flavoured mocktail", 
+      image: Item_eleven
     }
   };
 
@@ -472,7 +513,8 @@ const closeFilters = () => {
                       <CardMedia
                         component="img"
                         height="200"
-                        image={Steak}
+                        image={item.image}
+                        sx={{height:'200px'}}
                       />
                       <CardContent>
                         <Typography variant="body1" height="60px" sx={{overflowY: "auto"}}>{item.description}</Typography>
