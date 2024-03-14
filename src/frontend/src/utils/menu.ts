@@ -11,14 +11,15 @@ export enum DietaryDetail {
 export type MenuItem = {
 	name: string,
 	price: number,
-	dietary_details: DietaryDetail[],
+	health_requirements: DietaryDetail[],
 	description: string,
 }
 
 export type Category = {
 	id: string
 	name: string,
-	items: string[]
+	menu_items: string[],
+    index: number
 }
 export type Menu = {
 	categories : Category[]

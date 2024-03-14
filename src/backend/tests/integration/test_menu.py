@@ -2,8 +2,8 @@ from httpx import AsyncClient
 import pytest
 import pytest_asyncio
 from router.category import CategoryResponse
-from router.menu import Menu, MenuResponse
-from models.menu import Category
+from router.menu import MenuResponse
+from models.category import Category
 from config import CONFIG
 from models.user import User, UserRole
 from tests.integration.client import get_client
@@ -104,12 +104,8 @@ async def test_get_menu_with_multiple_categories(manager_client : AsyncClient):
         "menu_items" : []
     })
     assert response.status_code == 200
-
-    # Get the menu, it should now be in the opposite order
-    response = await manager_client.get("/menu")
-    assert response.status_code == 200
-    
     menuResponse = MenuResponse.model_validate(response.json())
+
     assert len(menuResponse.Items) == 0
     assert len(menuResponse.Menu.categories) == 2
     assert menuResponse.Menu.categories[0].name == "Stub name 2"

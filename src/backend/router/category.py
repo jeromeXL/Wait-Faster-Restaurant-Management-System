@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from utils.user_authentication import admin_user
 from models.auth import AccessToken, RefreshToken
 from models.user import User
-from models.menu import Category
+from models.category import Category
 from utils.password import hash_password
 from jwt import access_security, refresh_security
 from bson.errors import InvalidId
@@ -27,7 +27,7 @@ class CategoryResponse(BaseModel):
 
 
 @router.post("/", response_model=CategoryResponse)
-async def createCategory(createRequest: CategoryCreate, manager = Depends(admin_user)):
+async def createCategory(createRequest: CategoryCreate, manager = Depends(admin_user)) -> CategoryResponse:
     # Validate.
     if not createRequest.name.strip():
         raise HTTPException(status_code=400, detail="Category name cannot be empty")

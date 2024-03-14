@@ -5,7 +5,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from models.menuItem import MenuItem
 from models.user import User, UserRole
-from models.menu import Category
+from models.category import Category
 from router.auth import router as AuthRouter
 from router.menu import router as MenuRouter
 from router.menuItem import router as MenuItemRouter

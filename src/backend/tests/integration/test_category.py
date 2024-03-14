@@ -1,7 +1,7 @@
 from beanie import PydanticObjectId
 import pytest
 from tests.integration.client import get_client
-from models.menu import Category
+from models.category import Category
 
 # Tests
 # Checks for manager role
