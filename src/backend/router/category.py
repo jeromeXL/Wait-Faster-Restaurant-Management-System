@@ -27,7 +27,7 @@ class CategoryResponse(BaseModel):
 
 
 @router.post("/", response_model=CategoryResponse)
-async def createCategory(createRequest: CategoryCreate, manager = Depends(admin_user)):
+async def createCategory(createRequest: CategoryCreate, manager = Depends(admin_user)) -> CategoryResponse:
     # Validate.
     if not createRequest.name.strip():
         raise HTTPException(status_code=400, detail="Category name cannot be empty")

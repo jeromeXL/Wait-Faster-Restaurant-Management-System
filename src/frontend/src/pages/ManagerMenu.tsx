@@ -8,194 +8,92 @@ import {
     CardContent,
     CardActions,
     Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    TextField,
 } from "@mui/material";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
-import { Category, DietaryDetail, Menu, MenuItem } from "../utils/menu";
+import { Category, Menu, MenuItem } from "../utils/menu";
 import UpArrowIcon from "../components/Icons/UpArrowIcon";
 import DownArrowIcon from "../components/Icons/DownArrowIcon";
+import { CategoryResponse, getMenu, reorderMenu } from "../utils/api";
+import ManagerMenuCreateCategoryDialog from "../components/ManagerMenuCreateCategoryDialog";
+import ManagerMenuEditCategoryDialog from "../components/ManagerMenuEditCategoryDialog";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "AUD",
 });
 
-const menuItems: Record<string, MenuItem> = {
-    id_one: {
-        name: "Cabbage rolls",
-        description: "6 cabbage rolls.",
-        dietary_details: [DietaryDetail.CONTAINS_NUTS],
-        price: 15.0,
-    },
-    id_two: {
-        name: "Chinese Broccoli",
-        description: "Fried broccoli with oyster sauce.",
-        dietary_details: [
-            DietaryDetail.CONTAINS_NUTS,
-            DietaryDetail.CONTAINS_SOY,
-            DietaryDetail.VEGETARIAN,
-        ],
-        price: 7.5,
-    },
-    id_three: {
-        name: "Packaged Carrot",
-        description: "Carrot",
-        dietary_details: [DietaryDetail.VEGETARIAN],
-        price: 15.0,
-    },
-    id_four: {
-        name: "Cheese stick",
-        description: "Cheese stick",
-        dietary_details: [],
-        price: 9.0,
-    },
-    id_five: {
-        name: "Dumplings",
-        description: "Dumplings",
-        dietary_details: [DietaryDetail.CONTAINS_NUTS],
-        price: 15.0,
-    },
-    id_six: {
-        name: "Bolognese",
-        description: "Bolognese",
-        dietary_details: [DietaryDetail.CONTAINS_NUTS],
-        price: 15.0,
-    },
-    id_seven: {
-        name: "Fettuccine",
-        description: "Fettuccine",
-        dietary_details: [DietaryDetail.CONTAINS_NUTS],
-        price: 15.0,
-    },
-    id_eight: {
-        name: "Buffalo wing",
-        description: "Buffalo wing.",
-        dietary_details: [DietaryDetail.CONTAINS_NUTS],
-        price: 15.0,
-    },
-    id_nine: {
-        name: "Pork",
-        description: "Pork.",
-        dietary_details: [DietaryDetail.CONTAINS_NUTS],
-        price: 15.0,
-    },
-};
-
 const ManagerMenu = () => {
-    // Edit Category Dialog
-    const EditCategoryDialog = ({
-        showDialog,
-        onClose,
-        onEditCategory,
-        category,
-    }: {
-        showDialog: boolean;
-        onClose: () => void;
-        onEditCategory: (category: Category) => Promise<unknown>;
-        category: Category | undefined;
-    }) => {
-        const [categoryName, setCategoryName] = useState<string | undefined>(category?.name)
-        const onSubmit = () => {
-            // Construct a new category object 
-            const newCategory : Category = {
-                ...category,
-                name: categoryName ?? ""
-            }
-        };
-
-        return (
-            <Dialog open={showDialog} onClose={onClose}>
-                <DialogTitle>Edit Category</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Category Name"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={categoryName}
-                        onChange={(e) => setCategoryName(e.target.value)}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={onClose}>Cancel</Button>
-                    <Button onClick={onSubmit}>Confirm</Button>
-                </DialogActions>
-            </Dialog>
-        );
-    };
-
     // MAIN PAGE
     const [menu, setMenu] = useState<Menu | null>({ categories: [] });
+    const [menuItems, setMenuItems] = useState<Record<string, MenuItem>>({});
+    async function fetchMenu() {
+        const fetchedMenu = await getMenu();
+        setMenu(fetchedMenu.Menu);
+        setMenuItems(fetchedMenu.Items);
+    }
+
+    // On mounted
     useEffect(() => {
-        // Todo: replace with an async call to fetch the menu.
-        setMenu({
-            categories: [
-                {
-                    id: "Veggies1",
-                    name: "Veggies",
-                    items: ["id_one", "id_two", "id_three"],
-                },
-                {
-                    id: "Meat1",
-                    name: "Meat",
-                    items: ["id_four", "id_five", "id_six"],
-                },
-                {
-                    id: "OtherItems1",
-                    name: "Other Items",
-                    items: ["id_seven", "id_eight", "id_nine"],
-                },
-            ],
-        });
+        fetchMenu().catch((err) => console.log("Failed to fetch menu", err));
     }, []);
 
-    // Dialog Controls
-    const [showEditCategoryDialog, setShowEditCategoryDialog] =
+    // Create Category Dialog controls
+    const [showCreateCategoryDialog, setShowCreateCategoryDialog] =
         useState<boolean>(false);
-    const [lastClickedEditCategory, setLastClickedEditCategory] =
-        useState<Category | null>(null);
-    const handleEditCategory = (category: Category) => {
-        setLastClickedEditCategory(category);
-        setShowEditCategoryDialog(true);
+    const handleShowCreateCategoryDialog = () => {
+        setShowCreateCategoryDialog(true);
+    };
+    const handleNewCategoryCreated = async () => {
+        setShowCreateCategoryDialog(false);
+        await fetchMenu();
     };
 
+    // Edit category Dialog Controls
+    const [showEditCategoryDialog, setShowEditCategoryDialog] =
+        useState<boolean>(false);
+    const [lastClickedCategoryForEdit, setLastClickedCategoryForEidt] =
+        useState<Category | null>(null);
+    const handleShowEditCategoryDialog = (category: Category) => {
+        setLastClickedCategoryForEidt(category);
+        setShowEditCategoryDialog(true);
+    };
+    const handleCategoriesChanged = async () => {
+        console.log("edited!");
+        setShowEditCategoryDialog(false);
+        await fetchMenu();
+    };
+
+    // Accordion controls
     const [expandedCategoryName, setExpandedCategoryName] = useState<
         string | undefined
-    >(menu?.categories[0]?.name);
+    >(menu?.categories[0]?.id);
 
     const isLastItemInCategory = (category: Category, itemId: string) =>
-        category.items[category.items.length - 1] == itemId;
+        category.menu_items[category.menu_items.length - 1] == itemId;
     const isFirstItemInCategory = (category: Category, itemId: string) =>
-        category.items[0] == itemId;
+        category.menu_items[0] == itemId;
 
-    const isLastCategory = (categoryName: string) =>
-        menu?.categories[menu.categories.length - 1].name == categoryName;
-    const isFirstCategory = (categoryName: string) =>
-        menu?.categories[0].name == categoryName;
+    const isLastCategory = (id: string) =>
+        menu?.categories[menu.categories.length - 1].id == id;
+    const isFirstCategory = (id: string) => menu?.categories[0].id == id;
 
     const handleReorderCategories = async (
         categoryId: string,
         movementDirection: "Up" | "Down"
     ) => {
         // Get the categories as a list of names
-        const list = menu?.categories.map((x) => x.name);
-        if (list == null) {
+        const idList = menu?.categories.map((x) => x.id);
+        if (idList == null) {
             return Promise.reject("No categories to re-order.");
         }
 
         // Get the indexes of the two items that need to be swapped.
-        const targetItemIndex = list?.indexOf(categoryId);
+        const targetItemIndex = idList?.indexOf(categoryId);
         const isValidMovement =
             (movementDirection == "Down" &&
-                targetItemIndex != list.length - 1) ||
+                targetItemIndex != idList.length - 1) ||
             (movementDirection == "Up" && targetItemIndex != 0);
         if (!isValidMovement) {
             return Promise.reject("Cannot move category in that direction.");
@@ -205,23 +103,15 @@ const ManagerMenu = () => {
             targetItemIndex + (movementDirection == "Up" ? -1 : 1);
 
         // Swap targetItemIndex and indexToMoveTargetTo
-        const temp = list[targetItemIndex];
-        list[targetItemIndex] = list[indexToMoveTargetTo];
-        list[indexToMoveTargetTo] = temp;
+        const temp = idList[targetItemIndex];
+        idList[targetItemIndex] = idList[indexToMoveTargetTo];
+        idList[indexToMoveTargetTo] = temp;
 
-        // Send an http request and re-organize the list.
-        // TEMP - SORT THE CATEGORIES
-        console.log(list);
-        const sortedCategories = [];
-        for (const category of list) {
-            sortedCategories.push(
-                menu!.categories.find((x) => x.name == category)!
-            );
-        }
+        // Make a request to update the order
+        const updatedMenu = await reorderMenu({ order: idList });
 
-        setMenu({
-            categories: sortedCategories,
-        } satisfies Menu);
+        setMenu(updatedMenu.Menu);
+        setMenuItems(updatedMenu.Items);
     };
 
     const handleReorderMenuItems = async (
@@ -230,13 +120,13 @@ const ManagerMenu = () => {
         movementDirection: "Up" | "Down"
     ) => {
         // Get the list of items
-        const items = category.items;
+        const idList = category.menu_items;
 
         // Get the indexes of the two items that need to be swapped
-        const targetItemIndex = items.indexOf(itemId);
+        const targetItemIndex = idList.indexOf(itemId);
         const isValidMovement =
             (movementDirection == "Down" &&
-                targetItemIndex != items.length - 1) ||
+                targetItemIndex != idList.length - 1) ||
             (movementDirection == "Up" && targetItemIndex != 0);
         if (!isValidMovement) {
             return Promise.reject("Cannot move item in that direction.");
@@ -246,21 +136,21 @@ const ManagerMenu = () => {
             targetItemIndex + (movementDirection == "Up" ? -1 : 1);
 
         // Swap targetItemIndex and indexToMoveTargetTo
-        const temp = items[targetItemIndex];
-        items[targetItemIndex] = items[indexToMoveTargetTo];
-        items[indexToMoveTargetTo] = temp;
+        const temp = idList[targetItemIndex];
+        idList[targetItemIndex] = idList[indexToMoveTargetTo];
+        idList[indexToMoveTargetTo] = temp;
 
         // Send an http request and re-organize the items.
         // TEMP - SORT THE CATEGORIES
         const sortedItems = [];
-        for (const item of items) {
-            sortedItems.push(category.items.find((x) => x == item)!);
+        for (const item of idList) {
+            sortedItems.push(category.menu_items.find((x) => x == item)!);
         }
 
         // Update the category
-        category.items = items;
+        category.menu_items = idList;
         const oldCategoryIndex = menu?.categories.findIndex(
-            (x) => x.name == category.name
+            (x) => x.id == category.id
         );
         const newMenu: Menu = {
             categories: [
@@ -295,14 +185,30 @@ const ManagerMenu = () => {
                     paddingX: "1.5em",
                 }}
             >
+                <div class="grid grid-cols-3 py-1">
+                    <div></div>
+                    <div class="flex justify-center">
+                        <Typography>Categories</Typography>
+                    </div>
+                    <div class="flex justify-end">
+                        <Button
+                            sx={{
+                                background: "white",
+                            }}
+                            onClick={handleShowCreateCategoryDialog}
+                        >
+                            Create
+                        </Button>
+                    </div>
+                </div>
                 {menu.categories.map((category, index) => (
                     <Accordion
                         key={index}
                         sx={{
                             bgcolor: "white",
                         }}
-                        expanded={category.name == expandedCategoryName}
-                        onChange={() => setExpandedCategoryName(category.name)}
+                        expanded={category.id == expandedCategoryName}
+                        onChange={() => setExpandedCategoryName(category.id)}
                     >
                         <AccordionSummary>
                             <div class="flex flex-row w-full">
@@ -314,7 +220,7 @@ const ManagerMenu = () => {
                                     {category.name}
                                 </Typography>
                                 <div class="grid grid-cols-3">
-                                    {isFirstCategory(category.name) ? null : (
+                                    {isFirstCategory(category.id) ? null : (
                                         <Button
                                             sx={{
                                                 gridColumnStart: 1,
@@ -322,7 +228,7 @@ const ManagerMenu = () => {
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 return handleReorderCategories(
-                                                    category.name,
+                                                    category.id,
                                                     "Up"
                                                 );
                                             }}
@@ -330,7 +236,7 @@ const ManagerMenu = () => {
                                             <UpArrowIcon />
                                         </Button>
                                     )}
-                                    {isLastCategory(category.name) ? null : (
+                                    {isLastCategory(category.id) ? null : (
                                         <Button
                                             sx={{
                                                 gridColumnStart: 2,
@@ -338,7 +244,7 @@ const ManagerMenu = () => {
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 return handleReorderCategories(
-                                                    category.name,
+                                                    category.id,
                                                     "Down"
                                                 );
                                             }}
@@ -351,7 +257,12 @@ const ManagerMenu = () => {
                                             gridColumnStart: 3,
                                         }}
                                         size="small"
-                                        onClick={() => handleEditCategory(category)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleShowEditCategoryDialog(
+                                                category
+                                            );
+                                        }}
                                     >
                                         Edit
                                     </Button>
@@ -366,7 +277,7 @@ const ManagerMenu = () => {
                                 gap: "0.5em",
                             }}
                         >
-                            {category.items.map((item) => (
+                            {category.menu_items.map((item) => (
                                 <Card
                                     key={item}
                                     sx={{
@@ -392,7 +303,9 @@ const ManagerMenu = () => {
                                             <li>
                                                 {menuItems[
                                                     item
-                                                ].dietary_details.join(", ")}
+                                                ].health_requirements.join(
+                                                    ", "
+                                                )}
                                             </li>
                                         </ol>
                                     </CardContent>
@@ -455,11 +368,17 @@ const ManagerMenu = () => {
                     </Accordion>
                 ))}
             </Container>
-            <EditCategoryDialog
+            <ManagerMenuEditCategoryDialog
                 showDialog={showEditCategoryDialog}
                 onClose={() => setShowEditCategoryDialog(false)}
-                category={lastClickedEditCategory!}
-                onEditCategory={async () => {}}
+                category={lastClickedCategoryForEdit!}
+                onEditCategory={handleCategoriesChanged}
+                onDeleteCategory={handleCategoriesChanged}
+            />
+            <ManagerMenuCreateCategoryDialog
+                showDialog={showCreateCategoryDialog}
+                onClose={() => setShowCreateCategoryDialog(false)}
+                onCreateCategory={handleNewCategoryCreated}
             />
         </Box>
     );
