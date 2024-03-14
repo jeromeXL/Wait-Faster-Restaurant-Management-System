@@ -7,7 +7,7 @@ from tests.integration.client import get_client
 from config import CONFIG
 from models.user import  User, UserRole
 
-@pytest_asyncio.fixture() #Fixture not working 
+@pytest_asyncio.fixture() 
 async def admin_client():
     async with await get_client() as client:
         login_response = await client.post("/auth/login", json={
@@ -21,7 +21,7 @@ async def admin_client():
             "Authorization": f"Bearer {tokens['access_token']}"
         }
         
-        ## Delete all users and create the default admin user.
+        ## Delete all users except default admin user.
         non_admin_users = await User.find(User.role != UserRole.USER_ADMIN).to_list()
         for user in non_admin_users:
             await user.delete()
@@ -40,7 +40,7 @@ async def test_get_users(admin_client: AsyncClient):
 
 
 @pytest.mark.asyncio 
-async def test_create_user_success(admin_client): # Need to manually clear database on MongoDB compass to avoid 409 conflict error
+async def test_create_user_success(admin_client):
     create_response = await admin_client.post("/user/create", json={
         "username": "Table1",
         "password": "initialpassword",

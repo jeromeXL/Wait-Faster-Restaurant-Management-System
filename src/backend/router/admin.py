@@ -72,6 +72,9 @@ class UpdatedUserInfo(BaseModel):
 @router.put("/user/update/{userId}")
 async def updateUser(userId: str, newUserInfo: UpdatedUserInfo, adminUser = Depends(admin_user)) -> UserInfo:
     
+    if not adminUser:
+        raise HTTPException(status_code=403, detail="403 Forbidden: Only admins can get users info")
+    
     # parse the given user role and ensure it is a valid role
     validRoleValues = [role.value for role in UserRole]
     if newUserInfo.role not in validRoleValues:
