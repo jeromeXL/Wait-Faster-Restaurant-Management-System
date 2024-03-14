@@ -15,9 +15,10 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import { Category, Menu, MenuItem } from "../utils/menu";
 import UpArrowIcon from "../components/Icons/UpArrowIcon";
 import DownArrowIcon from "../components/Icons/DownArrowIcon";
-import { CategoryResponse, getMenu, reorderMenu } from "../utils/api";
+import { getMenu, reorderMenu } from "../utils/api";
 import ManagerMenuCreateCategoryDialog from "../components/ManagerMenuCreateCategoryDialog";
 import ManagerMenuEditCategoryDialog from "../components/ManagerMenuEditCategoryDialog";
+import { useNavigate } from "react-router-dom";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -27,8 +28,8 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 const ManagerMenu = () => {
     // Setup
     const navigate = useNavigate();
-    const hanldleGoToManagerItems = () => {
-        navigate("/manager");
+    const handleGoToManagerItems = () => {
+        navigate("/manager/items");
     };
 
     // MAIN PAGE
