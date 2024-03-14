@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography, Tabs, Snackbar, Alert, Tab, Divider } from '@mui/material';
+import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography, Tabs, Snackbar, Alert, Tab, Divider, Grid } from '@mui/material';
 import FloatingBottomNav from '../components/AdminBottomBar';
 import { getAxios } from '../utils/useAxios';
 import { UserRole } from "../utils/user";
@@ -88,16 +88,16 @@ const Admin = () => {
 
     try {
       console.log(payload);
-        const response = await getAxios().put(`/user/update/${editedUser.userId}`, payload);
-        const updatedUsers = [...users];
-        updatedUsers[editIndex] = response.data;
-        setUsers(updatedUsers);
-        setEditIndex(null);
-        setEditOpen(false);
+      const response = await getAxios().put(`/user/update/${editedUser.userId}`, payload);
+      const updatedUsers = [...users];
+      updatedUsers[editIndex] = response.data;
+      setUsers(updatedUsers);
+      setEditIndex(null);
+      setEditOpen(false);
     } catch (error) {
-        console.error("Failed to update user:", error);
+      console.error("Failed to update user:", error);
     }
-};
+  };
 
   const handleDeleteUser = async (userToDelete: User) => {
     try {
@@ -141,11 +141,17 @@ const Admin = () => {
           </Box>
           <Divider />
           {users.map((user, index) => (
-            <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body1" color='grey'>{user.username}</Typography>
-              <Typography variant="body1" color='grey'>{roleName(user.role)}</Typography>
-              <Button variant="outlined" size="small" onClick={() => handleEditUser(index)}>Edit</Button>
-            </Box>
+            <Grid key={index} container alignItems="center" justifyContent="space-between">
+              <Grid item xs={4}>
+                <Typography variant="body1" color='grey' textAlign="left">{user.username}</Typography>
+              </Grid>
+              <Grid item xs={4}>
+                <Typography variant="body1" color='grey' textAlign="center">{roleName(user.role)}</Typography>
+              </Grid>
+              <Grid item xs={4} display="flex" justifyContent="flex-end">
+                <Button variant="outlined" size="small" onClick={() => handleEditUser(index)}>Edit</Button>
+              </Grid>
+            </Grid>
           ))}
         </Box>
       </Container>
@@ -270,11 +276,11 @@ const EditUserDialog = ({ open, onClose, user, onSave, onDelete }: any) => {
           <TextField margin="dense" label="New Password (optional)" type="password" fullWidth variant="outlined" value={password} onChange={(e) => setPassword(e.target.value)} />
           <TextField margin="dense" label="Reconfirm Password" type="password" fullWidth variant="outlined" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
           {user?.role !== UserRole.USER_ADMIN && (
-          <Tabs value={selectedRole} onChange={(_e, newValue) => setSelectedRole(newValue)} variant="scrollable" scrollButtons="auto" aria-label="Roles" indicatorColor="primary" textColor="primary" allowScrollButtonsMobile>
-            {getUserRoleEntries().map(([role, value]) => (
-              <Tab key={value} label={role.replace('_', ' ')} value={value} />
-            ))}
-          </Tabs>
+            <Tabs value={selectedRole} onChange={(_e, newValue) => setSelectedRole(newValue)} variant="scrollable" scrollButtons="auto" aria-label="Roles" indicatorColor="primary" textColor="primary" allowScrollButtonsMobile>
+              {getUserRoleEntries().map(([role, value]) => (
+                <Tab key={value} label={role.replace('_', ' ')} value={value} />
+              ))}
+            </Tabs>
           )}
         </DialogContent>
         <DialogActions>
