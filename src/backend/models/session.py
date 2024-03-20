@@ -1,29 +1,32 @@
-from beanie import Document
-from time import time
+from beanie import Document, PydanticObjectId
+from datetime import datetime
 from typing import List, Optional
-from pydantic import ObjectId
 from enum import Enum
-from menuItem import MenuItem
 
-class Status(Enum):
+class OrderStatus(Enum):
+    ORDERED = 0
+    PREPARING = 1
+    COMPLETE = 2
+
+class SessionStatus(Enum):
     OPEN = 0
-    PENDING = 1
+    AWAITING_PAYMENT: 1
     CLOSED = 2
 
-class Order(Document):
-    status: Status
-    session_id: ObjectId
-    items: List[ObjectId]
-
 class OrderItem(Document):
-    menu_item_id: ObjectId
+    status: OrderStatus
+    menu_item_id: str
     isFree: bool
-    status: Status
-    notes: str
-    preferences: List[str]
+    preferences: Optional[List[str]]
+    additional_notes: Optional[str]
+
+class Order(Document):
+    status: OrderStatus
+    session_id: str
+    items: List[str]
 
 class Session(Document):
-    status: Status
-    orders: List[ObjectId]
-    session_start_time: time
-    session_end_time: Optional[time]
+    status: SessionStatus
+    orders: Optional[List[str]]
+    session_start_time: datetime
+    session_end_time: Optional[datetime]
