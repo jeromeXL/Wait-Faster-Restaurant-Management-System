@@ -14,7 +14,8 @@ from router.admin import router as AdminRouter
 from utils.password import hash_password
 from config import CONFIG
 from starlette.middleware.cors import CORSMiddleware
-
+from router.session import router as SessionRouter
+from models.session import OrderItem, Order, Session
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,7 +25,7 @@ async def lifespan(app: FastAPI):
     # Init beanie with the Product document class
     app.db = AsyncIOMotorClient(CONFIG.mongo_connection_string).account  # type: ignore[attr-defined]
 
-    await init_beanie(app.db, document_models=[User, MenuItem, Category])  # type: ignore[arg-type,attr-defined
+    await init_beanie(app.db, document_models=[User, MenuItem, Category, OrderItem, Order, Session,])  # type: ignore[arg-type,attr-defined
     # Check if the database has 0 users. If it does, then create a base admin user.
     userCount = await User.count()
     print(f"There are {userCount} user(s) in the database.")
@@ -49,6 +50,7 @@ app.include_router(AdminRouter)
 app.include_router(MenuRouter)
 app.include_router(CategoryRouter)
 app.include_router(MenuItemRouter)
+app.include_router(SessionRouter)
 
 app.add_middleware(
     CORSMiddleware,
