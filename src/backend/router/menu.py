@@ -3,6 +3,7 @@ import os.path
 from datetime import timedelta
 from typing import Dict, List
 from beanie import PydanticObjectId
+from beanie.operators import In
 from fastapi import APIRouter, Depends, HTTPException, Security
 from pydantic import BaseModel
 from router.category import CategoryResponse
@@ -35,33 +36,39 @@ async def generateMenu(categories: List[Category]) -> MenuResponse:
     items_to_fetch = set([PydanticObjectId(menu_item)
                          for category in categories for menu_item in category.menu_items])
 
-    items_exist = False \
-        if len(items_to_fetch) == 0 \
-        else await MenuItem.find(Category.id in items_to_fetch).exists()
-
+    items_exist = False if len(items_to_fetch) == 0 else await MenuItem.find(In(MenuItem.id, items_to_fetch)).exists()
     if not items_exist:
-        return MenuResponse(
-            Menu=MenuDTO(categories=[
-                CategoryResponse(
-                    id=str(category.id),
-                    index=category.index,
-                    menu_items=category.menu_items,
-                    name=category.name
-                ) for category in categories
-            ],),
-            Items={}
+        response = MenuResponse(
+                Menu=MenuDTO(categories=[
+                    CategoryResponse(
+                        **{
+                            **category.model_dump(),
+                            "id":str(category.id)
+                        }
+                    ) for category in categories
+                ]),
+                Items={}
         )
+        return  response
 
-    menu_items = await MenuItem.find(Category.id in items_to_fetch).to_list()
+    menu_items = await MenuItem.find_many(In(MenuItem.id, items_to_fetch)).to_list()
     return MenuResponse(
         Menu=MenuDTO(categories=[
             CategoryResponse(
-                **category.model_dump(),
-                id=str(category.id),
+                **{
+                    **category.model_dump(),
+                    "id":str(category.id)
+                },
             ) for category in categories
         ]),
-        Items={str(menu_item.id): MenuItemResponse(
-            **menu_item.model_dump(), id=str(menu_item.id)) for menu_item in menu_items}
+        Items={
+            str(menu_item.id): MenuItemResponse(
+                **{
+                    **menu_item.model_dump(), 
+                    "id": str(menu_item.id)
+                }
+            ) for menu_item in menu_items
+        }
     )
 
 

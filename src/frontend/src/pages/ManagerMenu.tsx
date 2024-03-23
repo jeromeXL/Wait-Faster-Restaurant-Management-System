@@ -15,10 +15,9 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import { Category, Menu, MenuItem } from "../utils/menu";
 import UpArrowIcon from "../components/Icons/UpArrowIcon";
 import DownArrowIcon from "../components/Icons/DownArrowIcon";
-import { getMenu, reorderMenu } from "../utils/api";
+import { CategoryResponse, getMenu, getMenuItems, reorderMenu, updateCategory } from "../utils/api";
 import ManagerMenuCreateCategoryDialog from "../components/ManagerMenuCreateCategoryDialog";
 import ManagerMenuEditCategoryDialog from "../components/ManagerMenuEditCategoryDialog";
-import { useNavigate } from "react-router-dom";
 import ManagerBottomBar from "../components/ManagerBottomBar";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -27,19 +26,19 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 });
 
 const ManagerMenu = () => {
-    // Setup
-    const navigate = useNavigate();
-    const handleGoToManagerItems = () => {
-        navigate("/manager/items");
-    };
-
     // MAIN PAGE
     const [menu, setMenu] = useState<Menu | null>({ categories: [] });
     const [menuItems, setMenuItems] = useState<Record<string, MenuItem>>({});
     async function fetchMenu() {
         const fetchedMenu = await getMenu();
         setMenu(fetchedMenu.Menu);
-        setMenuItems(fetchedMenu.Items);
+
+        const allMenuItems = await getMenuItems();
+        const map : Record<string, MenuItem> = {}
+        for (const menuItem of allMenuItems) {
+            map[menuItem.id] = menuItem
+        }
+        setMenuItems(map);
     }
 
     // On mounted
@@ -67,14 +66,14 @@ const ManagerMenu = () => {
         setLastClickedCategoryForEidt(category);
         setShowEditCategoryDialog(true);
     };
-    const handleCategoriesChanged = async () => {
-        console.log("edited!");
+    const handleCategoriesChanged = async (resp: CategoryResponse) => {
         setShowEditCategoryDialog(false);
+        setExpandedCategoryId(resp.id)
         await fetchMenu();
     };
 
     // Accordion controls
-    const [expandedCategoryName, setExpandedCategoryName] = useState<
+    const [expandedCategoryName, setExpandedCategoryId] = useState<
         string | undefined
     >(menu?.categories[0]?.id);
 
@@ -148,26 +147,16 @@ const ManagerMenu = () => {
         idList[targetItemIndex] = idList[indexToMoveTargetTo];
         idList[indexToMoveTargetTo] = temp;
 
-        // Send an http request and re-organize the items.
-        // TEMP - SORT THE CATEGORIES
-        const sortedItems = [];
-        for (const item of idList) {
-            sortedItems.push(category.menu_items.find((x) => x == item)!);
-        }
+        await updateCategory(
+            category.id,
+            {
+                menu_items: idList,
+                name: category.name
+            }
+        )
 
-        // Update the category
-        category.menu_items = idList;
-        const oldCategoryIndex = menu?.categories.findIndex(
-            (x) => x.id == category.id
-        );
-        const newMenu: Menu = {
-            categories: [
-                ...menu!.categories.slice(0, oldCategoryIndex),
-                category,
-                ...menu!.categories.slice(oldCategoryIndex! + 1),
-            ],
-        };
-        setMenu(newMenu);
+        const fetchedMenu = await getMenu();
+        setMenu(fetchedMenu.Menu);
     };
 
     return (
@@ -199,33 +188,25 @@ const ManagerMenu = () => {
                             sx={{
                                 background: "white",
                             }}
-                            onClick={handleGoToManagerItems}
+                            onClick={handleShowCreateCategoryDialog}
                         >
-                            Edit Items
+                            Create Category
                         </Button>
                     </div>
                     <div class="flex justify-center">
-                        <Typography>Categories</Typography>
+                        <Typography variant="h5">Categories</Typography>
                     </div>
                     <div class="flex justify-end">
-                        <Button
-                            sx={{
-                                background: "white",
-                            }}
-                            onClick={handleShowCreateCategoryDialog}
-                        >
-                            Create
-                        </Button>
                     </div>
                 </div>
-                {menu.categories.map((category, index) => (
+                {menu?.categories.map((category, index) => (
                     <Accordion
                         key={index}
                         sx={{
                             bgcolor: "white",
                         }}
                         expanded={category.id == expandedCategoryName}
-                        onChange={() => setExpandedCategoryName(category.id)}
+                        onChange={() => setExpandedCategoryId(category.id)}
                     >
                         <AccordionSummary>
                             <div class="flex flex-row w-full">
@@ -308,25 +289,25 @@ const ManagerMenu = () => {
                                         }}
                                     >
                                         <ol class="grid grid-cols-4 gap-2">
-                                            <li>{menuItems[item].name}</li>
+                                            <li>{menuItems[item]?.name}</li>
                                             <li>
                                                 {currencyFormatter.format(
-                                                    menuItems[item].price
+                                                    menuItems[item]?.price
                                                 )}
                                             </li>
                                             <li>
-                                                {menuItems[item].description}
+                                                {menuItems[item]?.description}
                                             </li>
                                             <li>
                                                 {menuItems[
                                                     item
-                                                ].health_requirements.join(
+                                                ]?.health_requirements?.join(
                                                     ", "
                                                 )}
                                             </li>
                                         </ol>
                                     </CardContent>
-                                    <CardActions class="grid grid-cols-3">
+                                    <CardActions class="grid grid-cols-2">
                                         {isFirstItemInCategory(
                                             category,
                                             item
@@ -369,15 +350,6 @@ const ManagerMenu = () => {
                                                 <DownArrowIcon />
                                             </Button>
                                         )}
-                                        <Button
-                                            sx={{
-                                                gridColumnStart: 3,
-                                            }}
-                                            size="small"
-                                            color="secondary"
-                                        >
-                                            Edit
-                                        </Button>
                                     </CardActions>
                                 </Card>
                             ))}
@@ -391,13 +363,14 @@ const ManagerMenu = () => {
                 category={lastClickedCategoryForEdit!}
                 onEditCategory={handleCategoriesChanged}
                 onDeleteCategory={handleCategoriesChanged}
+                menuItems={menuItems}
             />
             <ManagerMenuCreateCategoryDialog
                 showDialog={showCreateCategoryDialog}
                 onClose={() => setShowCreateCategoryDialog(false)}
                 onCreateCategory={handleNewCategoryCreated}
             />
-            <ManagerBottomBar/>
+            <ManagerBottomBar currentPageName="MenuManagement" />
         </Box>
     );
 };

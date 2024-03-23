@@ -75,7 +75,7 @@ export const getMenu = async () => {
 
 export const getMenuItems = async () => {
     const response = await getAxios().get("/menu-items");
-    return response.data;
+    return response.data as MenuItem[];
 };
 
 export const getAllMenuItems = async () => {

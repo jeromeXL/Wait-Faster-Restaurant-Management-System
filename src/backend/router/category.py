@@ -19,13 +19,13 @@ router = APIRouter(prefix="/category", tags=["Menu"])
 
 class CategoryCreate(BaseModel):
     name: str
-    menu_items: Set[str]
+    menu_items: List[str]
 
 
 class CategoryResponse(BaseModel):
     id: str
     name: str
-    menu_items: Set[str]
+    menu_items: List[str]
     index: int
 
 
@@ -67,8 +67,8 @@ async def updateCategory(categoryId: str, updatedCategory: CategoryCreate, manag
                 status_code=400, detail="Category name cannot be empty")
 
         # find if it exists
-        conflictingCategories = await Category.find_one(Category.name == updatedCategory.name)
-        if category is not None and category.id != PydanticObjectId(categoryId):
+        conflictingCategory = await Category.find_one(Category.name == updatedCategory.name)
+        if conflictingCategory is not None and conflictingCategory.id != PydanticObjectId(categoryId):
             raise HTTPException(
                 status_code=400, detail="Category name cannot be duplicated")
 
