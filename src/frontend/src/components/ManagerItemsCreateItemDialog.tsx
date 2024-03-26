@@ -49,6 +49,8 @@ const ManagerMenuCreateItemDialog = ({
 
     useEffect(() => {
         setItemName("");
+        setDescription("");
+        setPrice(0);
         setFormError("");
     }, [showDialog]);
 

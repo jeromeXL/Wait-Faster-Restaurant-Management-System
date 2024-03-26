@@ -11,22 +11,14 @@ import {
 } from "@mui/material";
 import { MenuItem } from "../utils/menu";
 import { getMenuItems } from "../utils/api";
-import { useNavigate } from "react-router-dom";
 import ManagerMenuEditItemDialog from "../components/ManagerItemsEditItemDialog";
 import ManagerMenuCreateItemDialog from "../components/ManagerItemsCreateItemDialog";
+import ManagerBottomBar from "../components/ManagerBottomBar";
+import currencyFormatter from "../utils/currencyFormatter";
 
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "AUD",
-});
+
 
 const ManagerItems = () => {
-    // Setup
-    const navigate = useNavigate();
-    const handleGoToManagerItems = () => {
-        navigate("/manager/menu");
-    };
-
     // MAIN PAGE
     const [menuItems, setMenuItems] = useState<MenuItem[] | null>([]);
     async function fetchItems() {
@@ -96,24 +88,15 @@ const ManagerItems = () => {
                             sx={{
                                 background: "white",
                             }}
-                            onClick={handleGoToManagerItems}
+                            onClick={handleShowCreateItemDialog}
                         >
-                            Edit Menu
+                            Create Menu Item
                         </Button>
                     </div>
                     <div class="flex justify-center">
-                        <Typography>Menu Items</Typography>
+                        <Typography variant="h5">Menu Items</Typography>
                     </div>
-                    <div class="flex justify-end">
-                        <Button
-                            sx={{
-                                background: "white",
-                            }}
-                            onClick={handleShowCreateItemDialog}
-                        >
-                            Create
-                        </Button>
-                    </div>
+                    <div class="flex justify-end"></div>
                 </div>
                 {menuItems?.map((menuItem, index) => (
                     <Card
@@ -168,6 +151,7 @@ const ManagerItems = () => {
                 onClose={() => setShowCreateItemDialog(false)}
                 onCreateMenuItem={handleNewItemCreated}
             />
+            <ManagerBottomBar currentPageName={"ItemManagement"} />
         </Box>
     );
 };

@@ -1,8 +1,13 @@
 import { motion } from 'framer-motion';
-import { FiLogOut } from 'react-icons/fi';
+import { FiLogOut , FiList, FiCoffee } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 
-const ManagerBottomBar = () => {
+const ManagerBottomBar = ({
+   currentPageName
+}: {
+    currentPageName: 'ItemManagement' | 'MenuManagement';
+}) => {
+    
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center items-center pb-4">
       <motion.nav
@@ -11,6 +16,12 @@ const ManagerBottomBar = () => {
         transition={{ duration: 0.5 }}
         className="bg-white text-black shadow-lg flex rounded-lg overflow-hidden"
       >
+        {currentPageName != 'ItemManagement' && 
+            <NavItem to="/manager/items" text="Edit Food Items" Icon={FiCoffee} />
+        }
+        {currentPageName != 'MenuManagement' && 
+            <NavItem to="/manager/menu" text="Edit Menu" Icon={FiList} />
+        }
         <NavItem to="/logout" text="Logout" Icon={FiLogOut} />
       </motion.nav>
     </div>
