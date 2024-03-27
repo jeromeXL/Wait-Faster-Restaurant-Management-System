@@ -44,6 +44,21 @@ async def start_session() -> SessionResponse:
     session_response  = SessionResponse(id=str(new_session.id), status=new_session.status, session_start_time=new_session.session_start_time)
     return session_response
 
+@router.post("/session/lock")
+async def lock_session(session_id: str) -> Session:
+    session = await Session.get(session_id)
+    session.status = SessionStatus.AWAITING_PAYMENT
+    await session.save()
+    return session
+
+'''
+@router.post("/session/complete")
+async def complete_session(session_id: str) -> Session:
+    session = await Session.get(session_id)
+    session.status = SessionStatus.CLOSED
+    await session.save()
+    return session
+'''
 
 @router.get("/table/session/{userId}")
 async def get_table_session(userId: str) -> SessionResponse:

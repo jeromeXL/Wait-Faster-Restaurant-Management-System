@@ -24,7 +24,7 @@ class OrderItem(Document):
 class Order(Document):
     status: OrderStatus
     session_id: str
-    items: List[str]
+    items: List[OrderItem]
 
 class Session(Document):
     status: SessionStatus
