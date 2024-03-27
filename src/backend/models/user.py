@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional
 from beanie import Document
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class UserRole(Enum):
   USER_ADMIN = 1
@@ -14,6 +14,7 @@ class User(Document):
   username: str
   password: str # Hashed password
   role: UserRole
+  active_session: Optional[str] = Field(default=None)
 
   @classmethod
   async def find_by_username(cls, username: str) -> Optional["User"]:

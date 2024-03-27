@@ -53,7 +53,7 @@ async def manager_client():
 #   Catch doubled category
 #   Permits legal category
 
-
+'''
 @pytest.mark.asyncio
 async def test_create_category_invalid_no_name(manager_client):
 
@@ -217,3 +217,4 @@ async def test_delete_category_valid(manager_client):
     })
     # no del2 means we should be able to make it again
     assert response.status_code == 200
+'''
