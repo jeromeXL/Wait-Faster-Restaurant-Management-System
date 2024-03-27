@@ -2,6 +2,7 @@ from beanie import Document, PydanticObjectId
 from datetime import datetime
 from typing import List, Optional
 from enum import Enum
+from pydantic import Field
 
 class OrderStatus(Enum):
     ORDERED = 0
@@ -17,8 +18,8 @@ class OrderItem(Document):
     status: OrderStatus
     menu_item_id: str
     isFree: bool
-    preferences: Optional[List[str]]
-    additional_notes: Optional[str]
+    preferences: Optional[List[str]] =  Field(default=None)
+    additional_notes: Optional[str] =  Field(default=None)
 
 class Order(Document):
     status: OrderStatus
@@ -27,6 +28,6 @@ class Order(Document):
 
 class Session(Document):
     status: SessionStatus
-    orders: Optional[List[str]]
+    orders: Optional[List[str]] = Field(default=None)
     session_start_time: datetime
-    session_end_time: Optional[datetime]
+    session_end_time: Optional[datetime] = Field(default=None)

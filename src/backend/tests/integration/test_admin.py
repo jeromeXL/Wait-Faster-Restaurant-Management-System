@@ -55,6 +55,7 @@ async def test_create_user_success(admin_client):
     assert create_response.status_code == 200
     assert create_response.json()["username"] == "Table1"
     assert create_response.json()["role"] == UserRole.CUSTOMER_TABLET.value
+    assert create_response.json()["active_session"] is not None
 
 
 @pytest.mark.asyncio
