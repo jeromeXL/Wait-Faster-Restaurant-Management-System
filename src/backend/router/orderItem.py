@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional
-from models.session import OrderItem, Order, Session, OrderStatus
+from models.session import Session
+from models.order import OrderItem, Order, OrderStatus
 from models.menuItem import MenuItem
 
 router = APIRouter()

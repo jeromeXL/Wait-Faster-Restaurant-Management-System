@@ -1,8 +1,7 @@
 import pytest
 from tests.integration.client import get_client
 from models.menuItem import MenuItem
-from models.session import OrderStatus
-from models.session import serialise_order_status
+from models.order import OrderStatus, serialise_order_status
 from config import CONFIG
 import pytest_asyncio
 from models.user import User, UserRole

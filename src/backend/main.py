@@ -16,7 +16,8 @@ from utils.password import hash_password
 from config import CONFIG
 from starlette.middleware.cors import CORSMiddleware
 from router.session import router as SessionRouter
-from models.session import OrderItem, Order, Session
+from models.order import OrderItem, Order
+from models.session import Session
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
