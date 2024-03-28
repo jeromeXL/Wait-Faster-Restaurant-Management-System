@@ -20,7 +20,13 @@ class CreateOrderRequest(BaseModel):
     session_id: str
     items: List[OrderItemRequest]
 
-@router.post("/order", response_model=Order)
+class OrderResponse(BaseModel):
+    id: str
+    status: OrderStatus
+    session_id: str
+    items: List[OrderItemRequest]
+
+@router.post("/order", response_model=OrderResponse)
 async def create_order(request: CreateOrderRequest):
     print("ENDPOINT CALLED")
     validated_request = Order.model_validate(request.model_dump())
@@ -59,8 +65,9 @@ async def create_order(request: CreateOrderRequest):
     order = Order(status=OrderStatus.ORDERED, session_id = session_id, items = created_order_items)
     print("Order is: " + str(order.model_dump()))
     await order.create()
-
-    return order
+    orderResponse = OrderResponse(id=str(order.id), **order.model_dump(exclude='id'))
+    print("Order Response is: " + str(orderResponse.model_dump()))
+    return orderResponse
 
 @router.get("/order/health")
 async def order_health():
