@@ -18,16 +18,19 @@ class OrderItem(Document):
     status: OrderStatus
     menu_item_id: str
     isFree: bool
-    preferences: Optional[List[str]] =  Field(default=None)
-    additional_notes: Optional[str] =  Field(default=None)
+    preferences: Optional[List[str]]
+    additional_notes: Optional[str]
 
 class Order(Document):
     status: OrderStatus
     session_id: str
-    items: List[str]
+    items: List[OrderItem]
 
 class Session(Document):
     status: SessionStatus
     orders: Optional[List[str]] = Field(default=None)
     session_start_time: datetime
     session_end_time: Optional[datetime] = Field(default=None)
+
+def serialise_order_status(order_status):
+    return order_status.value
