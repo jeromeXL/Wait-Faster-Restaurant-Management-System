@@ -8,6 +8,8 @@ class OrderStatus(Enum):
     ORDERED = 0
     PREPARING = 1
     COMPLETE = 2
+    DELIVERING = 3
+    DELIVERED = 4
 
 class OrderItem(Document):
     status: OrderStatus
