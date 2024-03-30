@@ -45,9 +45,6 @@ async def create_menu_item(menu_item: MenuItemCreate):
     # Pydantic Validation
     new_menu_item = MenuItem(**validated_menu_item.model_dump())
     await new_menu_item.create()
-    print("ID is: " + str(new_menu_item.id))
-    print("Created menu item is: " + str(new_menu_item))
-    print(MenuItemResponse(**new_menu_item.model_dump()))
     return MenuItemResponse(**new_menu_item.model_dump())
 
 
@@ -77,5 +74,4 @@ async def delete_menu_item(menu_item_id: str):
 @router.get("/allMenuItems")
 async def createCategory():
     MenuItemCount = await MenuItem.count()
-    print(f"There are {MenuItemCount} menu items")
     return {"count": MenuItemCount}

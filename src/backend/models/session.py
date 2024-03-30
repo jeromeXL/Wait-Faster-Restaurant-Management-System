@@ -8,7 +8,7 @@ class OrderStatus(Enum):
     ORDERED = 0
     PREPARING = 1
     COMPLETE = 2
-
+    
 class SessionStatus(Enum):
     OPEN = 0
     AWAITING_PAYMENT = 1
