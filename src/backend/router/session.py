@@ -4,10 +4,12 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
 from models.user import User, UserRole
-from utils.user_authentication import current_user, customer_tablet_user
+from utils.user_authentication import current_user, customer_tablet_user, wait_staff_user
 from fastapi.security import OAuth2PasswordBearer
 from jwt import user_from_token
 from fastapi_jwt import JwtAuthorizationCredentials
+from bson import ObjectId
+
 
 router = APIRouter()
 
@@ -60,30 +62,48 @@ async def start_session(customer_table: User = Depends(customer_tablet_user)) ->
     return session_response
 
 @router.post("/session/lock")
-async def lock_session(session_id: str) -> Session:
-    session = await Session.get(session_id)
-    session.status = SessionStatus.AWAITING_PAYMENT
+async def lock_session(customer_table: User = Depends(customer_tablet_user)) -> SessionResponse:
+    session = await Session.get(customer_table.active_session)
+    session.status = SessionStatus.AWAITING_PAYMENT.value
     await session.save()
-    return session
 
-'''
-@router.post("/session/complete")
-async def complete_session(session_id: str) -> Session:
-    session = await Session.get(session_id)
-    session.status = SessionStatus.CLOSED
+    session_response = SessionResponse(
+        id=str(session.id),
+        status=session.status,
+        orders=session.orders,
+        session_start_time=session.session_start_time,
+        session_end_time=session.session_end_time
+    )
+    return session_response
+
+
+@router.post("/session/complete/{customer_table_id}")
+async def complete_session(customer_table_id: str, waiter: User = Depends(wait_staff_user)) -> SessionResponse:
+
+    customer_table = User.get(customer_table_id)
+    session = await Session.get(customer_table.active_session)
+    session.status = SessionStatus.CLOSED.value
     await session.save()
-    return session
-'''
 
-@router.get("/table/session/{userId}")
-async def get_table_session(userId: str) -> SessionResponse:
-    user = await User.get(userId)
+    session_response = SessionResponse(
+        id=str(session.id), 
+        status=session.status, 
+        orders=session.orders, 
+        session_start_time=session.session_start_time, 
+        session_end_time=session.session_end_time
+    )
+    return session_response
 
-    if user.role != UserRole.CUSTOMER_TABLET:
-        raise HTTPException(status_code=403, detail="403 Forbidden: Only Customer Tables have sessions")
 
-    session_id = user.active_session
-    session = await Session.get(session_id)
+@router.get("/table/session")
+async def get_table_session(customer_table: User = Depends(customer_tablet_user)) -> SessionResponse:
+    session = await Session.get(customer_table.active_session)
 
-    session_response = SessionResponse(id=str(session.id), status=session.status, orders=session.orders, session_start_time=session.session_start_time, session_end_time=session.session_end_time)
+    session_response = SessionResponse(
+        id=str(session.id), 
+        status=session.status, 
+        orders=session.orders, 
+        session_start_time=session.session_start_time, 
+        session_end_time=session.session_end_time
+    )
     return session_response

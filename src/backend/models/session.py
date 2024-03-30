@@ -11,7 +11,7 @@ class OrderStatus(Enum):
 
 class SessionStatus(Enum):
     OPEN = 0
-    AWAITING_PAYMENT: 1
+    AWAITING_PAYMENT = 1
     CLOSED = 2
 
 class OrderItem(Document):
