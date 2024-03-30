@@ -10,14 +10,7 @@ from jwt import user_from_token
 from fastapi_jwt import JwtAuthorizationCredentials
 from bson import ObjectId
 
-
 router = APIRouter()
-
-# OrderItem Response + DTO
-# Order Response + DTO
-# Session Response + DTO
-# TableActivity Response + DTO
-# -> ActivityPanelResponse
 
 
 class OrderItemResponse(BaseModel):
@@ -76,23 +69,37 @@ async def lock_session(customer_table: User = Depends(customer_tablet_user)) -> 
     )
     return session_response
 
+class CompleteSessionResponse(BaseModel):
+    user_id: str
+    username: str
+    active_session: Optional[str] = Field(default=None)
+    session_id: str
+    session_status: SessionStatus
+    session_start_time: datetime
+    session_end_time: datetime
 
-@router.post("/session/complete/{customer_table_id}")
-async def complete_session(customer_table_id: str, waiter: User = Depends(wait_staff_user)) -> SessionResponse:
+@router.post("/session/complete/{customer_table_name}")
+async def complete_session(customer_table_name: str, waiter: User = Depends(wait_staff_user)) -> CompleteSessionResponse:
 
-    customer_table = User.get(customer_table_id)
+    customer_table = await User.find_one(User.username == customer_table_name)
     session = await Session.get(customer_table.active_session)
     session.status = SessionStatus.CLOSED.value
+    session.session_end_time = datetime.now()
     await session.save()
 
-    session_response = SessionResponse(
-        id=str(session.id), 
-        status=session.status, 
-        orders=session.orders, 
+    customer_table.active_session = None
+    await customer_table.save()
+
+    complete_session_response = CompleteSessionResponse(
+        user_id=str(customer_table.id),
+        username=customer_table.username,
+        active_session=customer_table.active_session,
+        session_id=str(session.id), 
+        session_status=session.status,
         session_start_time=session.session_start_time, 
         session_end_time=session.session_end_time
     )
-    return session_response
+    return complete_session_response
 
 
 @router.get("/table/session")
