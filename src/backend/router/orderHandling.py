@@ -34,6 +34,9 @@ async def update_order_status(order_id: str, item_id: str, request: OrderUpdateR
     current_status = item_to_update.status
     new_status = request.status
 
+    if new_status not in valid_transitions.get(current_status, []):
+        raise HTTPException(status_code=422, detail="Invalid state transition")
+
     # Update the status of the item
     item_to_update.status = new_status
 
@@ -55,6 +58,9 @@ async def update_order_status(order_id: str, request: OrderUpdateRequest):
 
     current_status = order.status
     new_status = request.status
+
+    if new_status not in valid_transitions.get(current_status, []):
+        raise HTTPException(status_code=422, detail="Invalid state transition")
 
     # Update the status of the item
     order.status = new_status
