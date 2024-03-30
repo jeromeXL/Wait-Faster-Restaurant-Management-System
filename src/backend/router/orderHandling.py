@@ -12,34 +12,57 @@ class OrderUpdateRequest(BaseModel):
     status: OrderStatus
 
 @router.post("/order/{order_id}/{item_id}", response_model=Order)
-async def update_order_status(order_id : str, item_id : str, request: OrderUpdateRequest):
+async def update_order_status(order_id: str, item_id: str, request: OrderUpdateRequest):
     validated_request = OrderUpdateRequest.model_validate(request.model_dump())
     print("Order id is: " + str(order_id))
-    print("item id is : " + str(item_id))
+    print("Item id is: " + str(item_id))
+
     # Check if the order exists
     order = await Order.get(order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    ''' Uncomment Later
-    # Check if the menu item exists
-    menu_item = await MenuItem.get(item_id)
-    if not menu_item:
-        raise HTTPException(status_code=404, detail="Menu item not found")
-    '''
+    # Check if the order contains the specified item
+    item_to_update = None
+    for item in order.items:
+        if item.menu_item_id == item_id:
+            item_to_update = item
+            break
+    if not item_to_update:
+        raise HTTPException(status_code=404, detail="Item not found in the order")
 
-    # Check if the order contains the specified menu item
-    if not any(item.menu_item_id == item_id for item in order.items):
-        raise HTTPException(status_code=404, detail="Order does not contain this menu item")
+    current_status = item_to_update.status
+    new_status = request.status
+
+    # Update the status of the item
+    item_to_update.status = new_status
+
+    # Update the order status based on item statuses
+    if all(item.status == new_status for item in order.items):
+        order.status = new_status
+
+    return order
+
+@router.post("/order/{order_id}", response_model=Order)
+async def update_order_status(order_id: str, request: OrderUpdateRequest):
+    validated_request = OrderUpdateRequest.model_validate(request.model_dump())
+    print("Order id is: " + str(order_id))
+
+    # Check if the order exists
+    order = await Order.get(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
 
     current_status = order.status
     new_status = request.status
 
-    if new_status not in valid_transitions.get(current_status, []):
-        raise HTTPException(status_code=422, detail="Invalid state transition")
-
-    # Update the status of the order item
+    # Update the status of the item
     order.status = new_status
+
+    # Update the order status based on item statuses
+    for item in order.items:
+        item.status = order.status 
+
     return order
 
 @router.get("/order/health")
