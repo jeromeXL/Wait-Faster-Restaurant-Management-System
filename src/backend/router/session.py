@@ -1,9 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, status, Security
 from models.session import OrderStatus, SessionStatus, OrderItem, Order, Session
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
 from models.user import User, UserRole
+from utils.user_authentication import current_user, customer_tablet_user
+from fastapi.security import OAuth2PasswordBearer
+from jwt import user_from_token
+from fastapi_jwt import JwtAuthorizationCredentials
 
 router = APIRouter()
 
@@ -37,11 +41,22 @@ class SessionResponse(BaseModel):
 
 
 @router.post("/session/start")
-async def start_session() -> SessionResponse:
+async def start_session(customer_table: User = Depends(customer_tablet_user)) -> SessionResponse:
+
+    if customer_table.active_session is not None:
+        raise HTTPException(status_code=409, detail="409: Active session already exists for this user")
+
     new_session = Session(status=SessionStatus.OPEN, session_start_time=datetime.now())
     await new_session.create()
 
-    session_response  = SessionResponse(id=str(new_session.id), status=new_session.status, session_start_time=new_session.session_start_time)
+    customer_table.active_session = str(new_session.id)
+    await customer_table.save()
+
+    session_response  = SessionResponse(
+        id=str(new_session.id), 
+        status=new_session.status, 
+        session_start_time=new_session.session_start_time
+    )
     return session_response
 
 @router.post("/session/lock")
