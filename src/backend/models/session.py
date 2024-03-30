@@ -3,11 +3,8 @@ from datetime import datetime
 from typing import List, Optional
 from enum import Enum
 from pydantic import Field
+from models.order import OrderStatus
 
-class OrderStatus(Enum):
-    ORDERED = 0
-    PREPARING = 1
-    COMPLETE = 2
     
 class SessionStatus(Enum):
     OPEN = 0

@@ -29,7 +29,7 @@ async def getUsers(adminUser = Depends(admin_user)) -> List[UserInfo]:
 
 '''
 # Get user by username
-@router.get("/user/{userId}")
+@router.get("/user/{user}")
 async def getUser(userId: str, adminUser = Depends(admin_user)) -> User:
     if not adminUser:
         raise HTTPException(status_code=403, detail="403 Forbidden: Only admins can get user info")

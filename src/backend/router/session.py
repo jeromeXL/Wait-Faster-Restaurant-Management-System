@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, status, Security
-from models.session import OrderStatus, SessionStatus, OrderItem, Order, Session
+from models.session import SessionStatus, Session
+from models.order import OrderStatus, OrderItem, Order
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
