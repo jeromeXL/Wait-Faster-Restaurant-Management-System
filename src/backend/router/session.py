@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
 from models.user import User, UserRole
-from utils.user_authentication import current_user, customer_tablet_user, wait_staff_user
+from utils.user_authentication import customer_tablet_user, wait_staff_user, manager_or_waitstaff_user
 from fastapi.security import OAuth2PasswordBearer
 from jwt import user_from_token
 from fastapi_jwt import JwtAuthorizationCredentials
@@ -40,7 +40,7 @@ class SessionResponse(BaseModel):
 async def start_session(customer_table: User = Depends(customer_tablet_user)) -> SessionResponse:
 
     if customer_table.active_session is not None:
-        raise HTTPException(status_code=409, detail="409: Active session already exists for this user")
+        raise HTTPException(status_code=409, detail="409 Conflict: Active session already exists for this user")
 
     new_session = Session(status=SessionStatus.OPEN, session_start_time=datetime.now())
     await new_session.create()
@@ -80,7 +80,7 @@ class CompleteSessionResponse(BaseModel):
     session_end_time: datetime
 
 @router.post("/session/complete/{customer_table_name}")
-async def complete_session(customer_table_name: str, waiter: User = Depends(wait_staff_user)) -> CompleteSessionResponse:
+async def complete_session(customer_table_name: str, waiter: User = Depends(manager_or_waitstaff_user)) -> CompleteSessionResponse:
 
     customer_table = await User.find_one(User.username == customer_table_name)
     session = await Session.get(customer_table.active_session)

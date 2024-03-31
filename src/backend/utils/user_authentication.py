@@ -70,3 +70,14 @@ async def user_of_role(auth: JwtAuthorizationCredentials, userRole: UserRole):
         raise HTTPException(401, "Not authorized to access this resource.")
 
     return user
+
+
+async def manager_or_waitstaff_user(
+    auth: JwtAuthorizationCredentials = Security(access_security)
+) -> User:
+    user = await user_from_credentials(auth)
+    if user is None:
+        raise HTTPException(status_code=404, detail="404 Not found: User not found")
+    if user.role not in [UserRole.MANAGER, UserRole.WAIT_STAFF]:
+        raise HTTPException(status_code=401, detail="401 Unauthorized: Not authorized to complete the session")
+    return user
