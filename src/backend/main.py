@@ -11,11 +11,15 @@ from router.menu import router as MenuRouter
 from router.menuItem import router as MenuItemRouter
 from router.category import router as CategoryRouter
 from router.admin import router as AdminRouter
+from router.orderItem import router as OrderItemRouter
+from router.orderHandling import router as OrderHandlingRouter
+from router.activityPanel import router as ActivityPanelRouter
 from utils.password import hash_password
 from config import CONFIG
 from starlette.middleware.cors import CORSMiddleware
 from router.session import router as SessionRouter
-from models.session import OrderItem, Order, Session
+from models.order import OrderItem, Order
+from models.session import Session
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -51,6 +55,9 @@ app.include_router(MenuRouter)
 app.include_router(CategoryRouter)
 app.include_router(MenuItemRouter)
 app.include_router(SessionRouter)
+app.include_router(OrderItemRouter)
+app.include_router(OrderHandlingRouter)
+app.include_router(ActivityPanelRouter)
 
 app.add_middleware(
     CORSMiddleware,

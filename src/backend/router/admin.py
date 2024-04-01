@@ -5,7 +5,9 @@ from utils.password import hash_password
 from utils.regex import matchesTablePattern
 from typing import List, Optional
 from beanie import Document
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from models.session import Session, SessionStatus
+from datetime import datetime
 
 router = APIRouter()
 
@@ -13,6 +15,7 @@ class UserInfo(BaseModel):
     userId: str
     username: str
     role: int
+    active_session: Optional[str] = Field(default=None)
 
 # Get all users
 @router.get("/users")
@@ -20,13 +23,13 @@ async def getUsers(adminUser = Depends(admin_user)) -> List[UserInfo]:
     if not adminUser:
         raise HTTPException(status_code=403, detail="403 Forbidden: Only admins can get users info")
     users = await User.find_all().to_list() # Users.find_all() returns a queryable. Then calling .to_list() will transform that into a list. 
-    users_info_list = [UserInfo(userId=str(user.id), username=user.username, role=user.role.value) for user in users]
+    users_info_list = [UserInfo(userId=str(user.id), username=user.username, role=user.role.value, active_session=user.active_session) for user in users]
 
     return users_info_list
 
 '''
 # Get user by username
-@router.get("/user/{userId}")
+@router.get("/user/{user}")
 async def getUser(userId: str, adminUser = Depends(admin_user)) -> User:
     if not adminUser:
         raise HTTPException(status_code=403, detail="403 Forbidden: Only admins can get user info")
@@ -41,11 +44,12 @@ async def getUser(userId: str, adminUser = Depends(admin_user)) -> UserInfo:
     if not adminUser:
         raise HTTPException(status_code=403, detail="403 Forbidden: Only admins can get user info")
     user = await User.get(userId)
-    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role)
+    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role, active_session=user.active_session)
     return user_info #404 Not found
 
 
 # Create User -> Returns user object
+# When Customer Table is created, create Session
 class CreateUserRequest(BaseModel):
     username: str
     password: str 
@@ -59,9 +63,16 @@ async def createUser(newUser: CreateUserRequest, adminUser = Depends(admin_user)
     newUsernameTaken = await User.find_by_username(newUser.username)
     if newUsernameTaken:
         raise HTTPException(status_code=409, detail="409 Conflict: New username already exists. Duplicate usernames not allowed")
-    user = User(username=newUser.username, password=hash_password(newUser.password), role=newUser.role)
+    
+    if newUser.role == UserRole.CUSTOMER_TABLET:
+        new_session = Session(status=SessionStatus.OPEN, session_start_time=datetime.now())
+        await new_session.create()
+    else:
+        new_session = False
+
+    user = User(username=newUser.username, password=hash_password(newUser.password), role=newUser.role, active_session=str(new_session.id) if new_session else None)
     await user.create() # On an instance, call create.
-    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role.value)
+    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role.value, active_session=user.active_session)
     return user_info
 
 # Update User (Previously Update Password)
@@ -93,7 +104,7 @@ async def updateUser(userId: str, newUserInfo: UpdatedUserInfo, adminUser = Depe
     user.role = UserRole(newUserInfo.role) if newUserInfo.role is not None else user.role
 
     await user.save()
-    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role.value)
+    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role.value, active_session=user.active_session)
     return user_info
 
 # Delete User   
