@@ -37,4 +37,22 @@ async def admin_client():
         })
         assert create_customer_tablet_response.status_code == 200
 
+        create_wait_staff_response = await client.post("/user/create", json={
+            "username": "Staff1",
+            "password": "Staff1",
+            "role":  UserRole.WAIT_STAFF.value
+        })
+        assert create_wait_staff_response.status_code == 200
+
+
         yield client
+
+@pytest.mark.asyncio
+async def test_get_Activity_Panel(admin_client: AsyncClient):
+    login_response = await admin_client.post("/auth/login", json={
+        "username": "Staff1",
+        "password": "Staff1"
+    })
+
+    panel_response = await admin_client.get("/Panel")
+    assert False
