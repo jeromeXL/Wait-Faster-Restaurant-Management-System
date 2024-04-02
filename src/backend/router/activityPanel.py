@@ -1,3 +1,4 @@
+
 # from enum import Enum
 # from typing import List, Optional, Set
 # from pydantic import BaseModel
@@ -20,7 +21,10 @@ from enum import Enum
 from typing import List, Optional, Set
 from pydantic import BaseModel
 from router.session import SessionResponse, OrderResponse
-from models.user import User
+from models.user import User, UserRole
+from models.order import Order, OrderStatus
+from beanie.operators import NE, Eq
+from beanie import PydanticObjectId
 
 class TableActivityDTO(BaseModel):
     TableNumber: int
@@ -38,14 +42,30 @@ async def getPanel():
     # Returns ActivityPanelResponse object
 
     # find active tables, for an active table, add current orders to Orderlist
-    ActiveUsers = User.find_all(User.active_session != None).to_list()
-    OrderList = []
+    # filter for table users
+    Tables = []
+    ActiveSessions = []
+    allusers = await User.find_all().to_list()
+    for user in allusers:
+        if user.role == UserRole.CUSTOMER_TABLET:
+            Tables.append(user)
+            if user.active_session != None:
+                ActiveSessions.append(user.active_session)
 
+    ActiveOrders = []
+    # for each active session string, find by id and get its active orders
+    for sessionId in ActiveSessions:
+        session = await Session.find_one(Session.id == PydanticObjectId(sessionId))
+        if session.orders != None:
+            for orderId in session.orders:
+                # lookup each order, if active, add to activeOrderIds
+                order = await Order.find_one(Order.id == PydanticObjectId(orderId))
+                if order.status == OrderStatus.ORDERED or OrderStatus.PREPARING:
+                    ActiveOrders.append(order)
+
+    # if active, add active orders to CurrentOrders list
     # build ActivityPanelResponse object accordingly and return
 
-    # ActiveUsers2 = await User.find_all().to_list()
     # TablesList = [TableActivityDTO(**user.active_session.model_dump()) for user in ActiveUsers ]
-    # ActiveSessions = Session.find_all(SessionStatus != SessionStatus.CLOSED.value).to_list()
-    # ActiveSessions2 = Session.find_all().to_list()
 
-    return ActiveUsers
+    return Tables
