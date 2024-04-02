@@ -78,11 +78,6 @@ export const getMenuItems = async () => {
     return response.data as MenuItem[];
 };
 
-export const getAllMenuItems = async () => {
-    const response = await getAxios().get("/allMenuItems");
-    return response.data;
-};
-
 export type CreateMenuItemRequest = {
     name: string;
     price: number;

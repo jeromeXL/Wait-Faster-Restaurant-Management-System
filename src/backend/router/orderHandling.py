@@ -1,6 +1,7 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import List, Optional
+from utils.user_authentication import any_staff_user
 from models.session import Session
 from models.order import OrderItem, Order, OrderStatus, valid_transitions
 from models.menuItem import MenuItem
@@ -11,11 +12,15 @@ router = APIRouter()
 class OrderUpdateRequest(BaseModel):
     status: OrderStatus
 
+
 @router.post("/order/{order_id}/{item_id}", response_model=Order)
-async def update_order_status(order_id: str, item_id: str, request: OrderUpdateRequest):
+async def update_order_status(
+    order_id: str,
+    item_id: str,
+    request: OrderUpdateRequest,
+    user=Depends(any_staff_user),
+):
     validated_request = OrderUpdateRequest.model_validate(request.model_dump())
-    print("Order id is: " + str(order_id))
-    print("Item id is: " + str(item_id))
 
     # Check if the order exists
     order = await Order.get(order_id)
@@ -46,34 +51,28 @@ async def update_order_status(order_id: str, item_id: str, request: OrderUpdateR
 
     return order
 
-@router.post("/order/{order_id}", response_model=Order)
-async def update_order_status(order_id: str, request: OrderUpdateRequest):
-    validated_request = OrderUpdateRequest.model_validate(request.model_dump())
-    print("Order id is: " + str(order_id))
 
-    # Check if the order exists
-    order = await Order.get(order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="Order not found")
+# @router.post("/order/{order_id}", response_model=Order)
+# async def update_order_status(order_id: str, request: OrderUpdateRequest):
+#     validated_request = OrderUpdateRequest.model_validate(request.model_dump())
+#     print("Order id is: " + str(order_id))
 
-    current_status = order.status
-    new_status = request.status
+#     # Check if the order exists
+#     order = await Order.get(order_id)
+#     if not order:
+#         raise HTTPException(status_code=404, detail="Order not found")
 
-    if new_status not in valid_transitions.get(current_status, []):
-        raise HTTPException(status_code=422, detail="Invalid state transition")
+#     current_status = order.status
+#     new_status = request.status
 
-    # Update the status of the item
-    order.status = new_status
+#     if new_status not in valid_transitions.get(current_status, []):
+#         raise HTTPException(status_code=422, detail="Invalid state transition")
 
-    # Update the order status based on item statuses
-    for item in order.items:
-        item.status = order.status 
+#     # Update the status of the item
+#     order.status = new_status
 
-    return order
+#     # Update the order status based on item statuses
+#     for item in order.items:
+#         item.status = order.status
 
-@router.get("/order/health")
-async def order_health():
-    print("HEALTHY")
-    return 0
-
-
+#     return order
