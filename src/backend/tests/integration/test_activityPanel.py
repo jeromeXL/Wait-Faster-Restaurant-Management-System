@@ -16,6 +16,7 @@ from config import CONFIG
 import pytest_asyncio
 from models.user import User, UserRole
 
+# setup users
 @pytest_asyncio.fixture()
 async def admin_client():
     async with await get_client() as client:
@@ -64,38 +65,57 @@ async def waitstaff_client():
         })
 
         assert login_response.status_code == 200
+        tokens = login_response.json()
+        client.headers = {
+            "Authorization": f"Bearer {tokens['access_token']}"
+        }
 
         yield client
 
-
-# @pytest.mark.asyncio
-# async def test_get_Activity_Panel(admin_client: AsyncClient):
-#     login_response = await admin_client.post("/auth/login", json={
-#         "username": "Staff1",
-#         "password": "Staff1"
-#     })
-
-#     panel_response = await admin_client.get("/Panel")
-#     assert False
-
-
 @pytest.mark.asyncio
 async def test_Activity_Panel(admin_client: AsyncClient, waitstaff_client: AsyncClient):
+    # async with await get_client() as client:
+    #     # manager
+
     async with await get_client() as client:
+        login_response = await client.post("/auth/login", json={
+            "username": "Table1",
+            "password": "Table1"
+        })
+
+        assert login_response.status_code == 200
+        tokens = login_response.json()
+        client.headers = {
+            "Authorization": f"Bearer {tokens['access_token']}"
+        }
+
+        # create_session_response = await client.post("/session/complete")
+        complete_session_response = await waitstaff_client.post("/session/complete/Table1",
+            json={"customer_table_name": "Table1"}
+        )
+        create_session_response = await client.post("/session/start")
+
+        assert create_session_response.status_code == 200
+        sessionData = create_session_response.json()
+        # sessionId = sessionData["active_session_id"]
+        sessionId = sessionData["id"]
+
         # Create a new menu item
-        response = await client.post("/menu-item/", json={
+        MIresponse = await client.post("/menu-item/", json={
             "name": "Test Item",
             "price": 10.99,
             "health_requirements": ["Vegetarian"],
             "description": "This is a test menu item."
         })
+        MIData = MIresponse.json()
         payload = {
             "status": serialise_order_status(OrderStatus.ORDERED),
-            "session_id": "valid_session_id",
+            # "session_id": "valid_session_id",
+            "session_id": sessionId,
             "items": [
                 {
                     "status": serialise_order_status(OrderStatus.ORDERED),
-                    "menu_item_id": "valid_menu_item_id",
+                    "menu_item_id": MIData['id'],
                     "isFree": False,
                     "preferences": ["extra cheese"],
                     "additional_notes": "No onions"
@@ -104,6 +124,8 @@ async def test_Activity_Panel(admin_client: AsyncClient, waitstaff_client: Async
         }
         response = await client.post("/order", json=payload)
         print(response)
+
+        # # remaining code from order_test.py
         # assert response.status_code == 200
         # status_update_payload = {
         #     "status": serialise_order_status(OrderStatus.PREPARING)

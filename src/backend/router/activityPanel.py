@@ -37,8 +37,8 @@ class ActivityPanelResponse(BaseModel):
 router = APIRouter()
 
 @router.get("/Panel")
-# async def getPanel(user=Depends(manager_or_waitstaff_user)):
-async def getPanel():
+async def getPanel(user=Depends(manager_or_waitstaff_user)):
+# async def getPanel():
     # Returns ActivityPanelResponse object
 
     # find active tables, for an active table, add current orders to Orderlist
