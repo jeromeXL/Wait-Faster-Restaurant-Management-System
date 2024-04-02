@@ -46,7 +46,7 @@ const Login = () => {
                     navigate("/kitchen_staff");
                     break;
                 case UserRole.CUSTOMER_TABLET:
-                    navigate("/menu");
+                    navigate("/start");
                     break;
                 default:
                     navigate("/");

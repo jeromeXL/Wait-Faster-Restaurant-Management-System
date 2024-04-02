@@ -138,3 +138,17 @@ export const updateCategory = async (id: string, req: CreateCategoryRequest) =>
 
 export const deleteCategory = async (id: string) =>
     await getAxios().delete(`/category/${id}`);
+
+
+export type SessionResponse = {
+    id: string;
+    status: number;
+    orders: string[];
+    session_start_time: Date;
+    session_end_time: Date;
+}
+
+export const startSession = async() =>
+    await getAxios()
+    .post("/session/start")
+    .then((resp) => resp.data as SessionResponse)

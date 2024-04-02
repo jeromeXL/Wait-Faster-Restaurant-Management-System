@@ -26,5 +26,5 @@ class Order(Document):
 class Session(Document):
     status: SessionStatus
     orders: Optional[List[str]] = Field(default=None)
-    session_start_time: datetime
-    session_end_time: Optional[datetime] = Field(default=None)
+    session_start_time: str
+    session_end_time: Optional[str] = Field(default=None)
