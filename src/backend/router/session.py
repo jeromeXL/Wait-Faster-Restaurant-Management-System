@@ -1,37 +1,16 @@
-from fastapi import APIRouter, HTTPException, Depends, status, Security
+from fastapi import APIRouter, HTTPException, Depends
+from router.orders import OrderResponse
 from models.session import SessionStatus, Session
-from models.order import OrderStatus, OrderItem, Order
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
-from models.user import User, UserRole
+from models.user import User
 from utils.user_authentication import (
     customer_tablet_user,
-    wait_staff_user,
     manager_or_waitstaff_user,
 )
-from fastapi.security import OAuth2PasswordBearer
-from jwt import user_from_token
-from fastapi_jwt import JwtAuthorizationCredentials
-from bson import ObjectId
 
 router = APIRouter()
-
-
-class OrderItemResponse(BaseModel):
-    id: str
-    status: OrderStatus
-    menu_item_id: str
-    is_free: bool
-    preferences: Optional[List[str]] = Field(default=None)
-    additional_notes: Optional[str] = Field(default=None)
-
-
-class OrderResponse(BaseModel):
-    id: str
-    status: OrderStatus
-    session_id: str
-    items: List[OrderItemResponse]
 
 
 class SessionResponse(BaseModel):
@@ -72,7 +51,13 @@ async def lock_session(
     customer_table: User = Depends(customer_tablet_user),
 ) -> SessionResponse:
     session = await Session.get(customer_table.active_session)
-    session.status = SessionStatus.AWAITING_PAYMENT.value
+    if session is None:
+        raise HTTPException(
+            status_code=404,
+            detail="404 Not Found: Cannot find session.",
+        )
+
+    session.status = SessionStatus.AWAITING_PAYMENT
     await session.save()
 
     session_response = SessionResponse(

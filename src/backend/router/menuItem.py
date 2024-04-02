@@ -7,10 +7,10 @@ from models.menuItem import MenuItem
 router = APIRouter()
 
 
-class MenuItemCreate(BaseModel):
+class CreateMenuItemRequest(BaseModel):
     name: str
     price: float
-    health_requirements: Set[str]
+    health_requirements: List[str]
     description: str
 
 
@@ -18,7 +18,7 @@ class MenuItemResponse(BaseModel):
     id: str
     name: str
     price: float
-    health_requirements: Set[str]
+    health_requirements: List[str]
     description: str
 
 
@@ -30,7 +30,9 @@ async def get_menu_items(current_user=Depends(current_user)):
 
 
 @router.post("/menu-item/", response_model=MenuItemResponse)
-async def create_menu_item(menu_item: MenuItemCreate, user=Depends(manager_user)):
+async def create_menu_item(
+    menu_item: CreateMenuItemRequest, user=Depends(manager_user)
+):
     validated_menu_item = MenuItem.model_validate(menu_item.model_dump())
     # Menu Item Create Validation Checks
     if not validated_menu_item.name.strip():
@@ -51,7 +53,9 @@ async def create_menu_item(menu_item: MenuItemCreate, user=Depends(manager_user)
 
 @router.put("/menu-item/{menu_item_id}", response_model=MenuItemResponse)
 async def update_menu_item(
-    menu_item_id: str, updatedMenuItem: MenuItemCreate, user=Depends(manager_user)
+    menu_item_id: str,
+    updatedMenuItem: CreateMenuItemRequest,
+    user=Depends(manager_user),
 ):
     menu_item = await MenuItem.get(menu_item_id)
     if not menu_item:

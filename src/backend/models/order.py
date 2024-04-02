@@ -1,8 +1,9 @@
+from uuid import UUID
 from beanie import Document, PydanticObjectId
-from datetime import datetime
 from typing import List, Optional
 from enum import Enum
-from pydantic import BaseModel, Field
+
+from pydantic import BaseModel
 
 
 class OrderStatus(int, Enum):
@@ -13,9 +14,10 @@ class OrderStatus(int, Enum):
     DELIVERED = 4
 
 
-class OrderItem(Document):
+class OrderItem(BaseModel):
+    id: PydanticObjectId
     status: OrderStatus
-    menu_item_id: str
+    menu_item_id: PydanticObjectId
     is_free: bool
     preferences: Optional[List[str]]
     additional_notes: Optional[str]
@@ -23,12 +25,8 @@ class OrderItem(Document):
 
 class Order(Document):
     status: OrderStatus
-    session_id: str
+    session_id: PydanticObjectId
     items: List[OrderItem]
-
-
-def serialize_order_status(order_status):
-    return order_status.value
 
 
 valid_transitions = {
