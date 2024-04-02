@@ -64,15 +64,9 @@ async def createUser(newUser: CreateUserRequest, adminUser = Depends(admin_user)
     if newUsernameTaken:
         raise HTTPException(status_code=409, detail="409 Conflict: New username already exists. Duplicate usernames not allowed")
     
-    if newUser.role == UserRole.CUSTOMER_TABLET:
-        new_session = Session(status=SessionStatus.OPEN, session_start_time=datetime.now().isoformat())
-        await new_session.create()
-    else:
-        new_session = False
-
-    user = User(username=newUser.username, password=hash_password(newUser.password), role=newUser.role, active_session=str(new_session.id) if new_session else None)
+    user = User(username=newUser.username, password=hash_password(newUser.password), role=newUser.role)
     await user.create() # On an instance, call create.
-    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role.value, active_session=user.active_session)
+    user_info = UserInfo(userId=str(user.id), username=user.username, role=user.role.value)
     return user_info
 
 # Update User (Previously Update Password)
