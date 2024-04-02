@@ -45,15 +45,15 @@ async def test_admin_cant_start_session(admin_client):
     assert session_response.status_code == 401
 
 @pytest.mark.asyncio
-async def test_session_created_upon_user_create(admin_client: AsyncClient):
+async def test_session_not_created_upon_user_create(admin_client: AsyncClient):
     users_response = await admin_client.get("/users")
     assert users_response.status_code == 200
 
     data = users_response.json()
     if data[1]["username"] == "Table1":
-        assert data[1]['active_session'] is not None
+        assert data[1]['active_session'] is None
     elif data[0]["username"] == "Table1":
-        assert data[0]['active_session'] is not None
+        assert data[0]['active_session'] is None
 
 @pytest.mark.asyncio
 async def test_active_session_already_exists(admin_client: AsyncClient):
@@ -66,7 +66,10 @@ async def test_active_session_already_exists(admin_client: AsyncClient):
     tokens = login_response.json()
 
     create_session_response = await admin_client.post("/session/start", headers={"Authorization": f"Bearer {tokens['access_token']}"})
-    assert create_session_response.status_code == 409
+    assert create_session_response.status_code == 200
+
+    create_session_response2 = await admin_client.post("/session/start", headers={"Authorization": f"Bearer {tokens['access_token']}"})
+    assert create_session_response2.status_code == 409
 
 @pytest.mark.asyncio
 async def test_session_lock_and_get_table_session(admin_client: AsyncClient):
@@ -78,6 +81,9 @@ async def test_session_lock_and_get_table_session(admin_client: AsyncClient):
 
     assert login_response.status_code == 200
     tokens = login_response.json()
+
+    create_session_response = await admin_client.post("/session/start", headers={"Authorization": f"Bearer {tokens['access_token']}"})
+    assert create_session_response.status_code == 200
     
     lock_session_response = await admin_client.post("/session/lock", headers={"Authorization": f"Bearer {tokens['access_token']}"})
     assert lock_session_response.status_code == 200
@@ -89,7 +95,23 @@ async def test_session_lock_and_get_table_session(admin_client: AsyncClient):
     assert session_data['status'] == SessionStatus.AWAITING_PAYMENT.value
 
 @pytest.mark.asyncio
-async def test_session_complete_and_restart(admin_client: AsyncClient):
+async def test_session_complete(admin_client: AsyncClient):
+
+    # 1. Login as Customer Table
+    login_response_ct = await admin_client.post("/auth/login", json={
+        "username": "Table1",
+        "password": "Table1"
+    })
+    assert login_response_ct.status_code == 200
+    tokens_ct = login_response_ct.json()
+    
+    # 2. Create Session as Customer Table
+    create_session_response = await admin_client.post("/session/start", headers={"Authorization": f"Bearer {tokens_ct['access_token']}"})
+    assert create_session_response.status_code == 200
+    create_session_data = create_session_response.json()
+    assert create_session_data['status'] == SessionStatus.OPEN.value
+
+    # 3. Create Wait Staff as Admin
     create_waitstaff_response = await admin_client.post("/user/create", json={
         "username": "Waiter",
         "password": "Waiter",
@@ -97,33 +119,20 @@ async def test_session_complete_and_restart(admin_client: AsyncClient):
     })
     assert create_waitstaff_response.status_code == 200
 
-    login_response = await admin_client.post("/auth/login", json={
+    # 4. Login as Wait Staff
+    login_response_ws = await admin_client.post("/auth/login", json={
         "username": "Waiter",
         "password": "Waiter"
     })
-    assert login_response.status_code == 200
+    assert login_response_ws.status_code == 200
+    tokens_ws = login_response_ws.json()
 
-    tokens = login_response.json()
-
+    # 5. Complete Session as Wait Staff
     complete_session_response = await admin_client.post("/session/complete/Table1", 
-        headers={"Authorization": f"Bearer {tokens['access_token']}"},
+        headers={"Authorization": f"Bearer {tokens_ws['access_token']}"},
         json={"customer_table_name": "Table1"}
     )
     assert complete_session_response.status_code == 200
-    
     complete_session_data = complete_session_response.json()
     assert complete_session_data['active_session'] == None
     assert complete_session_data['session_status'] == SessionStatus.CLOSED.value
-
-    login_response2 = await admin_client.post("/auth/login", json={
-        "username": "Table1",
-        "password": "Table1"
-    })
-    assert login_response2.status_code == 200
-    tokens2 = login_response2.json()
-
-    create_session_response = await admin_client.post("/session/start", headers={"Authorization": f"Bearer {tokens2['access_token']}"})
-    assert create_session_response.status_code == 200
-
-    create_session_data = create_session_response.json()
-    assert create_session_data['status'] == SessionStatus.OPEN.value
