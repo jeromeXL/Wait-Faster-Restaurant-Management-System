@@ -17,8 +17,8 @@ class SessionResponse(BaseModel):
     id: str
     status: SessionStatus
     orders: Optional[List[OrderResponse]] = Field(default=None)
-    session_start_time: datetime
-    session_end_time: Optional[datetime] = Field(default=None)
+    session_start_time: str
+    session_end_time: Optional[str] = Field(default=None)
 
 
 @router.post("/session/start")
@@ -32,7 +32,9 @@ async def start_session(
             detail="409 Conflict: Active session already exists for this user",
         )
 
-    new_session = Session(status=SessionStatus.OPEN, session_start_time=datetime.now())
+    new_session = Session(
+        status=SessionStatus.OPEN, session_start_time=datetime.now().isoformat()
+    )
     await new_session.create()
 
     customer_table.active_session = str(new_session.id)
@@ -76,8 +78,8 @@ class CompleteSessionResponse(BaseModel):
     active_session: Optional[str] = Field(default=None)
     session_id: str
     session_status: SessionStatus
-    session_start_time: datetime
-    session_end_time: datetime
+    session_start_time: str
+    session_end_time: str
 
 
 @router.post("/session/complete/{customer_table_name}")
@@ -88,7 +90,7 @@ async def complete_session(
     customer_table = await User.find_one(User.username == customer_table_name)
     session = await Session.get(customer_table.active_session)
     session.status = SessionStatus.CLOSED.value
-    session.session_end_time = datetime.now()
+    session.session_end_time = datetime.now().isoformat()
     await session.save()
 
     customer_table.active_session = None
