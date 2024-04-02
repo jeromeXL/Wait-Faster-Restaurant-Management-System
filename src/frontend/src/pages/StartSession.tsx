@@ -11,54 +11,26 @@ import loginBG from "../assets/LoginBG.mp4";
 import WFLogo from "../assets/WFLogo.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LoginRequest, login } from "../utils/api";
-import { UserRole } from "../utils/user";
+import { getAxios } from "../utils/useAxios";
+import { SessionResponse, SessionStatus, apiStartSession } from "../utils/api";
 
-const Login = () => {
-    const [credentials, setCredentials] = useState<LoginRequest>({
-        username: "",
-        password: "",
-    });
+
+const StartSession = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setCredentials({ ...credentials, [e.target.name]: e.target.value });
-    };
+    const handleStartSession = async () =>{
+        console.log('Start Session button pressed');
 
-    const handleSubmit = async (e: { preventDefault: () => void }) => {
-        e.preventDefault();
         try {
-            const response = await login(credentials);
-            console.log(response);
-            switch (response.role) {
-                case UserRole.USER_ADMIN:
-                    navigate("/admin");
-                    break;
-                case UserRole.MANAGER:
-                    navigate("/manager/menu");
-                    break;
-                case UserRole.WAIT_STAFF:
-                    navigate("/wait_staff");
-                    break;
-                case UserRole.KITCHEN_STAFF:
-                    navigate("/kitchen_staff");
-                    break;
-                case UserRole.CUSTOMER_TABLET:
-                    navigate("/start");
-                    break;
-                default:
-                    navigate("/");
-            }
+            const response = await apiStartSession();
+            console.log(response)
+            navigate("/menu")
+            
         } catch (error: any) {
-            console.error(
-                "Login error:",
-                error.response?.data?.detail || "Unknown error"
-            );
-            setError(
-                error.response?.data?.detail || "An unknown error occurred"
-            );
+            console.error('Error starting session: ', error.response?.data?.detail || "Unknown error");
+            setError(error.response?.data?.detail || "An unknown error occured");
             setSnackbarOpen(true);
         }
     };
@@ -123,34 +95,15 @@ const Login = () => {
                     }}
                 />
                 <Typography variant="h5">Welcome to WaitFaster.</Typography>
-                <form onSubmit={handleSubmit}>
-                    <TextField
-                        label="Username"
-                        name="username"
-                        variant="outlined"
-                        margin="normal"
-                        fullWidth
-                        onChange={handleChange}
-                    />
-                    <TextField
-                        label="Password"
-                        name="password"
-                        type="password"
-                        variant="outlined"
-                        margin="normal"
-                        fullWidth
-                        onChange={handleChange}
-                    />
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        fullWidth
-                        sx={{ marginTop: "20px" }}
-                    >
-                        Login
-                    </Button>
-                </form>
+                <Button onClick={handleStartSession} 
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    fullWidth
+                    sx={{ marginTop: "20px" }}
+                >
+                    Start Session
+                </Button>
             </Container>
 
             <Snackbar
@@ -170,4 +123,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default StartSession;
