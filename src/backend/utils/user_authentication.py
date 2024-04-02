@@ -8,7 +8,7 @@ from jwt import access_security, user_from_credentials
 
 
 async def current_user(
-    auth: JwtAuthorizationCredentials = Security(access_security)
+    auth: JwtAuthorizationCredentials = Security(access_security),
 ) -> User:
     """Return the current authorized user."""
     if not auth:
@@ -18,43 +18,48 @@ async def current_user(
         raise HTTPException(404, "Authorized user could not be found")
     return user
 
+
 # Checks if the user is logged in, and checks that they are a user admin.
 
 
 async def admin_user(
-    auth: JwtAuthorizationCredentials = Security(access_security)
+    auth: JwtAuthorizationCredentials = Security(access_security),
 ) -> User:
     return await user_of_role(auth, UserRole.USER_ADMIN)
+
 
 # Checks if the user is logged in, and checks that they are a customer tablet.
 
 
 async def customer_tablet_user(
-    auth: JwtAuthorizationCredentials = Security(access_security)
+    auth: JwtAuthorizationCredentials = Security(access_security),
 ) -> User:
     return await user_of_role(auth, UserRole.CUSTOMER_TABLET)
+
 
 # Checks if the user is logged in, and checks that they are a kitchen staff.
 
 
 async def kitchen_staff_user(
-    auth: JwtAuthorizationCredentials = Security(access_security)
+    auth: JwtAuthorizationCredentials = Security(access_security),
 ) -> User:
     return await user_of_role(auth, UserRole.KITCHEN_STAFF)
+
 
 # Checks if the user is logged in, and checks that they are a manager.
 
 
 async def manager_user(
-    auth: JwtAuthorizationCredentials = Security(access_security)
+    auth: JwtAuthorizationCredentials = Security(access_security),
 ) -> User:
     return await user_of_role(auth, UserRole.MANAGER)
+
 
 # Checks if the user is logged in, and checks that they are a wait staff.
 
 
 async def wait_staff_user(
-    auth: JwtAuthorizationCredentials = Security(access_security)
+    auth: JwtAuthorizationCredentials = Security(access_security),
 ) -> User:
     return await user_of_role(auth, UserRole.WAIT_STAFF)
 
@@ -73,11 +78,28 @@ async def user_of_role(auth: JwtAuthorizationCredentials, userRole: UserRole):
 
 
 async def manager_or_waitstaff_user(
-    auth: JwtAuthorizationCredentials = Security(access_security)
+    auth: JwtAuthorizationCredentials = Security(access_security),
 ) -> User:
     user = await user_from_credentials(auth)
     if user is None:
         raise HTTPException(status_code=404, detail="404 Not found: User not found")
     if user.role not in [UserRole.MANAGER, UserRole.WAIT_STAFF]:
-        raise HTTPException(status_code=401, detail="401 Unauthorized: Not authorized to complete the session")
+        raise HTTPException(
+            status_code=401,
+            detail="401 Unauthorized: Not authorized to complete the session",
+        )
+    return user
+
+
+async def any_staff_user(
+    auth: JwtAuthorizationCredentials = Security(access_security),
+) -> User:
+    user = await user_from_credentials(auth)
+    if user is None:
+        raise HTTPException(status_code=404, detail="404 Not found: User not found")
+    if user.role in [UserRole.CUSTOMER_TABLET, UserRole.USER_ADMIN]:
+        raise HTTPException(
+            status_code=401,
+            detail="401 Unauthorized: Not authorized to complete the session",
+        )
     return user
