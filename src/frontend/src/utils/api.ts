@@ -78,11 +78,6 @@ export const getMenuItems = async () => {
     return response.data as MenuItem[];
 };
 
-export const getAllMenuItems = async () => {
-    const response = await getAxios().get("/allMenuItems");
-    return response.data;
-};
-
 export type CreateMenuItemRequest = {
     name: string;
     price: number;
@@ -138,3 +133,23 @@ export const updateCategory = async (id: string, req: CreateCategoryRequest) =>
 
 export const deleteCategory = async (id: string) =>
     await getAxios().delete(`/category/${id}`);
+
+
+export enum SessionStatus {
+    OPEN = 0,
+    AWAITING_PAYMENT = 1,
+    CLOSED = 2,
+}
+
+export type SessionResponse = {
+    id: string;
+    status: SessionStatus;
+    orders: string[];
+    session_start_time: string;
+    session_end_time: string;
+}
+
+export const apiStartSession = async() =>
+    await getAxios()
+    .post("/session/start")
+    .then((resp) => resp.data as SessionResponse)

@@ -1,16 +1,16 @@
 from typing import List, Optional, Set
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from utils.user_authentication import current_user
+from utils.user_authentication import current_user, manager_user
 from models.menuItem import MenuItem
 
 router = APIRouter()
 
 
-class MenuItemCreate(BaseModel):
+class CreateMenuItemRequest(BaseModel):
     name: str
     price: float
-    health_requirements: Set[str]
+    health_requirements: List[str]
     description: str
 
 
@@ -18,7 +18,7 @@ class MenuItemResponse(BaseModel):
     id: str
     name: str
     price: float
-    health_requirements: Set[str]
+    health_requirements: List[str]
     description: str
 
 
@@ -30,18 +30,21 @@ async def get_menu_items(current_user=Depends(current_user)):
 
 
 @router.post("/menu-item/", response_model=MenuItemResponse)
-async def create_menu_item(menu_item: MenuItemCreate):
+async def create_menu_item(
+    menu_item: CreateMenuItemRequest, user=Depends(manager_user)
+):
     validated_menu_item = MenuItem.model_validate(menu_item.model_dump())
     # Menu Item Create Validation Checks
     if not validated_menu_item.name.strip():
-        raise HTTPException(
-            status_code=400, detail="Menu Item Name cannot be empty")
+        raise HTTPException(status_code=400, detail="Menu Item Name cannot be empty")
     if not validated_menu_item.description.strip():
         raise HTTPException(
-            status_code=400, detail="Menu Item Description cannot be empty")
+            status_code=400, detail="Menu Item Description cannot be empty"
+        )
     if validated_menu_item.price <= 0:
         raise HTTPException(
-            status_code=400, detail="Menu Item Price must be greater than 0")
+            status_code=400, detail="Menu Item Price must be greater than 0"
+        )
     # Pydantic Validation
     new_menu_item = MenuItem(**validated_menu_item.model_dump())
     await new_menu_item.create()
@@ -49,7 +52,11 @@ async def create_menu_item(menu_item: MenuItemCreate):
 
 
 @router.put("/menu-item/{menu_item_id}", response_model=MenuItemResponse)
-async def update_menu_item(menu_item_id: str, updatedMenuItem: MenuItemCreate):
+async def update_menu_item(
+    menu_item_id: str,
+    updatedMenuItem: CreateMenuItemRequest,
+    user=Depends(manager_user),
+):
     menu_item = await MenuItem.get(menu_item_id)
     if not menu_item:
         raise HTTPException(status_code=404, detail="Menu item not found")
@@ -63,15 +70,9 @@ async def update_menu_item(menu_item_id: str, updatedMenuItem: MenuItemCreate):
 
 
 @router.delete("/menu-item/{menu_item_id}")
-async def delete_menu_item(menu_item_id: str):
+async def delete_menu_item(menu_item_id: str, user=Depends(manager_user)):
     menu_item = await MenuItem.get(menu_item_id)
     if not menu_item:
         raise HTTPException(status_code=404, detail="Menu item not found")
     await menu_item.delete()
     return {"message": "Menu item deleted successfully"}
-
-
-@router.get("/allMenuItems")
-async def createCategory():
-    MenuItemCount = await MenuItem.count()
-    return {"count": MenuItemCount}

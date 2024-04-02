@@ -9,6 +9,7 @@ import ManagerMenu from "./pages/ManagerMenu";
 import AdminRoute from "./components/AdminRoute";
 import Logout from "./components/Logout";
 import ManagerItems from "./pages/ManagerItems";
+import StartSession from "./pages/StartSession";
 
 function App() {
     return (
@@ -17,6 +18,7 @@ function App() {
                 <CssBaseline />
                 <Routes>
                     <Route path="/" element={<Login />} />
+                    <Route path="/start" element={<StartSession />} />
                     <Route path="/menu" element={<Menu />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route

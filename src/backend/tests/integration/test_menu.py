@@ -20,25 +20,26 @@ async def manager_client():
         await User.delete_all()
 
         # Create the admin user
-        adminUser = User(username=CONFIG.default_user_username, password=hash_password(
-            CONFIG.default_user_password), role=UserRole.USER_ADMIN)
+        adminUser = User(
+            username=CONFIG.default_user_username,
+            password=hash_password(CONFIG.default_user_password),
+            role=UserRole.USER_ADMIN,
+        )
         await adminUser.create()
 
         # Create a manager user
-        managerUser = User(username="manager", password=hash_password(
-            "manager"), role=UserRole.MANAGER)
+        managerUser = User(
+            username="manager", password=hash_password("manager"), role=UserRole.MANAGER
+        )
         await managerUser.create()
 
-        login_response = await client.post("/auth/login", json={
-            "username": "manager",
-            "password": "manager"
-        })
+        login_response = await client.post(
+            "/auth/login", json={"username": "manager", "password": "manager"}
+        )
 
         assert login_response.status_code == 200
         tokens = login_response.json()
-        client.headers = {
-            "Authorization": f"Bearer {tokens['access_token']}"
-        }
+        client.headers = {"Authorization": f"Bearer {tokens['access_token']}"}
 
         CategoryList = await Category.find_all().to_list()
         for category in CategoryList:
@@ -46,7 +47,7 @@ async def manager_client():
         yield client
         # Dispose of client
 
-'''
+
 @pytest.mark.asyncio
 async def test_get_empty_menu(manager_client: AsyncClient):
     response = await manager_client.get("/menu")
@@ -61,10 +62,9 @@ async def test_get_empty_menu(manager_client: AsyncClient):
 async def test_get_menu_with_single_category(manager_client: AsyncClient):
 
     # Create a category
-    response = await manager_client.post("/category/", json={
-        "name": "Stub name",
-        "menu_items": []
-    })
+    response = await manager_client.post(
+        "/category/", json={"name": "Stub name", "menu_items": []}
+    )
     assert response.status_code == 200
 
     response = await manager_client.get("/menu")
@@ -80,18 +80,16 @@ async def test_get_menu_with_single_category(manager_client: AsyncClient):
 async def test_get_menu_with_multiple_categories(manager_client: AsyncClient):
 
     # Create a category
-    response = await manager_client.post("/category/", json={
-        "name": "Stub name",
-        "menu_items": []
-    })
+    response = await manager_client.post(
+        "/category/", json={"name": "Stub name", "menu_items": []}
+    )
     assert response.status_code == 200
     category_one = CategoryResponse.model_validate(response.json())
 
     # Create a category
-    response = await manager_client.post("/category/", json={
-        "name": "Stub name 2",
-        "menu_items": []
-    })
+    response = await manager_client.post(
+        "/category/", json={"name": "Stub name 2", "menu_items": []}
+    )
     assert response.status_code == 200
     category_two = CategoryResponse.model_validate(response.json())
 
@@ -108,14 +106,14 @@ async def test_get_menu_with_multiple_categories(manager_client: AsyncClient):
     assert menuResponse.Menu.categories[1].index == 1
 
     # Reorder
-    response = await manager_client.put("/menu/reorder", json={
-        "order": [
-            category_two.id,
-            category_one.id
-        ],
-        "name": 'test',
-        "menu_items": []
-    })
+    response = await manager_client.put(
+        "/menu/reorder",
+        json={
+            "order": [category_two.id, category_one.id],
+            "name": "test",
+            "menu_items": [],
+        },
+    )
     assert response.status_code == 200
     menuResponse = MenuResponse.model_validate(response.json())
 
@@ -125,17 +123,3 @@ async def test_get_menu_with_multiple_categories(manager_client: AsyncClient):
     assert menuResponse.Menu.categories[0].index == 0
     assert menuResponse.Menu.categories[1].name == "Stub name"
     assert menuResponse.Menu.categories[1].index == 1
-
-
-# @pytest.mark.asyncio
-# async def test_put_menu_invalid_access():
-# 	async with await get_client() as client:
-#      # putting a menu is invalid
-#      # requires manager login
-
-# @pytest.mark.asyncio
-# async def test_put_invalid_menu():
-# 	async with await get_client() as client:
-#      # putting a menu is invalid
-#      # requires manager login
-'''
