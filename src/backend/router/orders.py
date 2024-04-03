@@ -1,13 +1,16 @@
 from itertools import chain
 from beanie import PydanticObjectId
+from beanie.operators import NE
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import Annotated, List, Optional
+from models.user import User
 from utils.user_authentication import any_staff_user, customer_tablet_user
 from models.session import Session
 from models.order import OrderItem, Order, OrderStatus, valid_transitions
 from models.menuItem import MenuItem
-from beanie.operators import In
+from beanie.operators import In, And
+
 
 router = APIRouter()
 
@@ -16,6 +19,7 @@ class OrderItemResponse(BaseModel):
     id: str
     status: OrderStatus
     menu_item_id: str
+    menu_item_name: str
     is_free: bool
     preferences: Optional[List[str]] = Field(default=None)
     additional_notes: Optional[str] = Field(default=None)
@@ -51,15 +55,25 @@ async def create_order(request: CreateOrderRequest, user=Depends(customer_tablet
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
+    # Get all menu items mentioned as a dictionary
+    menu_item_ids = [
+        PydanticObjectId(item_request.menu_item_id) for item_request in order_items
+    ]
+    menu_items = {
+        item.id: item
+        for item in await MenuItem.find(In(MenuItem.id, menu_item_ids)).to_list()
+    }
+    if len(menu_items) != len(menu_item_ids):
+        raise HTTPException(
+            status_code=404,
+            detail="404 Not Found: One or more menu_item_id(s) are not valid menu items",
+        )
+
     # Iterate over order items and create OrderItem documents
-    created_order_items = []
+    created_order_items: List[OrderItem] = []
+    created_order_items_responses: List[OrderItemResponse] = []
     for item_request in order_items:
-        menu_item = await MenuItem.get(PydanticObjectId(item_request.menu_item_id))
-
-        if not menu_item:
-            raise HTTPException(status_code=404, detail="Menu item not found")
-
-        order_item = OrderItem(
+        order = OrderItem(
             id=PydanticObjectId(),
             status=OrderStatus.ORDERED,
             menu_item_id=PydanticObjectId(item_request.menu_item_id),
@@ -67,7 +81,12 @@ async def create_order(request: CreateOrderRequest, user=Depends(customer_tablet
             additional_notes=item_request.additional_notes,
             preferences=item_request.preferences,
         )
-        created_order_items.append(order_item)
+        created_order_items.append(order)
+        created_order_items_responses.append(
+            OrderItemResponse(
+                **order.model_dump(), menu_item_name=menu_items[order.menu_item_id].name
+            )
+        )
 
     # Create an order and associate it with the session
     order = Order(
@@ -77,7 +96,9 @@ async def create_order(request: CreateOrderRequest, user=Depends(customer_tablet
     )
     await order.create()
     orderResponse = OrderResponse(
-        id=str(order.id), **order.model_dump(exclude=set(["id"]))
+        id=str(order.id),
+        **order.model_dump(exclude={"id", "items"}),
+        items=created_order_items_responses
     )
     return orderResponse
 
@@ -126,34 +147,71 @@ async def update_order_status(
     return order
 
 
-class GetOrdersResponse(BaseModel):
+class CustomerOrderResponse(BaseModel):
+    table_id: int
     orders: List[OrderResponse]
 
 
-@router.get("/orders", response_model=GetOrdersResponse)
+class GetOrdersResponse(BaseModel):
+    customer_orders: List[CustomerOrderResponse]
+
+
+@router.get("/orders")
 async def get_orders(
     statuses: Annotated[list[OrderStatus] | None, Query()] = None,
     user=Depends(any_staff_user),
 ):
+
+    # Get all active sessions.
+    users_with_sessions = await User.find(NE(User.active_session, None)).to_list()
+
+    # Get session Ids and find all orders with those session ids.
+    session_ids = [user.active_session for user in users_with_sessions]
     orders = await Order.find(
-        In(
-            Order.status,
-            statuses if statuses is not None else [val.value for val in OrderStatus],
+        And(
+            In(
+                Order.status,
+                (
+                    statuses
+                    if statuses is not None
+                    else [val.value for val in OrderStatus]
+                ),
+            ),
+            In(Order.session_id, session_ids),
         )
     ).to_list()
 
-    order_responses: List[OrderResponse] = [
-        OrderResponse(
-            status=order.status,
-            id=str(order.id),
-            session_id=str(order.session_id),
-            items=[
-                OrderItemResponse(
-                    **item.model_dump(),
+    menu_item_ids = [item.menu_item_id for order in orders for item in order.items]
+    menu_items = {
+        item.id: item
+        for item in await MenuItem.find(In(MenuItem.id, menu_item_ids)).to_list()
+    }
+
+    outgoing_response = [
+        CustomerOrderResponse(
+            table_id=user.get_table_number(),
+            orders=[
+                OrderResponse(
+                    status=order.status,
+                    id=str(order.id),
+                    session_id=str(order.session_id),
+                    items=[
+                        OrderItemResponse(
+                            **item.model_dump(),
+                            menu_item_name=menu_items[item.menu_item_id].name
+                        )
+                        for item in order.items
+                    ],
                 )
-                for item in order.items
+                for order in filter(
+                    lambda order: order.session_id == user.active_session, orders
+                )
             ],
         )
-        for order in orders
+        for user in users_with_sessions
     ]
-    return GetOrdersResponse(orders=order_responses)
+    return GetOrdersResponse(
+        customer_orders=[
+            value for value in filter(lambda x: len(x.orders) > 0, outgoing_response)
+        ]
+    )

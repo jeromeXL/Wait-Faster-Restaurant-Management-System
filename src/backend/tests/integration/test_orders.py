@@ -7,6 +7,7 @@ from models.session import Session, SessionStatus
 from router.orders import (
     CreateOrderRequest,
     CreateOrderItemRequest,
+    CustomerOrderResponse,
     GetOrdersResponse,
     OrderResponse,
     OrderUpdateRequest,
@@ -59,18 +60,19 @@ async def customer_tablet_client():
 
     async with await get_client() as client:
 
+        session = Session(
+            orders=[], status=SessionStatus.OPEN, session_start_time=str(datetime.now())
+        )
+        await session.create()
+
         # Create a tablet user
         tableUser = User(
             username="Table1",
             password=hash_password("Table1"),
             role=UserRole.CUSTOMER_TABLET,
+            active_session=session.id,
         )
         await tableUser.create()
-
-        session = Session(
-            orders=[], status=SessionStatus.OPEN, session_start_time=str(datetime.now())
-        )
-        await session.create()
 
         login_response = await client.post(
             "/auth/login", json={"username": "Table1", "password": "Table1"}
@@ -206,13 +208,15 @@ async def test_get_orders_with_filters(
     response = await manager_client.get("/orders")
     assert response.status_code == 200
     orders_response = GetOrdersResponse.model_validate(response.json())
-    assert orders_response == GetOrdersResponse(orders=[order_response])
+    assert orders_response == GetOrdersResponse(
+        customer_orders=[CustomerOrderResponse(orders=[order_response], table_id=1)]
+    )
 
     # Perform another get request but filter for only pending orders.
     response = await manager_client.get("/orders?statuses=1")
     assert response.status_code == 200
     orders_response = GetOrdersResponse.model_validate(response.json())
-    assert orders_response == GetOrdersResponse(orders=[])
+    assert orders_response == GetOrdersResponse(customer_orders=[])
 
     # Make the request using the formatted URL
     status_update_payload = OrderUpdateRequest(status=OrderStatus.PREPARING)
@@ -228,8 +232,12 @@ async def test_get_orders_with_filters(
     assert response.status_code == 200
     orders_response = GetOrdersResponse.model_validate(response.json())
 
-    assert len(orders_response.orders) == 1
-    order = orders_response.orders[0]
+    assert len(orders_response.customer_orders) == 1
+    customer_order = orders_response.customer_orders[0]
+    assert customer_order.table_id == 1
+    assert len(customer_order.orders) == 1
+
+    order = customer_order.orders[0]
     assert order.status == OrderStatus.PREPARING
 
     assert len(order.items) == 1
@@ -241,8 +249,12 @@ async def test_get_orders_with_filters(
     assert response.status_code == 200
     orders_response = GetOrdersResponse.model_validate(response.json())
 
-    assert len(orders_response.orders) == 1
-    order = orders_response.orders[0]
+    assert len(orders_response.customer_orders) == 1
+    customer_order = orders_response.customer_orders[0]
+    assert customer_order.table_id == 1
+    assert len(customer_order.orders) == 1
+
+    order = customer_order.orders[0]
     assert order.status == OrderStatus.PREPARING
 
     assert len(order.items) == 1
