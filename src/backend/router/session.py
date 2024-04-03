@@ -1,5 +1,6 @@
 from beanie import PydanticObjectId
 from fastapi import APIRouter, HTTPException, Depends
+from models.menuItem import MenuItem
 from models.order import Order
 from router.orders import OrderItemResponse, OrderResponse
 from models.session import SessionStatus, Session
@@ -26,11 +27,31 @@ class SessionResponse(BaseModel):
 
 async def generate_session_response(session: Session) -> SessionResponse:
     orders = await Order.find(Order.session_id == session.id).to_list()
+    menu_items = {
+        item.id: item
+        for item in await MenuItem.find(
+            In(
+                MenuItem.id,
+                [item.menu_item_id for order in orders for item in order.items],
+            )
+        ).to_list()
+    }
+
     return SessionResponse(
         **session.model_dump(exclude={"id", "orders"}),
         id=str(session.id),
         orders=[
-            OrderResponse(**order.model_dump(exclude={"id"}), id=str(order.id))
+            OrderResponse(
+                **order.model_dump(exclude={"id", "items"}),
+                id=str(order.id),
+                items=[
+                    OrderItemResponse(
+                        **item.model_dump(),
+                        menu_item_name=menu_items[item.menu_item_id].name
+                    )
+                    for item in order.items
+                ]
+            )
             for order in orders
         ]
     )

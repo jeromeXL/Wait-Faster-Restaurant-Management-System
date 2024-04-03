@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Optional
-from beanie import Document
+from beanie import Document, PydanticObjectId
 from pydantic import BaseModel, Field, computed_field
 
 
@@ -16,7 +16,7 @@ class User(Document):
     username: str
     password: str  # Hashed password
     role: UserRole
-    active_session: Optional[str] = Field(default=None)
+    active_session: Optional[PydanticObjectId] = Field(default=None)
 
     def get_table_number(self) -> int:
         return int(self.username[5:])
