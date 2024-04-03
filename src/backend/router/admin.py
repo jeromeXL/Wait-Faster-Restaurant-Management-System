@@ -28,7 +28,7 @@ async def getUsers(adminUser=Depends(admin_user)) -> List[UserInfo]:
             userId=str(user.id),
             username=user.username,
             role=user.role.value,
-            active_session=user.active_session,
+            active_session=str(user.active_session),
         )
         for user in users
     ]
