@@ -55,17 +55,14 @@ async def getPanel(user=Depends(manager_or_waitstaff_user)):
             else await Session.get(PydanticObjectId(user.active_session))
         )
 
-        if session is None:
-            raise HTTPException(
-                status_code=404, detail="404 Not Found: Session not found."
-            )
-
-        session_response = await generate_session_response(session)
-
         response.tables.append(
             TableActivityResponse(
                 table_number=user.get_table_number(),
-                current_session=session_response,
+                current_session=(
+                    await generate_session_response(session)
+                    if session is not None
+                    else None
+                ),
             )
         )
 

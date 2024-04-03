@@ -15,7 +15,13 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import { Category, Menu, MenuItem } from "../utils/menu";
 import UpArrowIcon from "../components/Icons/UpArrowIcon";
 import DownArrowIcon from "../components/Icons/DownArrowIcon";
-import { CategoryResponse, getMenu, getMenuItems, reorderMenu, updateCategory } from "../utils/api";
+import {
+    CategoryResponse,
+    getMenu,
+    getMenuItems,
+    reorderMenu,
+    updateCategory,
+} from "../utils/api";
 import ManagerMenuCreateCategoryDialog from "../components/ManagerMenuCreateCategoryDialog";
 import ManagerMenuEditCategoryDialog from "../components/ManagerMenuEditCategoryDialog";
 import ManagerBottomBar from "../components/ManagerBottomBar";
@@ -34,9 +40,9 @@ const ManagerMenu = () => {
         setMenu(fetchedMenu.Menu);
 
         const allMenuItems = await getMenuItems();
-        const map : Record<string, MenuItem> = {}
+        const map: Record<string, MenuItem> = {};
         for (const menuItem of allMenuItems) {
-            map[menuItem.id] = menuItem
+            map[menuItem.id] = menuItem;
         }
         setMenuItems(map);
     }
@@ -68,7 +74,7 @@ const ManagerMenu = () => {
     };
     const handleCategoriesChanged = async (resp: CategoryResponse) => {
         setShowEditCategoryDialog(false);
-        setExpandedCategoryId(resp.id)
+        setExpandedCategoryId(resp.id);
         await fetchMenu();
     };
 
@@ -147,13 +153,10 @@ const ManagerMenu = () => {
         idList[targetItemIndex] = idList[indexToMoveTargetTo];
         idList[indexToMoveTargetTo] = temp;
 
-        await updateCategory(
-            category.id,
-            {
-                menu_items: idList,
-                name: category.name
-            }
-        )
+        await updateCategory(category.id, {
+            menu_items: idList,
+            name: category.name,
+        });
 
         const fetchedMenu = await getMenu();
         setMenu(fetchedMenu.Menu);
@@ -182,7 +185,7 @@ const ManagerMenu = () => {
                     paddingX: "1.5em",
                 }}
             >
-                <div class="grid grid-cols-3 py-1">
+                <div className="grid grid-cols-3 py-1">
                     <div>
                         <Button
                             sx={{
@@ -193,11 +196,10 @@ const ManagerMenu = () => {
                             Create Category
                         </Button>
                     </div>
-                    <div class="flex justify-center">
+                    <div className="flex justify-center">
                         <Typography variant="h5">Categories</Typography>
                     </div>
-                    <div class="flex justify-end">
-                    </div>
+                    <div className="flex justify-end"></div>
                 </div>
                 {menu?.categories.map((category, index) => (
                     <Accordion
@@ -209,7 +211,7 @@ const ManagerMenu = () => {
                         onChange={() => setExpandedCategoryId(category.id)}
                     >
                         <AccordionSummary>
-                            <div class="flex flex-row w-full">
+                            <div className="flex flex-row w-full">
                                 <Typography
                                     sx={{
                                         flex: "1",
@@ -217,7 +219,7 @@ const ManagerMenu = () => {
                                 >
                                     {category.name}
                                 </Typography>
-                                <div class="grid grid-cols-3">
+                                <div className="grid grid-cols-3">
                                     {isFirstCategory(category.id) ? null : (
                                         <Button
                                             sx={{
@@ -288,7 +290,7 @@ const ManagerMenu = () => {
                                             flex: "1",
                                         }}
                                     >
-                                        <ol class="grid grid-cols-4 gap-2">
+                                        <ol className="grid grid-cols-4 gap-2">
                                             <li>{menuItems[item]?.name}</li>
                                             <li>
                                                 {currencyFormatter.format(
@@ -307,7 +309,7 @@ const ManagerMenu = () => {
                                             </li>
                                         </ol>
                                     </CardContent>
-                                    <CardActions class="grid grid-cols-2">
+                                    <CardActions className="grid grid-cols-2">
                                         {isFirstItemInCategory(
                                             category,
                                             item

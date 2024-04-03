@@ -10,6 +10,7 @@ import AdminRoute from "./components/AdminRoute";
 import Logout from "./components/Logout";
 import ManagerItems from "./pages/ManagerItems";
 import StartSession from "./pages/StartSession";
+import ActivityPanel from "./pages/ActivityPanel";
 
 function App() {
     return (
@@ -32,6 +33,7 @@ function App() {
                     <Route path="/logout" element={<Logout />} />
                     <Route path="/manager/menu" element={<ManagerMenu />} />
                     <Route path="/manager/items" element={<ManagerItems />} />
+                    <Route path="/activity-panel" element={<ActivityPanel />} />
                 </Routes>
             </Router>
         </>
