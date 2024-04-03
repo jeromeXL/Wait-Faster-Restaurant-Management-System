@@ -134,6 +134,27 @@ export const updateCategory = async (id: string, req: CreateCategoryRequest) =>
 export const deleteCategory = async (id: string) =>
     await getAxios().delete(`/category/${id}`);
 
+export enum OrderStatus {
+    ORDERED = 0,
+    PREPARING = 1,
+    COMPLETE = 2,
+    DELIVERING = 3,
+    DELIVERED = 4,
+}
+export type OrderItemResponse = {
+    id: string;
+    status: OrderStatus;
+    menu_item_id: string;
+    is_free: boolean;
+    preferences?: string[];
+    additional_notes?: string;
+};
+export type OrderResponse = {
+    id: string;
+    status: OrderStatus;
+    session_id: string;
+    items: OrderItemResponse[];
+};
 
 export enum SessionStatus {
     OPEN = 0,
@@ -144,12 +165,25 @@ export enum SessionStatus {
 export type SessionResponse = {
     id: string;
     status: SessionStatus;
-    orders: string[];
+    orders: OrderResponse[];
     session_start_time: string;
     session_end_time: string;
-}
+};
 
-export const apiStartSession = async() =>
+export const apiStartSession = async () =>
     await getAxios()
-    .post("/session/start")
-    .then((resp) => resp.data as SessionResponse)
+        .post("/session/start")
+        .then((resp) => resp.data as SessionResponse);
+
+// Activity Panel
+export type TableActivityResponse = {
+    table_number: number;
+    current_session: SessionResponse | null;
+};
+export type ActivityPanelResponse = {
+    tables: TableActivityResponse[];
+};
+export const getActivityPanel = async () =>
+    await getAxios()
+        .get("/activity")
+        .then((resp) => resp.data as ActivityPanelResponse);

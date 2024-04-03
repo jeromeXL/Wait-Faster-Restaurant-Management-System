@@ -40,10 +40,10 @@ const Login = () => {
                     navigate("/manager/menu");
                     break;
                 case UserRole.WAIT_STAFF:
-                    navigate("/wait_staff");
+                    navigate("/activity-panel");
                     break;
                 case UserRole.KITCHEN_STAFF:
-                    navigate("/kitchen_staff");
+                    navigate("/activity-panel");
                     break;
                 case UserRole.CUSTOMER_TABLET:
                     navigate("/start");
