@@ -14,6 +14,6 @@ class SessionStatus(Enum):
 
 class Session(Document):
     status: SessionStatus
-    orders: Optional[List[str]] = Field(default=None)
+    orders: List[PydanticObjectId] = []
     session_start_time: str
     session_end_time: Optional[str] = Field(default=None)

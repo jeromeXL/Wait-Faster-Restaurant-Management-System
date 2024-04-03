@@ -1,5 +1,7 @@
+from beanie import PydanticObjectId
 from fastapi import APIRouter, HTTPException, Depends
-from router.orders import OrderResponse
+from models.order import Order
+from router.orders import OrderItemResponse, OrderResponse
 from models.session import SessionStatus, Session
 from pydantic import BaseModel, Field
 from datetime import datetime
@@ -9,6 +11,7 @@ from utils.user_authentication import (
     customer_tablet_user,
     manager_or_waitstaff_user,
 )
+from beanie.operators import In
 
 router = APIRouter()
 
@@ -19,6 +22,18 @@ class SessionResponse(BaseModel):
     orders: Optional[List[OrderResponse]] = Field(default=None)
     session_start_time: str
     session_end_time: Optional[str] = Field(default=None)
+
+
+async def generate_session_response(session: Session) -> SessionResponse:
+    orders = await Order.find(Order.session_id == session.id).to_list()
+    return SessionResponse(
+        **session.model_dump(exclude={"id", "orders"}),
+        id=str(session.id),
+        orders=[
+            OrderResponse(**order.model_dump(exclude={"id"}), id=str(order.id))
+            for order in orders
+        ]
+    )
 
 
 @router.post("/session/start")
@@ -40,12 +55,7 @@ async def start_session(
     customer_table.active_session = str(new_session.id)
     await customer_table.save()
 
-    session_response = SessionResponse(
-        id=str(new_session.id),
-        status=new_session.status,
-        session_start_time=new_session.session_start_time,
-    )
-    return session_response
+    return await generate_session_response(new_session)
 
 
 @router.post("/session/lock")
@@ -62,14 +72,7 @@ async def lock_session(
     session.status = SessionStatus.AWAITING_PAYMENT
     await session.save()
 
-    session_response = SessionResponse(
-        id=str(session.id),
-        status=session.status,
-        orders=session.orders,
-        session_start_time=session.session_start_time,
-        session_end_time=session.session_end_time,
-    )
-    return session_response
+    return await generate_session_response(session)
 
 
 class CompleteSessionResponse(BaseModel):
@@ -88,8 +91,20 @@ async def complete_session(
 ) -> CompleteSessionResponse:
 
     customer_table = await User.find_one(User.username == customer_table_name)
+    if customer_table is None:
+        raise HTTPException(
+            status_code=404,
+            detail="404 Not Found: Cannot find customer table with the given name.",
+        )
+
     session = await Session.get(customer_table.active_session)
-    session.status = SessionStatus.CLOSED.value
+    if session is None:
+        raise HTTPException(
+            status_code=404,
+            detail="404 Not Found: Cannot find session for the customer table.",
+        )
+
+    session.status = SessionStatus.CLOSED
     session.session_end_time = datetime.now().isoformat()
     await session.save()
 
@@ -111,14 +126,13 @@ async def complete_session(
 @router.get("/table/session")
 async def get_table_session(
     customer_table: User = Depends(customer_tablet_user),
-) -> SessionResponse:
-    session = await Session.get(customer_table.active_session)
+) -> SessionResponse | None:
 
-    session_response = SessionResponse(
-        id=str(session.id),
-        status=session.status,
-        orders=session.orders,
-        session_start_time=session.session_start_time,
-        session_end_time=session.session_end_time,
-    )
-    return session_response
+    if customer_table.active_session is None:
+        return None
+
+    session = await Session.get(customer_table.active_session)
+    if session is None:
+        raise HTTPException(status_code=404, detail="404 Not Found: Session not found.")
+
+    return await generate_session_response(session)
