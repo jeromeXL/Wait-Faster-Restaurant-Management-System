@@ -27,7 +27,7 @@ class SessionResponse(BaseModel):
 async def generate_session_response(session: Session) -> SessionResponse:
     orders = await Order.find(Order.session_id == session.id).to_list()
     return SessionResponse(
-        **session.model_dump(exclude={"id"}),
+        **session.model_dump(exclude={"id", "orders"}),
         id=str(session.id),
         orders=[
             OrderResponse(**order.model_dump(exclude={"id"}), id=str(order.id))

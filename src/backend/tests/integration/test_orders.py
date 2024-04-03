@@ -68,7 +68,7 @@ async def customer_tablet_client():
         await tableUser.create()
 
         session = Session(
-            orders=[], status=SessionStatus.OPEN, session_start_time=datetime.now()
+            orders=[], status=SessionStatus.OPEN, session_start_time=str(datetime.now())
         )
         await session.create()
 

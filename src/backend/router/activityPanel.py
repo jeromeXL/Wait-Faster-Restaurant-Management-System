@@ -23,7 +23,7 @@ from bson import ObjectId
 from enum import Enum
 from typing import List, Optional, Set
 from pydantic import BaseModel
-from router.session import SessionResponse, OrderResponse
+from router.session import SessionResponse, OrderResponse, generate_session_response
 from models.user import User, UserRole
 from models.order import Order, OrderStatus
 from beanie.operators import Not, NE, And, Eq
@@ -55,13 +55,12 @@ async def getPanel(user=Depends(manager_or_waitstaff_user)):
             else await Session.get(PydanticObjectId(user.active_session))
         )
 
-        session_response = (
-            None
-            if session is None
-            else SessionResponse(
-                id=str(session.id), **session.model_dump(exclude={"id"})
+        if session is None:
+            raise HTTPException(
+                status_code=404, detail="404 Not Found: Session not found."
             )
-        )
+
+        session_response = await generate_session_response(session)
 
         response.tables.append(
             TableActivityResponse(
