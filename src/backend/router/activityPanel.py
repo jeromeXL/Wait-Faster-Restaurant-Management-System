@@ -1,4 +1,3 @@
-
 # from enum import Enum
 # from typing import List, Optional, Set
 # from pydantic import BaseModel
@@ -12,7 +11,11 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
 from models.user import User, UserRole
-from utils.user_authentication import customer_tablet_user, wait_staff_user, manager_or_waitstaff_user
+from utils.user_authentication import (
+    customer_tablet_user,
+    wait_staff_user,
+    manager_or_waitstaff_user,
+)
 from fastapi.security import OAuth2PasswordBearer
 from jwt import user_from_token
 from fastapi_jwt import JwtAuthorizationCredentials
@@ -23,49 +26,48 @@ from pydantic import BaseModel
 from router.session import SessionResponse, OrderResponse
 from models.user import User, UserRole
 from models.order import Order, OrderStatus
-from beanie.operators import NE, Eq
+from beanie.operators import Not, NE, And, Eq
 from beanie import PydanticObjectId
 
-class TableActivityDTO(BaseModel):
-    TableNumber: int
-    CurrentSession: Optional[SessionResponse]
+
+class TableActivityResponse(BaseModel):
+    table_number: int
+    current_session: Optional[SessionResponse]
+
 
 class ActivityPanelResponse(BaseModel):
-    Tables: List[TableActivityDTO]
-    CurrentOrders: List[OrderResponse]
+    tables: List[TableActivityResponse]
+
 
 router = APIRouter()
 
-@router.get("/Panel")
+
+@router.get("/activity")
 async def getPanel(user=Depends(manager_or_waitstaff_user)):
-# async def getPanel():
-    # Returns ActivityPanelResponse object
 
-    # find active tables, for an active table, add current orders to Orderlist
-    # filter for table users
-    Tables = []
-    ActiveSessions = []
-    allusers = await User.find_all().to_list()
-    for user in allusers:
-        if user.role == UserRole.CUSTOMER_TABLET:
-            Tables.append(user)
-            if user.active_session != None:
-                ActiveSessions.append(user.active_session)
+    response = ActivityPanelResponse(tables=[])
 
-    ActiveOrders = []
-    # for each active session string, find by id and get its active orders
-    for sessionId in ActiveSessions:
-        session = await Session.find_one(Session.id == PydanticObjectId(sessionId))
-        if session.orders != None:
-            for orderId in session.orders:
-                # lookup each order, if active, add to activeOrderIds
-                order = await Order.find_one(Order.id == PydanticObjectId(orderId))
-                if order.status == OrderStatus.ORDERED or OrderStatus.PREPARING:
-                    ActiveOrders.append(order)
+    all_users = await User.find(Eq(User.role, UserRole.CUSTOMER_TABLET)).to_list()
+    for user in all_users:
+        session = (
+            None
+            if user.active_session is None
+            else await Session.get(PydanticObjectId(user.active_session))
+        )
 
-    # if active, add active orders to CurrentOrders list
-    # build ActivityPanelResponse object accordingly and return
+        session_response = (
+            None
+            if session is None
+            else SessionResponse(
+                id=str(session.id), **session.model_dump(exclude={"id"})
+            )
+        )
 
-    # TablesList = [TableActivityDTO(**user.active_session.model_dump()) for user in ActiveUsers ]
+        response.tables.append(
+            TableActivityResponse(
+                table_number=user.get_table_number(),
+                current_session=session_response,
+            )
+        )
 
-    return Tables
+    return response
