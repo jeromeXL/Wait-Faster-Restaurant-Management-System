@@ -2,7 +2,6 @@ import "./App.css";
 import { CssBaseline } from "@mui/material";
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
 import Login from "./pages/Login";
-import Menu from "./pages/Menu";
 import Cart from "./pages/Cart";
 import Admin from "./pages/Admin";
 import ManagerMenu from "./pages/ManagerMenu";
@@ -13,6 +12,7 @@ import StartSession from "./pages/StartSession";
 import ActivityPanel from "./pages/ActivityPanel";
 import Kitchen from "./pages/Kitchen";
 import CustomerMenu from "./pages/CustomerMenu";
+import EndPage from "./pages/endPage";
 
 function App() {
     return (
@@ -37,6 +37,7 @@ function App() {
                     <Route path="/manager/items" element={<ManagerItems />} />
                     <Route path="/activity-panel" element={<ActivityPanel />} />
                     <Route path="/kitchen" element={<Kitchen />} />
+                    <Route path="/end" element={<EndPage />} />
                 </Routes>
             </Router>
         </>
