@@ -173,54 +173,70 @@ async def test_multiple_customers_seed(
         )
         assert response.status_code == 200
 
-        # # Login as another user, create the same order but update the state.
-        # # log in as table 3, and start a session.
-        # login_response = await client.post(
-        #     "/auth/login",
-        #     json={
-        #         "username": "Table3",
-        #         "password": "t",
-        #     },
-        # )
-        # assert login_response.status_code == 200
+        # Login as another user, create the same order but update the state.
+        # log in as table 3, and start a session.
+        login_response = await client.post(
+            "/auth/login",
+            json={
+                "username": "Table3",
+                "password": "t",
+            },
+        )
+        assert login_response.status_code == 200
 
-        # tokens = login_response.json()
-        # client.headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+        tokens = login_response.json()
+        client.headers = {"Authorization": f"Bearer {tokens['access_token']}"}
 
-        # create_session_response = await client.post(
-        #     "/session/start",
-        #     headers={"Authorization": f"Bearer {tokens['access_token']}"},
-        # )
-        # assert create_session_response.status_code == 200
-        # session_response = SessionResponse.model_validate(
-        #     create_session_response.json()
-        # )
+        create_session_response = await client.post(
+            "/session/start",
+            headers={"Authorization": f"Bearer {tokens['access_token']}"},
+        )
+        assert create_session_response.status_code == 200
+        session_response = SessionResponse.model_validate(
+            create_session_response.json()
+        )
 
-        # # Create an order for the only menu item
-        # payload = CreateOrderRequest(
-        #     session_id=session_response.id,
-        #     items=[
-        #         CreateOrderItemRequest(
-        #             menu_item_id=str(setup_fixture.id),
-        #             is_free=False,
-        #             preferences=["extra cheese"],
-        #             additional_notes="No onions",
-        #         )
-        #     ],
-        # )
-        # response = await client.post("/order", json=payload.model_dump())
-        # assert response.status_code == 200
-        # order_response = OrderResponse.model_validate(response.json())
+        # Create an order for the only menu item
+        payload = CreateOrderRequest(
+            session_id=session_response.id,
+            items=[
+                CreateOrderItemRequest(
+                    menu_item_id=str(setup_fixture.id),
+                    is_free=False,
+                    preferences=["extra cheese"],
+                    additional_notes="No onions",
+                )
+            ],
+        )
+        response = await client.post("/order", json=payload.model_dump())
+        assert response.status_code == 200
+        order_response = OrderResponse.model_validate(response.json())
 
-        # response = await manager_client.post(
-        #     f"/order/{order_response.id}/{order_response.items[0].id}",
-        #     json=OrderUpdateRequest(status=OrderStatus.PREPARING).model_dump(),
-        # )
-        # print(response.json())
-        # assert response.status_code == 200
+        # Create an order for the only menu item
+        payload = CreateOrderRequest(
+            session_id=session_response.id,
+            items=[
+                CreateOrderItemRequest(
+                    menu_item_id=str(setup_fixture.id),
+                    is_free=False,
+                    preferences=["extra cheese"],
+                    additional_notes="No onions",
+                )
+            ],
+        )
+        response = await client.post("/order", json=payload.model_dump())
+        assert response.status_code == 200
+        order_response = OrderResponse.model_validate(response.json())
 
-        # response = await manager_client.post(
-        #     f"/order/{order_response.id}/{order_response.items[0].id}",
-        #     json=OrderUpdateRequest(status=OrderStatus.COMPLETE).model_dump(),
-        # )
-        # assert response.status_code == 200
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[0].id}",
+            json=OrderUpdateRequest(status=OrderStatus.PREPARING).model_dump(),
+        )
+        print(response.json())
+        assert response.status_code == 200
+
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[0].id}",
+            json=OrderUpdateRequest(status=OrderStatus.COMPLETE).model_dump(),
+        )
+        assert response.status_code == 200

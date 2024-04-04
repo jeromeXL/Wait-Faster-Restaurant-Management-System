@@ -426,7 +426,7 @@ const ActivityPanel = () => {
                                             {table.current_session.orders
                                                 .length > 0 && (
                                                 <div
-                                                    className={`p-2 ${getTableTextColour(
+                                                    className={`p-2 flex flex-col gap-2 ${getTableTextColour(
                                                         table
                                                     )}`}
                                                 >
