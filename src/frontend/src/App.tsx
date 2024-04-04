@@ -11,6 +11,7 @@ import Logout from "./components/Logout";
 import ManagerItems from "./pages/ManagerItems";
 import StartSession from "./pages/StartSession";
 import ActivityPanel from "./pages/ActivityPanel";
+import Kitchen from "./pages/Kitchen";
 
 function App() {
     return (
@@ -34,6 +35,7 @@ function App() {
                     <Route path="/manager/menu" element={<ManagerMenu />} />
                     <Route path="/manager/items" element={<ManagerItems />} />
                     <Route path="/activity-panel" element={<ActivityPanel />} />
+                    <Route path="/kitchen" element={<Kitchen />} />
                 </Routes>
             </Router>
         </>
