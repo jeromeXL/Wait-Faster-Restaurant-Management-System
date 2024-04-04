@@ -37,7 +37,7 @@ const Login = () => {
                     navigate("/admin");
                     break;
                 case UserRole.MANAGER:
-                    navigate("/manager/menu");
+                    navigate("/activity-panel");
                     break;
                 case UserRole.WAIT_STAFF:
                     navigate("/activity-panel");

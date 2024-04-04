@@ -62,7 +62,7 @@ async def getUser(userId: str, adminUser=Depends(admin_user)) -> UserInfo:
         userId=str(user.id),
         username=user.username,
         role=user.role,
-        active_session=user.active_session,
+        active_session=str(user.active_session),
     )
     return user_info  # 404 Not found
 
@@ -165,7 +165,7 @@ async def updateUser(
         userId=str(user.id),
         username=user.username,
         role=user.role.value,
-        active_session=user.active_session,
+        active_session=str(user.active_session),
     )
     return user_info
 

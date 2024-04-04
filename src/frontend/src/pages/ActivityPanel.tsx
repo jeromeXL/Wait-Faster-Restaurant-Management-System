@@ -1,19 +1,13 @@
 import {
     Box,
-    Button,
     Chip,
     Container,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    Fab,
     FormControl,
-    FormControlLabel,
     FormLabel,
-    Radio,
-    RadioGroup,
-    TextField,
     Typography,
 } from "@mui/material";
 import ActivityPanelBottomBar from "../components/ActivityPanel/ActivityPanelBottomBar";
@@ -80,10 +74,7 @@ const ActivityPanel = () => {
         setOrderItemToState: (state: OrderStatus) => Promise<unknown>;
     }) => {
         const can_modify_current_order_status =
-            orderItem.status != OrderStatus.DELIVERED &&
-            (auth?.isRole(UserRole.MANAGER) ||
-                auth?.isRole(UserRole.WAIT_STAFF)) &&
-            orderItem.status >= OrderStatus.COMPLETE;
+            orderItem.status != OrderStatus.DELIVERED;
 
         return (
             <div>

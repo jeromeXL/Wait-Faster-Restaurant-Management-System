@@ -20,9 +20,6 @@ const ActivityPanelBottomBar = ({
                 className="bg-white text-black shadow-lg flex rounded-lg overflow-hidden"
             >
                 {auth?.isRole(UserRole.WAIT_STAFF) && (
-                    <NavItem to="/orders" text="Orders" Icon={FiCoffee} />
-                )}
-                {auth?.isRole(UserRole.WAIT_STAFF) && (
                     <NavItem to="/menu" text="Menu" Icon={FiCoffee} />
                 )}
                 {auth?.isRole(UserRole.MANAGER) && (
