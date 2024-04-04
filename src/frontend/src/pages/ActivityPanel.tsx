@@ -1,45 +1,38 @@
 import {
     Box,
-    Button,
+    Chip,
     Container,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
-    TextField,
+    FormControl,
+    FormLabel,
     Typography,
 } from "@mui/material";
 import ActivityPanelBottomBar from "../components/ActivityPanel/ActivityPanelBottomBar";
 import {
     ActivityPanelResponse,
+    OrderItemResponse,
+    OrderResponse,
     OrderStatus,
     SessionStatus,
     TableActivityResponse,
     getActivityPanel,
-    getMenuItems,
+    updateOrderStatus,
 } from "../utils/api";
 import { useEffect, useState } from "react";
-import { MenuItem } from "../utils/menu";
-import { json } from "react-router-dom";
+import { UserRole, useAuth } from "../utils/user";
 
 const ActivityPanel = () => {
+    const auth = useAuth();
     const [activityPanel, setActivityPanel] =
         useState<ActivityPanelResponse | null>(null);
-    const [menuItems, setMenuItems] = useState<Record<string, MenuItem>>();
 
     const fetchActivityPanel = async () => {
         try {
             const response = await getActivityPanel();
             setActivityPanel(response);
-
-            const menuItems = await getMenuItems();
-            // Map to a map
-            const map: Record<string, MenuItem> = {};
-            menuItems.forEach((element) => {
-                map[element.id] = element;
-            });
-
-            setMenuItems(map);
         } catch (error) {
             console.error("Failed to fetch activity panel", error);
         }
@@ -48,6 +41,18 @@ const ActivityPanel = () => {
     useEffect(() => {
         fetchActivityPanel();
     }, []);
+
+    // Update order status
+    const updateOrderItemStatus = async (
+        orderId: string,
+        itemId: string,
+        status: OrderStatus
+    ) => {
+        console.log("here");
+        return await updateOrderStatus(orderId, itemId, status).then(() =>
+            fetchActivityPanel()
+        );
+    };
 
     // Session Dialog
     const [showDialog, setShowDialog] = useState<boolean>(false);
@@ -60,21 +65,138 @@ const ActivityPanel = () => {
     const closeSessionDialog = () => {
         setShowDialog(false);
     };
-    const strigifyOrderStatus = (status: OrderStatus) => {
-        switch (status) {
-            case OrderStatus.ORDERED:
-                return "ORDERED";
-            case OrderStatus.PREPARING:
-                return "PREPARING";
-            case OrderStatus.COMPLETE:
-                return "COMPLETE";
-            case OrderStatus.DELIVERING:
-                return "DELIVERING";
-            case OrderStatus.DELIVERED:
-                return "DELIVERED";
-        }
-    };
 
+    const OrderItemRadioGroup = ({
+        orderItem,
+        setOrderItemToState,
+    }: {
+        orderItem: OrderItemResponse;
+        setOrderItemToState: (state: OrderStatus) => Promise<unknown>;
+    }) => {
+        const can_modify_current_order_status =
+            orderItem.status != OrderStatus.DELIVERED;
+
+        return (
+            <div>
+                {can_modify_current_order_status && (
+                    <FormControl>
+                        <FormLabel id="demo-row-radio-buttons-group-label">
+                            Update Status:
+                        </FormLabel>
+
+                        {orderItem.status == OrderStatus.ORDERED && (
+                            <div className="flex gap-2">
+                                <Chip label="ORDERED" color="info" />
+                                <Chip
+                                    label="PREPARING"
+                                    sx={{
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.PREPARING
+                                        )
+                                    }
+                                />
+                            </div>
+                        )}
+
+                        {orderItem.status == OrderStatus.PREPARING && (
+                            <div className="flex gap-2">
+                                <Chip label="PREPARING" color="error" />
+                                <Chip
+                                    label="COMPLETE"
+                                    sx={{
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.COMPLETE
+                                        )
+                                    }
+                                />
+                            </div>
+                        )}
+
+                        {orderItem.status == OrderStatus.COMPLETE && (
+                            <div className="flex gap-2">
+                                <Chip
+                                    label="PREPARING"
+                                    sx={{
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.PREPARING
+                                        )
+                                    }
+                                />
+                                <Chip label="COMPLETE" color="warning" />
+                                <Chip
+                                    label="DELIVERING"
+                                    sx={{
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.DELIVERING
+                                        )
+                                    }
+                                />
+                            </div>
+                        )}
+
+                        {orderItem.status == OrderStatus.DELIVERING && (
+                            <div className="flex gap-2">
+                                <Chip
+                                    label="COMPLETE"
+                                    sx={{
+                                        cursor: "warning",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.COMPLETE
+                                        )
+                                    }
+                                />
+                                <Chip label="DELIVERING" color="secondary" />
+                                <Chip
+                                    label="DELIVERED"
+                                    sx={{
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.DELIVERED
+                                        )
+                                    }
+                                />
+                            </div>
+                        )}
+                    </FormControl>
+                )}
+                {!can_modify_current_order_status && (
+                    <>
+                        {orderItem.status == OrderStatus.ORDERED && (
+                            <Chip label="ORDERED" color="info" />
+                        )}
+                        {orderItem.status == OrderStatus.PREPARING && (
+                            <Chip label="PREPARING" color="error" />
+                        )}
+                        {orderItem.status == OrderStatus.COMPLETE && (
+                            <Chip label="COMPLETE" color="warning" />
+                        )}
+                        {orderItem.status == OrderStatus.DELIVERING && (
+                            <Chip label="DELIVERING" color="secondary" />
+                        )}
+                        {orderItem.status == OrderStatus.DELIVERED && (
+                            <Chip label="DELIVERED" color="success" />
+                        )}
+                    </>
+                )}
+            </div>
+        );
+    };
     const SessionDialog = ({
         dto,
         showDialog,
@@ -98,52 +220,45 @@ const ActivityPanel = () => {
                                 ).toLocaleString()}
                             </div>
                             {dto.current_session.orders.length > 0 && (
-                                <div className={`p-2`}>
+                                <div className={`py-2`}>
                                     <div>
                                         {dto.current_session.orders.map(
                                             (order, index) => (
-                                                <div>
+                                                <div key={order.id}>
                                                     <label>{`Order ${
                                                         index + 1
                                                     }`}</label>
-                                                    <table>
-                                                        <thead>
-                                                            <tr>
-                                                                <th className="text-start px-2">
-                                                                    Item
-                                                                </th>
-                                                                <th className="text-start px-2">
-                                                                    Status
-                                                                </th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {order.items.map(
-                                                                (item) => (
-                                                                    <tr
-                                                                        key={
-                                                                            item.id
-                                                                        }
-                                                                    >
-                                                                        <td className="px-2">
-                                                                            {
-                                                                                menuItems![
-                                                                                    item
-                                                                                        .menu_item_id
-                                                                                ]
-                                                                                    ?.name
-                                                                            }
-                                                                        </td>
-                                                                        <td className="px-2">
-                                                                            {strigifyOrderStatus(
-                                                                                item.status
-                                                                            )}
-                                                                        </td>
-                                                                    </tr>
-                                                                )
-                                                            )}
-                                                        </tbody>
-                                                    </table>
+
+                                                    {order.items.map((item) => (
+                                                        <section
+                                                            key={item.id}
+                                                            className="flex justify-between"
+                                                        >
+                                                            <div className="pr-2 flex items-center">
+                                                                {
+                                                                    item.menu_item_name
+                                                                }
+                                                            </div>
+                                                            <div className="pl-2">
+                                                                <OrderItemRadioGroup
+                                                                    orderItem={
+                                                                        item
+                                                                    }
+                                                                    setOrderItemToState={(
+                                                                        state
+                                                                    ) => {
+                                                                        return updateOrderItemStatus(
+                                                                            order.id,
+                                                                            item.id,
+                                                                            state
+                                                                        ).then(
+                                                                            onClose
+                                                                        );
+                                                                    }}
+                                                                />
+                                                            </div>
+                                                        </section>
+                                                    ))}
                                                 </div>
                                             )
                                         )}
@@ -167,16 +282,16 @@ const ActivityPanel = () => {
     // Display functions
     const getTableBackgroundColour = (dto: TableActivityResponse) => {
         if (dto.current_session == null) {
-            return "white";
+            return "bg-white brightness-75";
         }
 
         switch (dto.current_session?.status) {
             case SessionStatus.OPEN:
-                return "primary.main";
+                return "bg-white";
             case SessionStatus.AWAITING_PAYMENT:
-                return "secondary.main";
+                return "bg-blue-200";
             case SessionStatus.CLOSED:
-                return "white";
+                return "bg-white";
         }
     };
 
@@ -187,9 +302,9 @@ const ActivityPanel = () => {
 
         switch (dto.current_session?.status) {
             case SessionStatus.OPEN:
-                return "text-white";
+                return "text-black";
             case SessionStatus.AWAITING_PAYMENT:
-                return "secondary.contrastText";
+                return "text-white";
             case SessionStatus.CLOSED:
                 return "text-black";
         }
@@ -212,6 +327,28 @@ const ActivityPanel = () => {
                     x?.status == OrderStatus.COMPLETE ||
                     x?.status == OrderStatus.DELIVERING
             ).length;
+
+    const OrderStatusBadges = ({ order }: { order: OrderResponse }) => {
+        return (
+            <>
+                {order.status == OrderStatus.ORDERED && (
+                    <Chip label="ORDERED" color="info" />
+                )}
+                {order.status == OrderStatus.PREPARING && (
+                    <Chip label="PREPARING" color="error" />
+                )}
+                {order.status == OrderStatus.COMPLETE && (
+                    <Chip label="COMPLETE" color="warning" />
+                )}
+                {order.status == OrderStatus.DELIVERING && (
+                    <Chip label="DELIVERING" color="secondary" />
+                )}
+                {order.status == OrderStatus.DELIVERED && (
+                    <Chip label="DELIVERED" color="success" />
+                )}
+            </>
+        );
+    };
 
     return (
         <Box
@@ -237,17 +374,11 @@ const ActivityPanel = () => {
                 ) : (
                     <div className="flex flex-col w-full gap-2">
                         <div className="flex gap-4">
-                            <Box
-                                className="w-full text-black p-2 rounded-md text-center"
-                                sx={{ bgcolor: "white" }}
-                            >
+                            <Box className="w-full text-black p-2 rounded-md text-center bg-info">
                                 <p className="text-xl">{ordersInKitchen()}</p>
                                 {`Orders in the kitchen`}
                             </Box>
-                            <Box
-                                className="w-full text-black p-2 rounded-md text-center"
-                                sx={{ bgcolor: "white" }}
-                            >
+                            <Box className="w-full text-black p-2 rounded-md text-center bg-warning-light">
                                 <p className="text-xl">
                                     {ordersToBeDeliveredOrDelivering()}
                                 </p>
@@ -264,14 +395,11 @@ const ActivityPanel = () => {
                         <div className="h-full w-full grid grid-cols-3 md:grid-cols-4 grid-flow-row gap-4">
                             {activityPanel.tables.map((table) => (
                                 <Box
+                                    key={table.table_number}
                                     className={`rounded-md text-gray-800 p-4 ${
                                         table.current_session != null &&
                                         "cursor-pointer hover:brightness-95"
-                                    }`}
-                                    sx={{
-                                        bgcolor:
-                                            getTableBackgroundColour(table),
-                                    }}
+                                    } ${getTableBackgroundColour(table)}`}
                                     onClick={() => {
                                         if (table.current_session != null)
                                             onClickTableWithSession(table);
@@ -303,10 +431,25 @@ const ActivityPanel = () => {
                                                     )}`}
                                                 >
                                                     {"Orders: "}
-                                                    {
-                                                        table.current_session
-                                                            ?.orders.length
-                                                    }
+                                                    {table.current_session.orders.map(
+                                                        (order, index) => (
+                                                            <div
+                                                                key={order.id}
+                                                                className="flex flex-row justify-between"
+                                                            >
+                                                                <div className="flex items-center">
+                                                                    {index + 1}
+                                                                </div>
+                                                                <div className="flex flex-row">
+                                                                    <OrderStatusBadges
+                                                                        order={
+                                                                            order
+                                                                        }
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        )
+                                                    )}
                                                 </div>
                                             )}
                                         </Box>
