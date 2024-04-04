@@ -9,7 +9,7 @@ from pydantic import BaseModel
 class OrderStatus(int, Enum):
     ORDERED = 0
     PREPARING = 1
-    COMPLETE = 2
+    READY = 2
     DELIVERING = 3
     DELIVERED = 4
 
@@ -31,7 +31,7 @@ class Order(Document):
 
 valid_transitions = {
     OrderStatus.ORDERED: [OrderStatus.PREPARING],
-    OrderStatus.PREPARING: [OrderStatus.COMPLETE],
-    OrderStatus.COMPLETE: [OrderStatus.DELIVERING, OrderStatus.PREPARING],
-    OrderStatus.DELIVERING: [OrderStatus.COMPLETE, OrderStatus.DELIVERED],
+    OrderStatus.PREPARING: [OrderStatus.READY],
+    OrderStatus.READY: [OrderStatus.DELIVERING, OrderStatus.PREPARING],
+    OrderStatus.DELIVERING: [OrderStatus.READY, OrderStatus.DELIVERED],
 }

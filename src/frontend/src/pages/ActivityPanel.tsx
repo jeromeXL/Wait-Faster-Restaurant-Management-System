@@ -105,20 +105,18 @@ const ActivityPanel = () => {
                             <div className="flex gap-2">
                                 <Chip label="PREPARING" color="error" />
                                 <Chip
-                                    label="COMPLETE"
+                                    label="READY"
                                     sx={{
                                         cursor: "pointer",
                                     }}
                                     onClick={() =>
-                                        setOrderItemToState(
-                                            OrderStatus.COMPLETE
-                                        )
+                                        setOrderItemToState(OrderStatus.READY)
                                     }
                                 />
                             </div>
                         )}
 
-                        {orderItem.status == OrderStatus.COMPLETE && (
+                        {orderItem.status == OrderStatus.READY && (
                             <div className="flex gap-2">
                                 <Chip
                                     label="PREPARING"
@@ -131,7 +129,7 @@ const ActivityPanel = () => {
                                         )
                                     }
                                 />
-                                <Chip label="COMPLETE" color="warning" />
+                                <Chip label="READY" color="warning" />
                                 <Chip
                                     label="DELIVERING"
                                     sx={{
@@ -149,14 +147,12 @@ const ActivityPanel = () => {
                         {orderItem.status == OrderStatus.DELIVERING && (
                             <div className="flex gap-2">
                                 <Chip
-                                    label="COMPLETE"
+                                    label="READY"
                                     sx={{
                                         cursor: "warning",
                                     }}
                                     onClick={() =>
-                                        setOrderItemToState(
-                                            OrderStatus.COMPLETE
-                                        )
+                                        setOrderItemToState(OrderStatus.READY)
                                     }
                                 />
                                 <Chip label="DELIVERING" color="secondary" />
@@ -183,8 +179,8 @@ const ActivityPanel = () => {
                         {orderItem.status == OrderStatus.PREPARING && (
                             <Chip label="PREPARING" color="error" />
                         )}
-                        {orderItem.status == OrderStatus.COMPLETE && (
-                            <Chip label="COMPLETE" color="warning" />
+                        {orderItem.status == OrderStatus.READY && (
+                            <Chip label="READY" color="warning" />
                         )}
                         {orderItem.status == OrderStatus.DELIVERING && (
                             <Chip label="DELIVERING" color="secondary" />
@@ -324,7 +320,7 @@ const ActivityPanel = () => {
             .flatMap((x) => x.current_session?.orders)
             .filter(
                 (x) =>
-                    x?.status == OrderStatus.COMPLETE ||
+                    x?.status == OrderStatus.READY ||
                     x?.status == OrderStatus.DELIVERING
             ).length;
 
@@ -337,8 +333,8 @@ const ActivityPanel = () => {
                 {order.status == OrderStatus.PREPARING && (
                     <Chip label="PREPARING" color="error" />
                 )}
-                {order.status == OrderStatus.COMPLETE && (
-                    <Chip label="COMPLETE" color="warning" />
+                {order.status == OrderStatus.READY && (
+                    <Chip label="READY" color="warning" />
                 )}
                 {order.status == OrderStatus.DELIVERING && (
                     <Chip label="DELIVERING" color="secondary" />

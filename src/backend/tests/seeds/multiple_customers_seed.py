@@ -237,6 +237,6 @@ async def test_multiple_customers_seed(
 
         response = await manager_client.post(
             f"/order/{order_response.id}/{order_response.items[0].id}",
-            json=OrderUpdateRequest(status=OrderStatus.COMPLETE).model_dump(),
+            json=OrderUpdateRequest(status=OrderStatus.READY).model_dump(),
         )
         assert response.status_code == 200

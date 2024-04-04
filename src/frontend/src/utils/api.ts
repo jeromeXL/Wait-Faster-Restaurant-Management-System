@@ -137,7 +137,7 @@ export const deleteCategory = async (id: string) =>
 export enum OrderStatus {
     ORDERED = 0,
     PREPARING = 1,
-    COMPLETE = 2,
+    READY = 2,
     DELIVERING = 3,
     DELIVERED = 4,
 }
