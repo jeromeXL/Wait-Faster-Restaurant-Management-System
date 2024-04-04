@@ -39,13 +39,13 @@ async def setup_fixture():
 
         # Create a wait staff user
         wait_staff_user = User(
-            username="wait", password=hash_password("wait"), role=UserRole.WAIT_STAFF
+            username="wait", password=hash_password("w"), role=UserRole.WAIT_STAFF
         )
         await wait_staff_user.create()
 
         # Create a wait staff user
         kitchen_user = User(
-            username="kitchen", password=hash_password("kit"), role=UserRole.KITCHEN_STAFF
+            username="kitchen", password=hash_password("k"), role=UserRole.KITCHEN_STAFF
         )
         await kitchen_user.create()
 
