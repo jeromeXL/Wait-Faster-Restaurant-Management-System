@@ -55,15 +55,54 @@ async def setup_fixture():
         await Category.delete_all()
         await MenuItem.delete_all()
         # Create a food item
-        menu_item = MenuItem(
+        menu_item_1 = MenuItem(
             name="Hamburger",
             price=10.99,
             health_requirements=[],
             description="Contains Meat",
         )
-        await menu_item.create()
+        await menu_item_1.create()
 
-        yield (menu_item)
+         # Create a food item
+        menu_item_2 = MenuItem(
+            name="Cookie",
+            price=5,
+            health_requirements=["Nuts"],
+            description="Contains nuts",
+        )
+        await menu_item_2.create()
+
+        # Create a food item
+        menu_item_3 = MenuItem(
+            name="Coffee",
+            price=3.50,
+            health_requirements=[""],
+            description="",
+        )
+        await menu_item_3.create()
+
+         # Create a food item
+        category_1 = Category(
+            index=1,
+            menu_items=[
+                str(menu_item_1.id),
+                str(menu_item_2.id)
+            ],
+            name="Food"
+        )
+        await category_1.create()
+
+        category_2 = Category(
+            index=2,
+            menu_items=[
+                str(menu_item_3.id)
+            ],
+            name="Drink"
+        )
+        await category_2.create()
+
+
+        yield (menu_item_1)
         # Dispose of client
 
 
