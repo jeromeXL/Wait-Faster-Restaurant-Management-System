@@ -176,6 +176,11 @@ export const apiStartSession = async () =>
     .post("/session/start")
     .then((resp) => resp.data as SessionResponse);
 
+export const apiGetSession = async () =>
+  await getAxios()
+    .get("/table/session")
+    .then((resp) => resp.data as SessionResponse);
+
 // Activity Panel
 export type TableActivityResponse = {
   table_number: number;

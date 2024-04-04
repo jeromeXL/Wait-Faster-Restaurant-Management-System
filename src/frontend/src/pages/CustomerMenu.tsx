@@ -288,6 +288,7 @@ const CustomerMenu = () => {
         updatedPendingCart[itemId] = 0;
       });
       setPendingCart(updatedPendingCart);
+      setCartCounter(0);
 
       console.log('Order created successfully:', response.data);
 
