@@ -25,7 +25,7 @@ import {
   Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,
 } from "@mui/material";
 import { DietaryDetail, Menu, MenuItem } from "../utils/menu";
-import { getMenu, getMenuItems } from "../utils/api";
+import { MakeOrder, getMenu, getMenuItems } from "../utils/api";
 import { getAxios } from '../utils/useAxios';
 import axios from 'axios';
 
@@ -273,21 +273,22 @@ const CustomerMenu = () => {
   const sendItems = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('/order', {
+      const response = await MakeOrder({
         session_id: sessionID,
         items: Object.keys(pendingCart).map((itemId) => ({
           menu_item_id: itemId,
           is_free: false,
           preferences: [],
           additional_notes: '',
-        })),
-      });
+        }))
+      })
 
       const updatedPendingCart = {};
       Object.keys(pendingCart).forEach(itemId => {
         updatedPendingCart[itemId] = 0;
       });
       setPendingCart(updatedPendingCart);
+      setCartCounter(0);
 
       console.log('Order created successfully:', response.data);
 

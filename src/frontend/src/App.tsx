@@ -12,6 +12,7 @@ import ManagerItems from "./pages/ManagerItems";
 import StartSession from "./pages/StartSession";
 import ActivityPanel from "./pages/ActivityPanel";
 import Kitchen from "./pages/Kitchen";
+import CustomerMenu from "./pages/CustomerMenu";
 
 function App() {
     return (
@@ -21,7 +22,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Login />} />
                     <Route path="/start" element={<StartSession />} />
-                    <Route path="/menu" element={<Menu />} />
+                    <Route path="/menu" element={<CustomerMenu />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route
                         path="/admin"
