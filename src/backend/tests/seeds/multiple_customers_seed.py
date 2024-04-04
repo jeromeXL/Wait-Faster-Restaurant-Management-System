@@ -43,6 +43,12 @@ async def setup_fixture():
         )
         await wait_staff_user.create()
 
+        # Create a wait staff user
+        kitchen_user = User(
+            username="kitchen", password=hash_password("kit"), role=UserRole.KITCHEN_STAFF
+        )
+        await kitchen_user.create()
+
         # Create multiple customers
         for i in range(1, 11):
             customer = User(
