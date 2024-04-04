@@ -50,6 +50,7 @@ async def create_order(request: CreateOrderRequest, user=Depends(customer_tablet
     session_id = request.session_id
     order_items = request.items
 
+    print("here")
     # Check if the session exists
     session = await Session.get(PydanticObjectId(session_id))
     if not session:
@@ -63,6 +64,7 @@ async def create_order(request: CreateOrderRequest, user=Depends(customer_tablet
         item.id: item
         for item in await MenuItem.find(In(MenuItem.id, menu_item_ids)).to_list()
     }
+    print("here2", menu_items)
     if len(menu_items) != len(menu_item_ids):
         raise HTTPException(
             status_code=404,
