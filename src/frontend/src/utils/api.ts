@@ -145,6 +145,7 @@ export type OrderItemResponse = {
     id: string;
     status: OrderStatus;
     menu_item_id: string;
+    menu_item_name: string;
     is_free: boolean;
     preferences?: string[];
     additional_notes?: string;
@@ -187,3 +188,10 @@ export const getActivityPanel = async () =>
     await getAxios()
         .get("/activity")
         .then((resp) => resp.data as ActivityPanelResponse);
+
+// Update a singular order item
+export const updateOrderStatus = async (
+    orderId: string,
+    itemId: string,
+    status: OrderStatus
+) => await getAxios().post(`/order/${orderId}/${itemId}`, { status });

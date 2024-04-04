@@ -123,7 +123,7 @@ async def update_order_status(
     # Check if the order contains the specified item
     item_to_update = None
     for item in order.items:
-        if item.menu_item_id == PydanticObjectId(item_id):
+        if item.id == PydanticObjectId(item_id):
             item_to_update = item
             break
     if not item_to_update:
