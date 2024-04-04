@@ -23,7 +23,7 @@ const tableMock = {
       orders: [
         {
           id: "101",
-          status: 2, // Assuming 2 corresponds to 'Ready'
+          status: 2,
           session_id: "session1",
           items: [
             {
@@ -112,13 +112,9 @@ interface CustomerOrder {
   orders: Order[];
 }
 
-interface KitchenState {
-  customer_orders: CustomerOrder[];
-}
-
 enum ItemStatus {
   Pending = 0, // ORDERED <-> PENDING
-  Ongoing = 1, // PREPARING <-> ONGOING
+  Preparing = 1, // PREPARING <-> ONGOING,
   Ready = 2, // COMPLETE <-> READY
 }
 
@@ -142,7 +138,7 @@ const Kitchen = () => {
 
   const fetchOrders = async () => {
     try {
-      const response = await getAxios().get('/orders');
+      const response = await getAxios().get('/orders?statuses=0&statuses=1&statuses=2');
       setTables(response.data.customer_orders);
       //setTables(tableMock.customer_orders);
     } catch (error) {
@@ -153,16 +149,16 @@ const Kitchen = () => {
   const translateStatus = (status: ItemStatus): string => {
     switch (status) {
       case ItemStatus.Pending: return 'Pending';
-      case ItemStatus.Ongoing: return 'Ongoing';
+      case ItemStatus.Preparing: return 'Preparing';
       case ItemStatus.Ready: return 'Ready';
-      default: return 'Unknown';
+      default: return 'Done';
     }
   };
 
   const getStatusColor = (status: ItemStatus) => {
     switch (status) {
       case ItemStatus.Ready: return 'green';
-      case ItemStatus.Ongoing: return 'orange';
+      case ItemStatus.Preparing: return 'orange';
       case ItemStatus.Pending: return 'red';
       default: return 'grey';
     }
@@ -174,6 +170,7 @@ const Kitchen = () => {
 
     try {
       // Use the item's ID to make the update call
+      console.log(`OrderId = ${selectedInfo.orderId}, id = ${selectedInfo.itemId}, status = ${newStatus}`);
       await getAxios().post(`/order/${selectedInfo.orderId}/${selectedInfo.itemId}`, {
         status: newStatus,
       });
@@ -312,33 +309,81 @@ const Kitchen = () => {
           }
         }}
       >
+
         <Box>
-          <Typography id="modal-modal-title" variant="h6" component="h2" textAlign="center" marginBottom={2} sx={{ color: 'white', fontWeight: 'bold' }}>
+          <Typography id="modal-modal-title" variant="h6" component="h2" textAlign="center" marginBottom={2}>
             Select New Status
           </Typography>
           <List>
-            {[ItemStatus.Ready, ItemStatus.Ongoing, ItemStatus.Pending].map((status) => (
-              <ListItemButton
-                key={status}
-                sx={{
-                  justifyContent: 'center',
-                  bgcolor: getStatusColor(status),
-                  margin: '25px',
-                  borderRadius: '20px',
-                  padding: '10px 20px',
-                  '&:hover': {
-                    bgcolor: `${getStatusColor(status)}`,
-                  },
-                }}
-                onClick={() => updateItemStatus(status)}
-              >
-                <Typography variant="body1" sx={{ color: 'white', fontWeight: 'bold' }}>
-                  {translateStatus(status)}
-                </Typography>
-              </ListItemButton>
-            ))}
+            {
+              selectedInfo && tables.length > 0 && (function () {
+                // Find the current status of the selected item
+                const currentItem = tables
+                  .find(table => table.table_id === selectedInfo.tableId)
+                  ?.orders.find(order => order.id === selectedInfo.orderId)
+                  ?.items.find(item => item.id === selectedInfo.itemId);
+
+                const currentStatus = currentItem ? currentItem.status : null;
+
+                // Determine which button(s) to display based on the current status
+                switch (currentStatus) {
+                  case ItemStatus.Pending:
+                    return (
+                      <ListItemButton onClick={() => updateItemStatus(ItemStatus.Preparing)} sx={{
+                        justifyContent: 'center',
+                        bgcolor: getStatusColor(ItemStatus.Preparing),
+                        margin: '25px',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        '&:hover': {
+                          bgcolor: `${getStatusColor(ItemStatus.Preparing)}`,
+                        },
+                      }}>
+                        Preparing
+                      </ListItemButton>
+                    );
+                  case ItemStatus.Preparing:
+                    return (
+                      <ListItemButton onClick={() => updateItemStatus(ItemStatus.Ready)} sx={{
+                        justifyContent: 'center',
+                        bgcolor: getStatusColor(ItemStatus.Ready),
+                        margin: '25px',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        '&:hover': {
+                          bgcolor: `${getStatusColor(ItemStatus.Ready)}`,
+                        },
+                      }}>
+                        Ready
+                      </ListItemButton>
+                    );
+                  case ItemStatus.Ready:
+                    // If moving back to Preparing from Ready is intended
+                    return (
+                      <ListItemButton onClick={() => updateItemStatus(ItemStatus.Preparing)} sx={{
+                        justifyContent: 'center',
+                        bgcolor: getStatusColor(ItemStatus.Preparing),
+                        margin: '25px',
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        '&:hover': {
+                          bgcolor: `${getStatusColor(ItemStatus.Preparing)}`,
+                        },
+                      }}>
+                        Preparing
+                      </ListItemButton>
+                    );
+                  default:
+                    return null;
+                }
+              })()
+            }
           </List>
         </Box>
+
+
+
+
       </Modal>
       <KitchenBottomBar />
     </Box>

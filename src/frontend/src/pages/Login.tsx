@@ -43,7 +43,7 @@ const Login = () => {
                     navigate("/activity-panel");
                     break;
                 case UserRole.KITCHEN_STAFF:
-                    navigate("/activity-panel");
+                    navigate("/kitchen");
                     break;
                 case UserRole.CUSTOMER_TABLET:
                     navigate("/start");
