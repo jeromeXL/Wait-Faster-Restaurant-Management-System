@@ -1,0 +1,2 @@
+- Started working on the frontend of the project
+- Finished the frontend visually for the customer menu page
