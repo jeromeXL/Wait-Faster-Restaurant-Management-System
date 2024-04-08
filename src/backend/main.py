@@ -13,6 +13,7 @@ from router.category import router as CategoryRouter
 from router.admin import router as AdminRouter
 from router.orders import router as OrderRouter
 from router.activityPanel import router as ActivityPanelRouter
+from router.assistanceRequests import router as AssistanceRequestsRouter
 from utils.password import hash_password
 from config import CONFIG
 from starlette.middleware.cors import CORSMiddleware
@@ -70,6 +71,7 @@ app.include_router(MenuItemRouter)
 app.include_router(SessionRouter)
 app.include_router(OrderRouter)
 app.include_router(ActivityPanelRouter)
+app.include_router(AssistanceRequestsRouter)
 
 app.add_middleware(
     CORSMiddleware,
