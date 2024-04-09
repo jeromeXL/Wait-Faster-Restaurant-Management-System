@@ -484,39 +484,38 @@ const ActivityPanel = () => {
                                                                                     <div className="pl-2">
                                                                                         {item.status ==
                                                                                             OrderStatus.ORDERED && (
-                                                                                            <div className="flex gap-2">
-                                                                                                <Chip
-                                                                                                    label="ORDERED"
-                                                                                                    color="info"
-                                                                                                />
-                                                                                            </div>
+                                                                                            <Chip
+                                                                                                label="ORDERED"
+                                                                                                color="info"
+                                                                                            />
                                                                                         )}
                                                                                         {item.status ==
                                                                                             OrderStatus.PREPARING && (
-                                                                                            <div className="flex gap-2">
-                                                                                                <Chip
-                                                                                                    label="PREPARING"
-                                                                                                    color="error"
-                                                                                                />
-                                                                                            </div>
+                                                                                            <Chip
+                                                                                                label="PREPARING"
+                                                                                                color="error"
+                                                                                            />
                                                                                         )}
                                                                                         {item.status ==
                                                                                             OrderStatus.READY && (
-                                                                                            <div className="flex gap-2">
-                                                                                                <Chip
-                                                                                                    label="READY"
-                                                                                                    color="warning"
-                                                                                                />
-                                                                                            </div>
+                                                                                            <Chip
+                                                                                                label="READY"
+                                                                                                color="warning"
+                                                                                            />
                                                                                         )}
                                                                                         {item.status ==
                                                                                             OrderStatus.DELIVERING && (
-                                                                                            <div className="flex gap-2">
-                                                                                                <Chip
-                                                                                                    label="DELIVERING"
-                                                                                                    color="secondary"
-                                                                                                />
-                                                                                            </div>
+                                                                                            <Chip
+                                                                                                label="DELIVERING"
+                                                                                                color="secondary"
+                                                                                            />
+                                                                                        )}
+                                                                                        {item.status ==
+                                                                                            OrderStatus.DELIVERED && (
+                                                                                            <Chip
+                                                                                                label="DELIVERED"
+                                                                                                color="success"
+                                                                                            />
                                                                                         )}
                                                                                     </div>
                                                                                 </section>
