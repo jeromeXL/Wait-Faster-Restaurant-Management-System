@@ -1,8 +1,12 @@
 import { motion } from 'framer-motion';
-import { FiLogOut } from 'react-icons/fi';
+import { FiLogOut, FiRefreshCw } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 
-const KitchenBottomBar = () => {
+const KitchenBottomBar = ({
+  refreshOrders,
+}: {
+  refreshOrders: () => void;
+}) => {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center items-center pb-4">
       <motion.nav
@@ -11,6 +15,10 @@ const KitchenBottomBar = () => {
         transition={{ duration: 0.5 }}
         className="bg-white text-black shadow-lg flex rounded-lg overflow-hidden"
       >
+        <div onClick={refreshOrders} className="flex items-center justify-center gap-2 p-4 hover:bg-gray-100 text-black transition-colors cursor-pointer">
+          <FiRefreshCw className="text-lg" />
+          <span className="text-base">Refresh</span>
+        </div>
         <NavItem to="/logout" text="Logout" Icon={FiLogOut} />
       </motion.nav>
     </div>

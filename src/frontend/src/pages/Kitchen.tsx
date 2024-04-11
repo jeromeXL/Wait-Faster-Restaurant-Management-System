@@ -148,7 +148,7 @@ const Kitchen = () => {
 
   const translateStatus = (status: ItemStatus): string => {
     switch (status) {
-      case ItemStatus.Pending: return 'Pending';
+      case ItemStatus.Pending: return 'Ordered';
       case ItemStatus.Preparing: return 'Preparing';
       case ItemStatus.Ready: return 'Ready';
       default: return 'Done';
@@ -159,7 +159,7 @@ const Kitchen = () => {
     switch (status) {
       case ItemStatus.Ready: return 'green';
       case ItemStatus.Preparing: return 'orange';
-      case ItemStatus.Pending: return 'red';
+      case ItemStatus.Pending: return 'light blue';
       default: return 'grey';
     }
   };
@@ -344,18 +344,33 @@ const Kitchen = () => {
                     );
                   case ItemStatus.Preparing:
                     return (
-                      <ListItemButton onClick={() => updateItemStatus(ItemStatus.Ready)} sx={{
-                        justifyContent: 'center',
-                        bgcolor: getStatusColor(ItemStatus.Ready),
-                        margin: '25px',
-                        borderRadius: '20px',
-                        padding: '10px 20px',
-                        '&:hover': {
-                          bgcolor: `${getStatusColor(ItemStatus.Ready)}`,
-                        },
-                      }}>
-                        Ready
-                      </ListItemButton>
+                      <>
+                        <ListItemButton onClick={() => updateItemStatus(ItemStatus.Ready)} sx={{
+                          justifyContent: 'center',
+                          bgcolor: getStatusColor(ItemStatus.Ready),
+                          margin: '25px',
+                          borderRadius: '20px',
+                          padding: '10px 20px',
+                          '&:hover': {
+                            bgcolor: `${getStatusColor(ItemStatus.Ready)}`,
+                          },
+                        }}>
+                          Ready
+                        </ListItemButton>
+                        <ListItemButton onClick={() => updateItemStatus(ItemStatus.Pending)} sx={{
+                          justifyContent: 'center',
+                          bgcolor: getStatusColor(ItemStatus.Pending),
+                          margin: '25px',
+                          borderRadius: '20px',
+                          padding: '10px 20px',
+                          '&:hover': {
+                            bgcolor: `${getStatusColor(ItemStatus.Pending)}`,
+                          },
+                        }}>
+                          Pending
+                        </ListItemButton>
+                      </>
+
                     );
                   case ItemStatus.Ready:
                     // If moving back to Preparing from Ready is intended
@@ -385,7 +400,7 @@ const Kitchen = () => {
 
 
       </Modal>
-      <KitchenBottomBar />
+      <KitchenBottomBar refreshOrders={fetchOrders} />
     </Box>
   );
 };

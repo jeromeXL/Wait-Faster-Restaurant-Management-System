@@ -80,10 +80,6 @@ const ActivityPanel = () => {
             <div>
                 {can_modify_current_order_status && (
                     <FormControl>
-                        <FormLabel id="demo-row-radio-buttons-group-label">
-                            Update Status:
-                        </FormLabel>
-
                         {orderItem.status == OrderStatus.ORDERED && (
                             <div className="flex gap-2">
                                 <Chip label="ORDERED" color="info" />
@@ -217,44 +213,53 @@ const ActivityPanel = () => {
                             </div>
                             {dto.current_session.orders.length > 0 && (
                                 <div className={`py-2`}>
-                                    <div>
+                                    <div className="flex flex-col gap-3 divide-y-2 divide-gray-300">
                                         {dto.current_session.orders.map(
                                             (order, index) => (
-                                                <div key={order.id}>
-                                                    <label>{`Order ${
+                                                <div
+                                                    key={order.id}
+                                                    className=" p-2"
+                                                >
+                                                    <label className="text-sm">{`Order ${
                                                         index + 1
                                                     }`}</label>
 
-                                                    {order.items.map((item) => (
-                                                        <section
-                                                            key={item.id}
-                                                            className="flex justify-between"
-                                                        >
-                                                            <div className="pr-2 flex items-center">
-                                                                {
-                                                                    item.menu_item_name
-                                                                }
-                                                            </div>
-                                                            <div className="pl-2">
-                                                                <OrderItemRadioGroup
-                                                                    orderItem={
-                                                                        item
+                                                    <div className="flex flex-col gap-2">
+                                                        {order.items.map(
+                                                            (item) => (
+                                                                <section
+                                                                    key={
+                                                                        item.id
                                                                     }
-                                                                    setOrderItemToState={(
-                                                                        state
-                                                                    ) => {
-                                                                        return updateOrderItemStatus(
-                                                                            order.id,
-                                                                            item.id,
-                                                                            state
-                                                                        ).then(
-                                                                            onClose
-                                                                        );
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                        </section>
-                                                    ))}
+                                                                    className="flex justify-between"
+                                                                >
+                                                                    <div className="pr-2 flex items-center">
+                                                                        {
+                                                                            item.menu_item_name
+                                                                        }
+                                                                    </div>
+                                                                    <div className="pl-2">
+                                                                        <OrderItemRadioGroup
+                                                                            orderItem={
+                                                                                item
+                                                                            }
+                                                                            setOrderItemToState={(
+                                                                                state
+                                                                            ) => {
+                                                                                return updateOrderItemStatus(
+                                                                                    order.id,
+                                                                                    item.id,
+                                                                                    state
+                                                                                ).then(
+                                                                                    onClose
+                                                                                );
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                </section>
+                                                            )
+                                                        )}
+                                                    </div>
                                                 </div>
                                             )
                                         )}
@@ -427,7 +432,7 @@ const ActivityPanel = () => {
                                                     )}`}
                                                 >
                                                     {"Orders: "}
-                                                    {table.current_session.orders.map(
+                                                    {/* {table.current_session.orders.map(
                                                         (order, index) => (
                                                             <div
                                                                 key={order.id}
@@ -445,7 +450,82 @@ const ActivityPanel = () => {
                                                                 </div>
                                                             </div>
                                                         )
-                                                    )}
+                                                    )} */}
+                                                    <div className="flex flex-col gap-3 divide-y-2 divide-gray-200">
+                                                        {table.current_session.orders.map(
+                                                            (order, index) => (
+                                                                <div
+                                                                    key={
+                                                                        order.id
+                                                                    }
+                                                                    className="p-2"
+                                                                >
+                                                                    <label className="text-sm">{`Order ${
+                                                                        index +
+                                                                        1
+                                                                    }`}</label>
+
+                                                                    <div className="flex flex-col gap-2">
+                                                                        {order.items.map(
+                                                                            (
+                                                                                item
+                                                                            ) => (
+                                                                                <section
+                                                                                    key={
+                                                                                        item.id
+                                                                                    }
+                                                                                    className="flex justify-between"
+                                                                                >
+                                                                                    <div className="pr-2 flex items-center">
+                                                                                        {
+                                                                                            item.menu_item_name
+                                                                                        }
+                                                                                    </div>
+                                                                                    <div className="pl-2">
+                                                                                        {item.status ==
+                                                                                            OrderStatus.ORDERED && (
+                                                                                            <Chip
+                                                                                                label="ORDERED"
+                                                                                                color="info"
+                                                                                            />
+                                                                                        )}
+                                                                                        {item.status ==
+                                                                                            OrderStatus.PREPARING && (
+                                                                                            <Chip
+                                                                                                label="PREPARING"
+                                                                                                color="error"
+                                                                                            />
+                                                                                        )}
+                                                                                        {item.status ==
+                                                                                            OrderStatus.READY && (
+                                                                                            <Chip
+                                                                                                label="READY"
+                                                                                                color="warning"
+                                                                                            />
+                                                                                        )}
+                                                                                        {item.status ==
+                                                                                            OrderStatus.DELIVERING && (
+                                                                                            <Chip
+                                                                                                label="DELIVERING"
+                                                                                                color="secondary"
+                                                                                            />
+                                                                                        )}
+                                                                                        {item.status ==
+                                                                                            OrderStatus.DELIVERED && (
+                                                                                            <Chip
+                                                                                                label="DELIVERED"
+                                                                                                color="success"
+                                                                                            />
+                                                                                        )}
+                                                                                    </div>
+                                                                                </section>
+                                                                            )
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            )
+                                                        )}
+                                                    </div>
                                                 </div>
                                             )}
                                         </Box>
