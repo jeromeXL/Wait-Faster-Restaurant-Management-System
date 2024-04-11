@@ -1,0 +1,4 @@
+-   Fixed backend data model changes.
+-   Fixed a lot of failing tests
+-   Created activity panel backend
+-   Created activity panel frontend

@@ -1,0 +1,3 @@
+-   Finished manager category creation
+-   Finished manager category ordering
+-   Finished the ability to add menu items to categories
