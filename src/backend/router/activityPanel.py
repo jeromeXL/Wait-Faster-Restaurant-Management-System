@@ -41,12 +41,10 @@ class ActivityPanelResponse(BaseModel):
 
 router = APIRouter()
 
-
 @router.get("/activity")
 async def getPanel(user=Depends(manager_or_waitstaff_user)):
 
     response = ActivityPanelResponse(tables=[])
-
     all_users = await User.find(Eq(User.role, UserRole.CUSTOMER_TABLET)).to_list()
     for user in all_users:
         session = (

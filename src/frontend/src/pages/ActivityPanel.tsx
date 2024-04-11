@@ -23,6 +23,10 @@ import {
 } from "../utils/api";
 import { useEffect, useState } from "react";
 import { UserRole, useAuth } from "../utils/user";
+import {
+    ActivityPanelUpdatedEventName,
+    NotificationSocket,
+} from "../utils/socketIo";
 
 const ActivityPanel = () => {
     const auth = useAuth();
@@ -40,6 +44,20 @@ const ActivityPanel = () => {
 
     useEffect(() => {
         fetchActivityPanel();
+
+        if (!NotificationSocket.connected) {
+            NotificationSocket.connect();
+        }
+
+        NotificationSocket.on(
+            ActivityPanelUpdatedEventName,
+            fetchActivityPanel
+        );
+
+        return () => {
+            NotificationSocket.disconnect();
+            NotificationSocket.removeListener(ActivityPanelUpdatedEventName);
+        };
     }, []);
 
     // Update order status
@@ -393,7 +411,7 @@ const ActivityPanel = () => {
                                 {`Help requests`}
                             </Box>
                         </div>
-                        <div className="h-full w-full grid grid-cols-3 md:grid-cols-4 grid-flow-row gap-4">
+                        <div className="h-full w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-flow-row gap-4">
                             {activityPanel.tables.map((table) => (
                                 <Box
                                     key={table.table_number}

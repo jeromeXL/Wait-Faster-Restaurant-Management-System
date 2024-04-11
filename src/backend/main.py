@@ -3,6 +3,8 @@ from typing import Union, List
 from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
+import socketio
+from socket_io_router.activity_panel_namespace import ActivityPanelNamespace
 from models.menuItem import MenuItem
 from models.user import User, UserRole
 from models.category import Category
@@ -20,6 +22,7 @@ from starlette.middleware.cors import CORSMiddleware
 from router.session import router as SessionRouter
 from models.order import OrderItem, Order
 from models.session import Session
+from socket_io import sio 
 
 
 @asynccontextmanager
@@ -73,16 +76,31 @@ app.include_router(OrderRouter)
 app.include_router(ActivityPanelRouter)
 app.include_router(AssistanceRequestsRouter)
 
+cors = CONFIG.cors.split(",")
+print(cors)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins="*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+socket_app = socketio.ASGIApp(sio)
+app.mount("/", socket_app)
 
 ## Sample routes.
 @app.get("/")
 def health_check():
     return "HEALTHY"
+
+@sio.event()
+def connect(sid, environ, auth):
+    pass
+
+@sio.event()
+def disconnect(sid):
+    pass
+
+

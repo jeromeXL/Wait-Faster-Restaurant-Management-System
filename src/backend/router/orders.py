@@ -10,7 +10,7 @@ from models.session import Session
 from models.order import OrderItem, Order, OrderStatus, valid_transitions
 from models.menuItem import MenuItem
 from beanie.operators import In, And
-
+from socket_io import sio
 
 router = APIRouter()
 
@@ -102,6 +102,8 @@ async def create_order(request: CreateOrderRequest, user=Depends(customer_tablet
         **order.model_dump(exclude={"id", "items"}),
         items=created_order_items_responses
     )
+
+    await sio.emit("activity_panel_updated")
     return orderResponse
 
 
@@ -145,6 +147,7 @@ async def update_order_status(
         order.status = new_status
 
     await order.save()
+    await sio.emit("activity_panel_updated")
 
     return order
 
