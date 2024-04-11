@@ -1,6 +1,5 @@
-import { Socket, io } from "socket.io-client";
+import { io } from "socket.io-client";
 import { getConfig } from "./config";
-import { ActivityPanelResponse } from "./api";
 
 const config = getConfig();
 const token = localStorage.getItem("accessToken");
