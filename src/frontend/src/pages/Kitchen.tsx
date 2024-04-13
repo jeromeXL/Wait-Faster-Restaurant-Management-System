@@ -20,81 +20,6 @@ import {
   NotificationSocket,
 } from "../utils/socketIo";
 
-// Mock data for initial orders
-const tableMock = {
-  customer_orders: [
-    {
-      table_id: 1,
-      orders: [
-        {
-          id: "101",
-          status: 2,
-          session_id: "session1",
-          items: [
-            {
-              id: "item1",
-              status: 2, // 'Ready'
-              menu_item_id: "menuItem1",
-              menu_item_name: "Margherita Pizza",
-              is_free: false,
-              preferences: [],
-              additional_notes: "",
-            },
-            {
-              id: "item2",
-              status: 0, // 'Pending'
-              menu_item_id: "menuItem2",
-              menu_item_name: "Caesar Salad",
-              is_free: false,
-              preferences: ["No anchovies"],
-              additional_notes: "Extra dressing on the side",
-            },
-          ],
-        },
-      ],
-    },
-    {
-      table_id: 2,
-      orders: [
-        {
-          id: "102",
-          status: 1, // 'Ongoing'
-          session_id: "session2",
-          items: [
-            {
-              id: "item3",
-              status: 1, // 'Ongoing'
-              menu_item_id: "menuItem3",
-              menu_item_name: "Spaghetti Carbonara",
-              is_free: false,
-              preferences: ["Less salty"],
-              additional_notes: "",
-            },
-            {
-              id: "item4",
-              status: 2, // 'Ready'
-              menu_item_id: "menuItem4",
-              menu_item_name: "Garlic Bread",
-              is_free: true,
-              preferences: [],
-              additional_notes: "Served warm",
-            },
-            {
-              id: "item5",
-              status: 0, // 'Pending'
-              menu_item_id: "menuItem5",
-              menu_item_name: "Tiramisu",
-              is_free: false,
-              preferences: ["No cocoa powder"],
-              additional_notes: "Birthday message on the plate",
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
-
 interface OrderItem {
   id: string;
   status: ItemStatus;
@@ -123,10 +48,16 @@ enum ItemStatus {
   Ready = 2, // COMPLETE <-> READY
 }
 
+interface SelectedInfo {
+  tableId: number;
+  orderId: string;
+  itemId: string;
+}
+
 const Kitchen = () => {
   const [tables, setTables] = useState<CustomerOrder[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedInfo, setSelectedInfo] = useState(null);
+  const [selectedInfo, setSelectedInfo] = useState<SelectedInfo | null>(null);
   const isMobile = useMediaQuery("(max-width:600px)");
   const [currentDateTime, setCurrentDateTime] = useState(
     new Date().toLocaleString()
@@ -166,7 +97,6 @@ const Kitchen = () => {
         "/orders?statuses=0&statuses=1&statuses=2"
       );
       setTables(response.data.customer_orders);
-      //setTables(tableMock.customer_orders);
     } catch (error) {
       console.error("Failed to fetch orders:", error);
     }
@@ -217,11 +147,7 @@ const Kitchen = () => {
     }
   };
 
-  const handleItemClick = (
-    tableId: number,
-    orderId: string,
-    itemId: string
-  ) => {
+  const handleItemClick = (tableId: number, orderId: string, itemId: string) => {
     setSelectedInfo({ tableId, orderId, itemId });
     setModalOpen(true);
   };
@@ -285,7 +211,7 @@ const Kitchen = () => {
           }}
         >
 
-          <Grid container spacing={2} sx = {{mb: '20px'}} justifyContent={isMobile ? "center" : "flex-start"}>
+          <Grid container spacing={2} sx={{ mb: '20px' }} justifyContent={isMobile ? "center" : "flex-start"}>
             {tables.map((table) => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={table.table_id}>
                 <Card raised sx={cardStyles}>
@@ -294,7 +220,7 @@ const Kitchen = () => {
                     {table.orders.map((order, orderIndex) => (
                       <Box key={order.id} sx={{ mb: 2 }}>
                         <Divider sx={{ bgcolor: 'grey', height: '1px', mt: '15px', mb: '10px' }} />
-                        <Typography variant="body2" gutterBottom sx = {{fontWeight: 'bold'}}>Order {orderIndex + 1}</Typography>
+                        <Typography variant="body2" gutterBottom sx={{ fontWeight: 'bold' }}>Order {orderIndex + 1}</Typography>
                         <List dense>
                           {order.items.map((item) => (
                             <ListItem key={item.id} disablePadding>
