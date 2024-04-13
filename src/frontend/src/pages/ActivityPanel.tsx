@@ -25,6 +25,7 @@ import {
   ActivityPanelUpdatedEventName,
   NotificationSocket,
 } from "../utils/socketIo";
+import { TodoBoard } from "../components/TodoBoard";
 
 const ActivityPanel = () => {
   const [activityPanel, setActivityPanel] =
@@ -363,6 +364,7 @@ const ActivityPanel = () => {
       <Typography variant="h4" gutterBottom sx={{ color: "#FFF" }}>
         Activity Panel
       </Typography>
+      <TodoBoard/>
       <Container maxWidth="lg" className="flex-1">
         {activityPanel == null ? (
           <>No content</>
