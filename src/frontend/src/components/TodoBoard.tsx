@@ -116,7 +116,7 @@ const BurnBarrel = ({ setCards }: any) => {
       onDragLeave={() => setActive(false)}
       className={`mt-10 grid place-content-center rounded border text-3xl
                   ${active ? "border-red-800 bg-red-800/20 text-red-500" : "border-neutral-500 bg-neutral-500/20 text-neutral-500"}
-                  sm:h-56 sm:w-56 h-36 w-90`}
+                  md:h-56 md:w-56 h-36 w-90`}
     >
       {active ? <FaFire className="animate-bounce" /> : <FiTrash />}
     </div>
