@@ -1,4 +1,4 @@
 - Started on project proposal
 - Helped brainstorming user stories
-- Worked on user interfaces on figma for the proposal
-- Added in graphics for the figma designs
+- Worked on user interfaces in Figma for the proposal.
+- Researched, designed, and incorporated custom graphics into the designs to bring the concepts to life.

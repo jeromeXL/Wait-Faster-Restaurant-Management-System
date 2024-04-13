@@ -1,2 +1,3 @@
-- Started working on the frontend of the project
-- Finished the frontend design for the login page
+- Started working on the frontend of the project, setting up the structure with Vite and React, and incorporating Material UI components.
+- Finished the frontend design for the login page, ensuring a clean and user-friendly experience.
+- Researched potential graphics for the website to enhance the overall visual appeal.

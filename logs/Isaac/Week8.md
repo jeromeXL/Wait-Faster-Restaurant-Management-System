@@ -1,0 +1,3 @@
+- Connected the Kitchen Orders page with the backend
+- Prepared script for Demo 2
+- Recorded for Demo 2

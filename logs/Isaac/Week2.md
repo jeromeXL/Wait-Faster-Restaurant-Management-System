@@ -1,3 +1,4 @@
 - Created Jira Website for the project
 - Started working on frontend designs
 - Decided to work on frontend due to previous experiences (Proficient with vite + react)
+- Started discussion on what to include for the project

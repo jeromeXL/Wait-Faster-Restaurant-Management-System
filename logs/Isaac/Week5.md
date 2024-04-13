@@ -1,0 +1,5 @@
+- Implemented the Admin Page for user role creation, complete with backend logic and a user-friendly frontend for secure permission management.
+- Added username and password change functions (excluding admin), enabling convenient self-service account updates.
+- Integrated seamless logout functionality within the frontend design, providing users with secure session control.
+- Drafted presentation script for Demo 1.
+- Recorded video for Demo 1.

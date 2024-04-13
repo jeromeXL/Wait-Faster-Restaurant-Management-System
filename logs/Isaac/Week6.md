@@ -1,0 +1,1 @@
+- Researched for graphics and designs for Kitchen Order page

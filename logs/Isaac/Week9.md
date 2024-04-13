@@ -1,0 +1,2 @@
+- Refined frontend visuals to ensure both mobile responsiveness and a professional aesthetic, enhancing user experience across devices.
+- Developed a todo component and integrated it into the activity panel, improving organization and streamlining the project management system.
