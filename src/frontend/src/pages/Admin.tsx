@@ -1,8 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography, Tabs, Snackbar, Alert, Tab, Divider, Grid } from '@mui/material';
+import { useState, useEffect, useMemo } from 'react';
+import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Typography, Tabs, Snackbar, Alert, Tab, Divider, Grid, FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import FloatingBottomNav from '../components/AdminBottomBar';
 import { getAxios } from '../utils/useAxios';
 import { UserRole } from "../utils/user";
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 
 interface User {
   userId: string;
@@ -10,6 +14,94 @@ interface User {
   password: string;
   role: UserRole;
 }
+
+interface UserRoleStatsProps {
+  users: User[];
+}
+
+const styles = {
+  adminBox: {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'start',
+    padding: 2,
+    alignItems: 'center',
+    bgcolor: '#1e1e1e',
+    paddingTop: '20px',
+    color: '#E0E0E0',
+    background: `linear-gradient(to bottom right, #1e1e1e, #333333)`,
+  },
+  container: {
+    bgcolor: 'background.paper',
+    borderRadius: 2,
+    padding: 3,
+    boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+    mb: '80px',
+    width: '100%',
+    maxWidth: '600px',
+  },
+  userBox: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    bgcolor: 'transparent',
+    padding: 2,
+    alignItems: 'center',
+  },
+  gridItem: {
+    color: 'grey',
+    textAlign: 'center',
+    width: '100%',
+  },
+  button: {
+    textTransform: 'none',
+    margin: '8px',
+  },
+  dialog: {
+    minWidth: '100%',
+    maxWidth: '600px',
+  },
+  tabLabel: {
+    textTransform: 'capitalize',
+  },
+  statsContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    width: '100%',
+    marginBottom: 2,
+    marginTop: 2,
+    padding: 2,
+    borderRadius: '8px',
+    backgroundColor: '#404040',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+    '@media (max-width:1092px)': {
+      flexDirection: 'column',
+      gap: "10px"
+    }
+  },
+  statItem: {
+    color: '#FFF',
+    textAlign: 'center',
+    padding: '10px 20px',
+    borderRadius: '10px',
+    backgroundColor: '#555',
+    margin: '0 10px',
+    flex: 1,
+    '@media (max-width:600px)': {
+      margin: '10px 0',
+    }
+  },
+  headerItem: {
+    color: 'black',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    flex: 1,
+    padding: '0 30px',
+  }
+};
+
 
 // Helper functions
 function getUserRoleEntries() {
@@ -33,12 +125,39 @@ function roleName(role: UserRole): string {
   }
 }
 
+const UserRoleStats = ({ users }: UserRoleStatsProps) => {
+  const roleCounts = useMemo(() => {
+    const counts: Partial<Record<UserRole, number>> = {};
+
+    users.forEach(user => {
+      const role = user.role;
+      if (role in counts) {
+        counts[role]! += 1;
+      } else {
+        counts[role] = 1;
+      }
+    });
+    return counts;
+  }, [users]);
+
+  return (
+    <Box sx={styles.statsContainer}>
+      {getUserRoleEntries().map(([role, value]) => (
+        <Typography key={role} sx={styles.statItem}>
+          {roleName(value as UserRole)}: {roleCounts[value as UserRole] || 0}
+        </Typography>
+      ))}
+    </Box>
+  );
+};
+
 const Admin = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [open, setOpen] = useState<boolean>(false);
   const [editOpen, setEditOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
+  const [roleFilter, setRoleFilter] = useState<string | UserRole>('All');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -60,6 +179,12 @@ const Admin = () => {
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const handleRoleFilterChange = (event: SelectChangeEvent) => {
+    setRoleFilter(event.target.value);
+  };
+
+  const filteredUsers = users.filter(user => roleFilter === 'All' ? true : user.role === roleFilter as UserRole);
 
   const handleAddUser = async (newUser: User) => {
     try {
@@ -112,48 +237,63 @@ const Admin = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'start',
-        padding: 2,
-        alignItems: 'center',
-        bgcolor: '#121212',
-        paddingTop: '20px',
-        color: '#E0E0E0',
-        background: `linear-gradient(to bottom right, #121212, #2C2C2C)`,
-      }}
-    >
-      <Typography variant="h4" gutterBottom sx={{ color: '#FFF' }}>Admin Dashboard</Typography>
-      <Container maxWidth="sm" sx={{
-        bgcolor: 'white',
-        borderRadius: 2,
-        padding: 2,
-        boxShadow: '0 4px 10px rgba(0,0,0,0.5)',
-      }}>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', bgcolor: 'transparant', padding: 1 }}>
-            <Typography variant="body1" color='black'><strong>User</strong></Typography>
-            <Typography variant="body1" color='black'><strong>Role</strong></Typography>
-            <Typography variant="body1" color='black'><strong>Edit</strong></Typography>
-          </Box>
-          <Divider />
-          {users.map((user, index) => (
-            <Grid key={index} container alignItems="center" justifyContent="space-between">
-              <Grid item xs={4}>
-                <Typography variant="body1" color='grey' textAlign="left">{user.username}</Typography>
-              </Grid>
-              <Grid item xs={4}>
-                <Typography variant="body1" color='grey' textAlign="center">{roleName(user.role)}</Typography>
-              </Grid>
-              <Grid item xs={4} display="flex" justifyContent="flex-end">
-                <Button variant="outlined" size="small" onClick={() => handleEditUser(index)}>Edit</Button>
-              </Grid>
-            </Grid>
-          ))}
+    <Box sx={styles.adminBox}>
+      <Typography variant="h4" gutterBottom sx={{ color: '#FFF' }}>
+        <AccountCircleIcon sx={{ verticalAlign: 'middle', mr: 1 }} />Admin Dashboard
+      </Typography>
+      <UserRoleStats users={users} />
+      <Box sx={{ minWidth: 120, marginBottom: 2 }}>
+        <FormControl fullWidth>
+          <InputLabel id="role-filter-label" sx={{ color: 'white' }}>Role Filter</InputLabel>
+          <Select
+            labelId="role-filter-label"
+            id="role-filter"
+            value={roleFilter.toString()}
+            label="Role Filter"
+            onChange={handleRoleFilterChange}
+            sx={{
+              color: "white",
+              '.MuiOutlinedInput-notchedOutline': {
+                borderColor: "white",
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: "white",
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: "white",
+              },
+              '.MuiSvgIcon-root ': {
+                fill: "white",
+              },
+            }}
+          >
+            <MenuItem value="All">All</MenuItem>
+            {getUserRoleEntries().map(([key, value]) => (
+              <MenuItem key={key} value={value}>{roleName(value as UserRole)}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+      <Container maxWidth="sm" sx={styles.container}>
+        <Box sx={styles.userBox}>
+          <Typography variant="body1" sx={styles.headerItem}><PersonIcon sx={{ verticalAlign: 'middle', mr: 1 }} />User</Typography>
+          <Typography variant="body1" sx={styles.headerItem}><AdminPanelSettingsIcon sx={{ verticalAlign: 'middle', mr: 1 }} />Role</Typography>
+          <Typography variant="body1" sx={styles.headerItem}><EditIcon sx={{ verticalAlign: 'middle', mr: 1 }} />Edit</Typography>
         </Box>
+        <Divider />
+        {filteredUsers.map((user, index) => (
+          <Grid key={index} container alignItems="center" justifyContent="space-between">
+            <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Typography variant="body1" sx={styles.gridItem}>{user.username}</Typography>
+            </Grid>
+            <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Typography variant="body1" sx={styles.gridItem}>{roleName(user.role)}</Typography>
+            </Grid>
+            <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+              <Button variant="outlined" size="small" startIcon={<EditIcon />} sx={styles.button} onClick={() => handleEditUser(index)}>Edit</Button>
+            </Grid>
+          </Grid>
+        ))}
       </Container>
       <AddUserDialog open={open} onClose={handleClose} onAddUser={handleAddUser} />
       {selectedUser && (
