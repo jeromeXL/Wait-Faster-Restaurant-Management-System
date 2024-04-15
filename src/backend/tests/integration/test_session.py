@@ -1,6 +1,7 @@
 import pytest
 import pytest_asyncio
 from httpx import AsyncClient
+from router.admin import UserInfo
 from tests.integration.client import get_client
 from config import CONFIG
 from models.user import User, UserRole
@@ -81,12 +82,12 @@ async def test_admin_cant_start_session(admin_client):
 async def test_session_not_created_upon_user_create(admin_client: AsyncClient):
     users_response = await admin_client.get("/users")
     assert users_response.status_code == 200
+    data = [UserInfo.model_validate(item) for item in users_response.json()]
+    user1Filter = [item for item in data if item.username == 'Table1']
+    assert len(user1Filter) == 1
+    user1 = user1Filter[0]
 
-    data = users_response.json()
-    if data[1]["username"] == "Table1":
-        assert data[1]["active_session"] is None
-    elif data[0]["username"] == "Table1":
-        assert data[0]["active_session"] is None
+    assert user1.active_session == 'None'
 
 
 @pytest.mark.asyncio

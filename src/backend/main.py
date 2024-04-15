@@ -4,7 +4,6 @@ from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 import socketio
-from socket_io_router.activity_panel_namespace import ActivityPanelNamespace
 from models.menuItem import MenuItem
 from models.user import User, UserRole
 from models.category import Category
@@ -22,7 +21,7 @@ from starlette.middleware.cors import CORSMiddleware
 from router.session import router as SessionRouter
 from models.order import OrderItem, Order
 from models.session import Session
-from socket_io import sio 
+from socket_io import sio
 
 
 @asynccontextmanager
@@ -30,7 +29,8 @@ async def lifespan(app: FastAPI):
     """Initialize application services."""
 
     # Init beanie with the Product document class
-    app.db = AsyncIOMotorClient(CONFIG.mongo_connection_string).account  # type: ignore[attr-defined]
+    # type: ignore[attr-defined]
+    app.db = AsyncIOMotorClient(CONFIG.mongo_connection_string).account
 
     await init_beanie(
         app.db,
@@ -63,7 +63,8 @@ app = FastAPI(
     title="Wait Faster API",
     description="The api for the wait faster application.",
     version="0.1.0",
-    lifespan=lifespan,  # Registers the 'lifespan' function to run at startup and shutdown. It stores a reference to the database, so that models can access them during api calls.
+    # Registers the 'lifespan' function to run at startup and shutdown. It stores a reference to the database, so that models can access them during api calls.
+    lifespan=lifespan,
 )
 
 app.include_router(AuthRouter)
@@ -87,20 +88,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+@app.get("/healthz")
+def health_check():
+    return "HEALTHY"
+
+
 socket_app = socketio.ASGIApp(sio)
 app.mount("/", socket_app)
 
-## Sample routes.
-@app.get("/")
-def health_check():
-    return "HEALTHY"
 
 @sio.event()
 def connect(sid, environ, auth):
     pass
 
+
 @sio.event()
 def disconnect(sid):
     pass
-
-

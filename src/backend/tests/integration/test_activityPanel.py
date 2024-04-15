@@ -9,7 +9,7 @@ from router.orders import (
     OrderResponse,
 )
 from models.menuItem import MenuItem
-from router.menuItem import CreateMenuItemRequest, MenuItemResponse
+from router.menuItem import MenuItemRequest, MenuItemResponse
 from models.order import OrderStatus
 from router.session import SessionResponse
 from tests.integration.client import get_client
@@ -121,13 +121,14 @@ async def test_activity_panel_returns_correct_users(
 ):
 
     # Create a new menu item
-    response = await manager_client.post(
+    response = await manager_client.put(
         "/menu-item/",
-        json=CreateMenuItemRequest(
+        json=MenuItemRequest(
             name="Test Item",
             price=10.99,
             health_requirements=["Vegetarian"],
             description="This is a test menu item.",
+            ingredients=["testing"]
         ).model_dump(),
     )
     menu_item = MenuItem.model_validate(response.json())
@@ -149,7 +150,8 @@ async def test_activity_panel_returns_correct_users(
     # Get Activity Panel response
     response = await manager_client.get("/activity")
     assert response.status_code == 200
-    activity_panel_response = ActivityPanelResponse.model_validate(response.json())
+    activity_panel_response = ActivityPanelResponse.model_validate(
+        response.json())
     assert activity_panel_response == ActivityPanelResponse(
         tables=[
             TableActivityResponse(

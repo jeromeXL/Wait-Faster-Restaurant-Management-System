@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Tuple
 from httpx import AsyncClient
 import pytest
-from router.menuItem import CreateMenuItemRequest, MenuItemResponse
+from router.menuItem import MenuItemRequest, MenuItemResponse
 from models.session import Session, SessionStatus
 from router.orders import (
     CreateOrderRequest,
@@ -61,7 +61,8 @@ async def customer_tablet_client():
     async with await get_client() as client:
 
         session = Session(
-            orders=[], status=SessionStatus.OPEN, session_start_time=str(datetime.now())
+            orders=[], status=SessionStatus.OPEN, session_start_time=str(
+                datetime.now())
         )
         await session.create()
 
@@ -91,13 +92,14 @@ async def test_order_menu_items_valid(
 
     session_id = customer_tablet_client[1].id
     # Create a new menu item
-    response = await manager_client.post(
+    response = await manager_client.put(
         "/menu-item/",
-        json=CreateMenuItemRequest(
+        json=MenuItemRequest(
             name="Test Item",
             price=10.99,
             health_requirements=["Vegetarian"],
             description="This is a test menu item.",
+            ingredients=["testing"]
         ).model_dump(),
     )
     assert response.status_code == 200
@@ -126,13 +128,14 @@ async def test_can_update_order_item_state(
     session_id = customer_tablet_client[1].id
 
     # Create a new menu item
-    response = await manager_client.post(
+    response = await manager_client.put(
         "/menu-item/",
-        json=CreateMenuItemRequest(
+        json=MenuItemRequest(
             name="Test Item",
             price=10.99,
             health_requirements=["Vegetarian"],
             description="This is a test menu item.",
+            ingredients=["testing"]
         ).model_dump(),
     )
     assert response.status_code == 200
@@ -155,7 +158,7 @@ async def test_can_update_order_item_state(
     order_response = OrderResponse.model_validate(response.json())
     status_update_payload = OrderUpdateRequest(status=OrderStatus.PREPARING)
     order_id = order_response.id
-    item_id = order_response.items[0].menu_item_id
+    item_id = order_response.items[0].id
 
     # Format the URL string with the order_id and item_id variables
     url = f"/order/{order_id}/{item_id}"
@@ -165,7 +168,6 @@ async def test_can_update_order_item_state(
         url, json=status_update_payload.model_dump()
     )
 
-    print(update_response.json())
     assert update_response.status_code == 200
 
 
@@ -177,13 +179,14 @@ async def test_get_orders_with_filters(
     session_id = customer_tablet_client[1].id
 
     # Create a new menu item
-    response = await manager_client.post(
+    response = await manager_client.put(
         "/menu-item/",
-        json=CreateMenuItemRequest(
+        json=MenuItemRequest(
             name="Test Item",
             price=10.99,
             health_requirements=["Vegetarian"],
             description="This is a test menu item.",
+            ingredients=["Testing"]
         ).model_dump(),
     )
     assert response.status_code == 200
@@ -209,7 +212,8 @@ async def test_get_orders_with_filters(
     assert response.status_code == 200
     orders_response = GetOrdersResponse.model_validate(response.json())
     assert orders_response == GetOrdersResponse(
-        customer_orders=[CustomerOrderResponse(orders=[order_response], table_id=1)]
+        customer_orders=[CustomerOrderResponse(
+            orders=[order_response], table_id=1)]
     )
 
     # Perform another get request but filter for only pending orders.
@@ -221,7 +225,7 @@ async def test_get_orders_with_filters(
     # Make the request using the formatted URL
     status_update_payload = OrderUpdateRequest(status=OrderStatus.PREPARING)
     order_id = order_response.id
-    item_id = order_response.items[0].menu_item_id
+    item_id = order_response.items[0].id
     update_response = await manager_client.post(
         f"/order/{order_id}/{item_id}", json=status_update_payload.model_dump()
     )

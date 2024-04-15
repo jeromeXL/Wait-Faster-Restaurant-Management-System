@@ -7,11 +7,12 @@ from models.menuItem import MenuItem
 router = APIRouter()
 
 
-class CreateMenuItemRequest(BaseModel):
+class MenuItemRequest(BaseModel):
     name: str
     price: float
     health_requirements: List[str]
     description: str
+    ingredients: List[str]
 
 
 class MenuItemResponse(BaseModel):
@@ -20,6 +21,7 @@ class MenuItemResponse(BaseModel):
     price: float
     health_requirements: List[str]
     description: str
+    ingredients: List[str]
 
 
 @router.get("/menu-items", response_model=List[MenuItemResponse])
@@ -29,9 +31,9 @@ async def get_menu_items(current_user=Depends(current_user)):
     return [MenuItemResponse(**item.model_dump()) for item in filtered_items]
 
 
-@router.post("/menu-item/", response_model=MenuItemResponse)
+@router.put("/menu-item/", response_model=MenuItemResponse)
 async def create_menu_item(
-    menu_item: CreateMenuItemRequest, user=Depends(manager_user)
+    menu_item: MenuItemRequest, user=Depends(manager_user)
 ):
     validated_menu_item = MenuItem.model_validate(menu_item.model_dump())
     # Menu Item Create Validation Checks
@@ -51,10 +53,10 @@ async def create_menu_item(
     return MenuItemResponse(**new_menu_item.model_dump())
 
 
-@router.put("/menu-item/{menu_item_id}", response_model=MenuItemResponse)
+@router.post("/menu-item/{menu_item_id}", response_model=MenuItemResponse)
 async def update_menu_item(
     menu_item_id: str,
-    updatedMenuItem: CreateMenuItemRequest,
+    updatedMenuItem: MenuItemRequest,
     user=Depends(manager_user),
 ):
     menu_item = await MenuItem.get(menu_item_id)
@@ -65,6 +67,7 @@ async def update_menu_item(
     menu_item.price = validated_menu_item.price
     menu_item.health_requirements = validated_menu_item.health_requirements
     menu_item.description = validated_menu_item.description
+    menu_item.ingredients = validated_menu_item.ingredients
     await menu_item.save()
     return MenuItemResponse(**menu_item.model_dump())
 
