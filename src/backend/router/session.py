@@ -267,7 +267,7 @@ async def tablet_resolve_assistance_request(customer_tablet: User = Depends(cust
             status_code=404, detail="The session currently does not have a help request.")
 
     # Close the assistance request.
-    session.assistance_requests.current.status = AssistanceRequestStatus.CLOSED
+    session.assistance_requests.current.status = AssistanceRequestStatus.CANCELLED if session.assistance_requests.current.status == AssistanceRequestStatus.OPEN else AssistanceRequestStatus.CLOSED
     session.assistance_requests.current.end_time = datetime.now().isoformat()
     session.assistance_requests.handled.append(
         session.assistance_requests.current)

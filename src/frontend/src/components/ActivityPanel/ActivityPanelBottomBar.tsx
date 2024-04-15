@@ -1,16 +1,14 @@
 import { motion } from "framer-motion";
-import { FiLogOut, FiList, FiCoffee, FiRotateCcw } from "react-icons/fi";
+import { FiLogOut, FiList, FiCoffee, FiMap, FiClipboard } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { UserRole, useAuth } from "../../utils/user";
 import { IconType } from "react-icons";
+import { FC } from "react";
+import { useLocation } from "react-router-dom";
 
-const ActivityPanelBottomBar = ({
-    refresh,
-}: {
-    refresh: () => Promise<void>;
-}) => {
+const ActivityPanelBottomBar: FC = () => {
     const auth = useAuth();
-
+    const location = useLocation();
     return (
         <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center items-center pb-4">
             <motion.nav
@@ -19,8 +17,19 @@ const ActivityPanelBottomBar = ({
                 transition={{ duration: 0.5 }}
                 className="bg-white text-black shadow-lg flex rounded-lg overflow-hidden"
             >
-                {auth?.isRole(UserRole.WAIT_STAFF) && (
-                    <NavItem to="/menu" text="Menu" Icon={FiCoffee} />
+                {location.pathname != "/notice-board" && (
+                    <NavItem
+                        to="/notice-board"
+                        text="Notice Board"
+                        Icon={FiClipboard}
+                    />
+                )}
+                {location.pathname != "/activity-panel" && (
+                    <NavItem
+                        to="/activity-panel"
+                        text="Activity Panel"
+                        Icon={FiMap}
+                    />
                 )}
                 {auth?.isRole(UserRole.MANAGER) && (
                     <NavItem
@@ -36,7 +45,6 @@ const ActivityPanelBottomBar = ({
                         Icon={FiList}
                     />
                 )}
-                <ButtonItem text="Refresh" Icon={FiRotateCcw} click={refresh} />
                 <NavItem to="/logout" text="Logout" Icon={FiLogOut} />
             </motion.nav>
         </div>
@@ -60,26 +68,6 @@ const NavItem = ({
             <Icon className="text-lg" />
             <span className="text-base">{text}</span>
         </Link>
-    );
-};
-
-const ButtonItem = ({
-    text,
-    Icon,
-    click,
-}: {
-    text: string;
-    Icon: IconType;
-    click: () => Promise<void>;
-}) => {
-    return (
-        <button
-            className="flex items-center justify-center gap-2 p-4 hover:bg-gray-100 text-black transition-colors"
-            onClick={click}
-        >
-            <Icon className="text-lg" />
-            <span className="text-base">{text}</span>
-        </button>
     );
 };
 

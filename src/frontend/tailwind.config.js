@@ -44,4 +44,12 @@ export default {
         },
     },
     plugins: [],
+    safelist: [
+        {
+            // Automatically imports all the colours since we want them for changing colours based on variables.
+            pattern:
+                /bg-(primary|primary-light|primary-main|primary-dark|secondary|secondary-light|secondary-main|secondary-dark|error|error-light|error-main|error-dark|warning|warning-light|warning-main|warning-dark|info|info-light|info-main|info-dark|success|success-light|success-main|success-dark)/,
+            variants: ["hover", "group-hover"],
+        },
+    ],
 };

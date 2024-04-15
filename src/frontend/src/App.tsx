@@ -13,6 +13,7 @@ import ActivityPanel from "./pages/ActivityPanel";
 import Kitchen from "./pages/Kitchen";
 import CustomerMenu from "./pages/CustomerMenu";
 import EndPage from "./pages/endPage";
+import NoticeBoard from "./pages/NoticeBoard";
 
 function App() {
     return (
@@ -38,6 +39,7 @@ function App() {
                     <Route path="/activity-panel" element={<ActivityPanel />} />
                     <Route path="/kitchen" element={<Kitchen />} />
                     <Route path="/end" element={<EndPage />} />
+                    <Route path="/notice-board" element={<NoticeBoard />} />
                 </Routes>
             </Router>
         </>
