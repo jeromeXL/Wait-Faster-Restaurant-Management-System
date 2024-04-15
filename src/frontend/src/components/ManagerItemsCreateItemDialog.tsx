@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import {
-    CreateMenuItemRequest,
+    MenuItemRequest,
     MenuItemResponse,
     createMenuItem,
     stringifyApiError,
@@ -32,11 +32,12 @@ const ManagerMenuCreateItemDialog = ({
 
     const onSubmit = async () => {
         // Construct a new category object
-        const request: CreateMenuItemRequest = {
+        const request: MenuItemRequest = {
             name: itemName ?? "",
             description: description ?? "",
             price: price ?? 0,
             health_requirements: [],
+            ingredients: [],
         };
 
         // Make a request to the create category api

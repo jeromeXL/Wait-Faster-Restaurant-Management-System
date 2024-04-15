@@ -9,3 +9,4 @@ class MenuItem(Document):
     price: float
     health_requirements: List[str]
     description: str
+    ingredients: List[str]
