@@ -287,58 +287,66 @@ const ActivityPanel = () => {
                         sx={{ bgcolor: "grey", height: "1px", mt: "10px" }}
                     />
                     <DialogContent>
-                        <Box className="flex gap-2 justify-between">
-                            <div className="flex gap-2">
-                                <FiBell className="text-2xl text-error" />
-                                <label>Help</label>
-                            </div>
-                            {dto.current_session.assistance_requests.current
-                                ?.status == AssistanceRequestStatus.OPEN && (
+                        {dto.current_session.assistance_requests.current && (
+                            <Box className="flex gap-2 justify-between">
                                 <div className="flex gap-2">
-                                    <Chip label="OPEN" color="error" />
-                                    <Chip
-                                        label="HANDLING"
-                                        className="select-none"
-                                        sx={{ cursor: "pointer" }}
-                                        onClick={() =>
-                                            onUpdateAssistanceRequestStatus(
-                                                dto,
-                                                AssistanceRequestStatus.HANDLING
-                                            )
-                                        }
-                                    />
+                                    <FiBell className="text-2xl text-error" />
+                                    <label className="text-sm">
+                                        Assistance
+                                    </label>
                                 </div>
-                            )}
-                            {dto.current_session.assistance_requests.current
-                                ?.status ==
-                                AssistanceRequestStatus.HANDLING && (
-                                <div className="flex gap-2">
-                                    <Chip
-                                        label="OPEN"
-                                        className="select-none"
-                                        sx={{ cursor: "pointer" }}
-                                        onClick={() =>
-                                            onUpdateAssistanceRequestStatus(
-                                                dto,
-                                                AssistanceRequestStatus.OPEN
-                                            )
-                                        }
-                                    />
-                                    <Chip label="HANDLING" color="secondary" />
-                                    <Chip
-                                        label="CLOSED"
-                                        className="select-none"
-                                        sx={{ cursor: "pointer" }}
-                                        onClick={() =>
-                                            onUpdateAssistanceRequestStatus(
-                                                dto,
-                                                AssistanceRequestStatus.CLOSED
-                                            )
-                                        }
-                                    />
-                                </div>
-                            )}
-                        </Box>
+                                {dto.current_session.assistance_requests.current
+                                    ?.status ==
+                                    AssistanceRequestStatus.OPEN && (
+                                    <div className="flex gap-2">
+                                        <Chip label="OPEN" color="error" />
+                                        <Chip
+                                            label="HANDLING"
+                                            className="select-none"
+                                            sx={{ cursor: "pointer" }}
+                                            onClick={() =>
+                                                onUpdateAssistanceRequestStatus(
+                                                    dto,
+                                                    AssistanceRequestStatus.HANDLING
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                )}
+                                {dto.current_session.assistance_requests.current
+                                    ?.status ==
+                                    AssistanceRequestStatus.HANDLING && (
+                                    <div className="flex gap-2">
+                                        <Chip
+                                            label="OPEN"
+                                            className="select-none"
+                                            sx={{ cursor: "pointer" }}
+                                            onClick={() =>
+                                                onUpdateAssistanceRequestStatus(
+                                                    dto,
+                                                    AssistanceRequestStatus.OPEN
+                                                )
+                                            }
+                                        />
+                                        <Chip
+                                            label="HANDLING"
+                                            color="secondary"
+                                        />
+                                        <Chip
+                                            label="CLOSED"
+                                            className="select-none"
+                                            sx={{ cursor: "pointer" }}
+                                            onClick={() =>
+                                                onUpdateAssistanceRequestStatus(
+                                                    dto,
+                                                    AssistanceRequestStatus.CLOSED
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                )}
+                            </Box>
+                        )}
                         <Box className="flex flex-col pb-2 divide-y-2">
                             {dto.current_session.orders.length > 0 && (
                                 <div className={`py-2`}>
@@ -491,7 +499,7 @@ const ActivityPanel = () => {
                                 sx={{ bgcolor: "white" }}
                             >
                                 <p className="text-xl">0</p>
-                                {`Help requests`}
+                                {`Assistance requests`}
                             </Box>
                         </div>
                         <div className="h-full w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 grid-flow-row gap-4">
