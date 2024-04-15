@@ -43,6 +43,7 @@ const ManagerMenuEditItemDialog = ({
             description: description ?? "",
             price: price ?? 0,
             health_requirements: [],
+            ingredients: [],
         };
 
         // Make a request to the create category api
