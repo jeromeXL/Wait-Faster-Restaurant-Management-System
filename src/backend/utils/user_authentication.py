@@ -1,3 +1,4 @@
+from typing import Callable, Coroutine, List
 from fastapi import HTTPException, Security
 from fastapi_jwt import JwtAuthorizationCredentials
 
@@ -82,7 +83,8 @@ async def manager_or_waitstaff_user(
 ) -> User:
     user = await user_from_credentials(auth)
     if user is None:
-        raise HTTPException(status_code=404, detail="404 Not found: User not found")
+        raise HTTPException(
+            status_code=404, detail="404 Not found: User not found")
     if user.role not in [UserRole.MANAGER, UserRole.WAIT_STAFF]:
         raise HTTPException(
             status_code=401,
@@ -96,7 +98,8 @@ async def any_staff_user(
 ) -> User:
     user = await user_from_credentials(auth)
     if user is None:
-        raise HTTPException(status_code=404, detail="404 Not found: User not found")
+        raise HTTPException(
+            status_code=404, detail="404 Not found: User not found")
     if user.role in [UserRole.CUSTOMER_TABLET, UserRole.USER_ADMIN]:
         raise HTTPException(
             status_code=401,

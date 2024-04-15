@@ -164,22 +164,62 @@ export enum SessionStatus {
     CLOSED = 2,
 }
 
+// Sessions
+export enum AssistanceRequestStatus {
+    OPEN = 0,
+    HANDLING = 1,
+    CLOSED = 2,
+    CANCELLED = 3,
+}
+
+export type AssistanceRequest = {
+    start_time: string;
+    end_time: string | null;
+    notes: string | null;
+    status: AssistanceRequestStatus;
+};
 export type SessionResponse = {
     id: string;
     status: SessionStatus;
     orders: OrderResponse[];
     session_start_time: string;
     session_end_time: string;
+    assistance_requests: {
+        current: AssistanceRequest | null;
+        handled: AssistanceRequest[];
+    };
 };
 
-export const apiStartSession = async () =>
+export const startSession = async () =>
     await getAxios()
         .post("/session/start")
         .then((resp) => resp.data as SessionResponse);
 
-export const apiGetSession = async () =>
+export const getSession = async () =>
     await getAxios()
         .get("/table/session")
+        .then((resp) => resp.data as SessionResponse);
+
+// Sessions - Help requests.
+export const createAssistanceRequest = async () =>
+    await getAxios()
+        .put("/session/assistance-request/create")
+        .then((resp) => resp.data as SessionResponse);
+
+export type StaffUpdateAssistanceRequest = {
+    session_id: string;
+    status: AssistanceRequestStatus;
+};
+export const staffUpdateAssistanceRequest = async (
+    request: StaffUpdateAssistanceRequest
+) =>
+    await getAxios()
+        .put("/session/assistance-request/staff-update", request)
+        .then((resp) => resp.data as SessionResponse);
+
+export const tabletResolveAssistanceRequest = async () =>
+    await getAxios()
+        .put("/session/assistance-request/tablet-resolve")
         .then((resp) => resp.data as SessionResponse);
 
 // Activity Panel

@@ -3,7 +3,7 @@ from typing import Tuple
 from httpx import AsyncClient
 import pytest
 from router.menuItem import MenuItemRequest, MenuItemResponse
-from models.session import Session, SessionStatus
+from models.session import AssistanceRequestsDetails, Session, SessionStatus
 from router.orders import (
     CreateOrderRequest,
     CreateOrderItemRequest,
@@ -61,8 +61,12 @@ async def customer_tablet_client():
     async with await get_client() as client:
 
         session = Session(
-            orders=[], status=SessionStatus.OPEN, session_start_time=str(
-                datetime.now())
+            orders=[], status=SessionStatus.OPEN,
+            session_start_time=str(datetime.now()),
+            assistance_requests=AssistanceRequestsDetails(
+                current=None,
+                handled=[]
+            )
         )
         await session.create()
 
