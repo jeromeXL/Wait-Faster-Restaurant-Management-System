@@ -66,15 +66,17 @@ async def setup_fixture():
             price=10.99,
             health_requirements=[],
             description="Contains Meat",
+            ingredients=[]
         )
         await menu_item_1.create()
 
-         # Create a food item
+        # Create a food item
         menu_item_2 = MenuItem(
             name="Cookie",
             price=5,
             health_requirements=["Nuts"],
             description="Contains nuts",
+            ingredients=[]
         )
         await menu_item_2.create()
 
@@ -84,10 +86,11 @@ async def setup_fixture():
             price=3.50,
             health_requirements=[""],
             description="",
+            ingredients=[]
         )
         await menu_item_3.create()
 
-         # Create a food item
+        # Create a food item
         category_1 = Category(
             index=1,
             menu_items=[
@@ -106,7 +109,6 @@ async def setup_fixture():
             name="Drink"
         )
         await category_2.create()
-
 
         yield (menu_item_1)
         # Dispose of client
