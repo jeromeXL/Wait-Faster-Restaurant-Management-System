@@ -103,11 +103,13 @@ export const editMenuItem = async (id: string, req: MenuItemRequest) =>
         .then((resp) => resp.data as MenuItemResponse);
 export const deleteMenuItem = async (id: string) =>
     await getAxios().delete(`/menu-item/${id}`);
+export const getMenuItem = async(id: string) =>
+    await getAxios().get(`/menu-item/${id}`);
 
 export type ReorderMenuRequest = {
     order: string[];
 };
-export const reorderMenu = async (req: ReoderMenuRequest) => {
+export const reorderMenu = async (req: ReorderMenuRequest) => {
     const response = await getAxios().put("/menu/reorder", req);
     return response.data as GetMenuResponse;
 };

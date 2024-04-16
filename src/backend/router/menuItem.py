@@ -1,6 +1,6 @@
 from typing import List, Optional, Set
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from utils.user_authentication import current_user, manager_user
 from models.menuItem import MenuItem
 
@@ -13,6 +13,7 @@ class MenuItemRequest(BaseModel):
     health_requirements: List[str]
     description: str
     ingredients: List[str]
+    photo_url: Optional[str] = Field(default=None)
 
 
 class MenuItemResponse(BaseModel):
@@ -22,6 +23,7 @@ class MenuItemResponse(BaseModel):
     health_requirements: List[str]
     description: str
     ingredients: List[str]
+    photo_url: Optional[str] = Field(default=None)
 
 
 @router.get("/menu-items", response_model=List[MenuItemResponse])
@@ -68,6 +70,7 @@ async def update_menu_item(
     menu_item.health_requirements = validated_menu_item.health_requirements
     menu_item.description = validated_menu_item.description
     menu_item.ingredients = validated_menu_item.ingredients
+    menu_item.photo_url = validated_menu_item.photo_url
     await menu_item.save()
     return MenuItemResponse(**menu_item.model_dump())
 
@@ -79,3 +82,10 @@ async def delete_menu_item(menu_item_id: str, user=Depends(manager_user)):
         raise HTTPException(status_code=404, detail="Menu item not found")
     await menu_item.delete()
     return {"message": "Menu item deleted successfully"}
+
+@router.get("/menu-item/{menu_item_id}")
+async def get_menu_item(menu_item_id: str, user=Depends(manager_user)):
+    menu_item = await MenuItem.get(menu_item_id)
+    if not menu_item:
+        raise HTTPException(status_code=404, detail="Menu item not found")
+    return MenuItemResponse(**menu_item.model_dump())
