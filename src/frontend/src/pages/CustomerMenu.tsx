@@ -320,23 +320,6 @@ const CustomerMenu = () => {
 
     const [error, setError] = useState<string | null>(null);
 
-  async function fetchTableSession() {
-    try {
-      const response = await getAxios().get('/table/session');
-      if (response.data) {
-        setSessionID(response.data.id);
-      } else {
-        console.error('Error fetching table session');
-      }
-    } catch (error) {
-      console.error('Error fetching table session:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchTableSession().catch((err) => console.log("Failed to fetch session", err));
-  }, []);
-
   const sendItems = async (event) => {
     event.preventDefault();
     try {
@@ -353,23 +336,7 @@ const CustomerMenu = () => {
       });
   
       const response = await MakeOrder({
-        session_id: sessionID,
-        items: itemsToSend
-      });
-      const itemsToSend = [];
-      Object.entries(pendingCart).forEach(([itemId, quantity]) => {
-        for (let i = 0; i < quantity; i++) {
-          itemsToSend.push({
-            menu_item_id: itemId,
-            is_free: false,
-            preferences: [],
-            additional_notes: '',
-          });
-        }
-      });
-  
-      const response = await MakeOrder({
-        session_id: sessionID,
+        session_id: session.id,
         items: itemsToSend
       });
 
