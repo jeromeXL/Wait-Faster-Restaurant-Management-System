@@ -34,6 +34,7 @@ import {
     DialogContentText,
     DialogActions,
 } from "@mui/material";
+
 import { DietaryDetail, Menu, MenuItem } from "../utils/menu";
 import {
     MakeOrder,
@@ -43,6 +44,7 @@ import {
     createAssistanceRequest,
     tabletResolveAssistanceRequest,
     CreateOrderItemRequest,
+    OrderStatus
 } from "../utils/api";
 import {
     AssistanceRequestUpdatedEventName,
@@ -467,7 +469,7 @@ const CustomerMenu = () => {
                         paddingBottom: "20px",
                     }}
                 >
-                    <Table aria-label="simple table">
+                    <Table aria-label="cart">
                         <TableHead>
                             <TableRow>
                                 <TableCell
@@ -662,6 +664,97 @@ const CustomerMenu = () => {
                         </div>
                     )}
                 </div>
+            </Box>
+            <Box
+            sx={{
+                display: 'flex', 
+                flexDirection: 'column',
+                alignItems: 'left', 
+            }}
+            >
+                <Typography 
+                    variant="h6" 
+                    component="div" 
+                    sx={{
+                        color: '#F0F0F0',
+                        textAlign: 'left', 
+                        paddingTop: '40px'
+                    }}
+                >
+                    Ordered Items
+                </Typography>
+                <TableContainer
+                    component={Paper}
+                    elevation={0}
+                    sx={{
+                        backgroundColor: "transparent",
+                        paddingBottom: "20px",
+                    }}
+                >
+                    <Table aria-label="ordered_items">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell 
+                                    style={{
+                                        fontWeight: 'bold', 
+                                        color: 'white' 
+                                    }}
+                                >
+                                    Item
+                                </TableCell>
+                                <TableCell 
+                                    align="left" 
+                                    style={{ 
+                                        fontWeight: 'bold', 
+                                        color: 'white' 
+                                    }}
+                                >
+                                    Price
+                                </TableCell>
+                                {/* <TableCell align="right" style={{ fontWeight: 'bold', color: 'white' }}>Quantity</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold', color: 'white' }}>Subtotal</TableCell> */}
+                                <TableCell 
+                                    style={{ 
+                                        fontWeight: 'bold', 
+                                        color: 'white' 
+                                    }}
+                                >
+                                    Status
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {session?.orders.map((order) => (
+                                order.items.map((item) => (
+                                    <TableRow
+                                        key={item.id}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row" style={{ fontWeight: 'bold', color: 'white'}}>
+                                            {item.menu_item_name}
+                                        </TableCell>
+                                        <TableCell 
+                                            align="left" 
+                                            style={{ 
+                                                color: 'white'
+                                            }}
+                                        >
+                                            {currencyFormatter.format(
+                                                menuItems[item.menu_item_id].price
+                                            )}
+                                        </TableCell>
+                                        {/* quantity? */}
+                                        <TableCell 
+                                            style={{ color: 'white'}}
+                                        >
+                                            {OrderStatus[item.status]}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             </Box>
             <div
                 style={{
