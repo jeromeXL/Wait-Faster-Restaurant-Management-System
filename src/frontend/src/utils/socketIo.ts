@@ -20,3 +20,4 @@ function onDisconnect() {
 }
 
 export const ActivityPanelUpdatedEventName = "activity_panel_updated";
+export const AssistanceRequestUpdatedEventName = "assistance_request_update";

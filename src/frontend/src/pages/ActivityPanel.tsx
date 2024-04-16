@@ -19,12 +19,14 @@ import {
     SessionStatus,
     TableActivityResponse,
     getActivityPanel,
+    staffReopenAssistanceRequest,
     staffUpdateAssistanceRequest,
     updateOrderStatus,
 } from "../utils/api";
 import { useEffect, useState } from "react";
 import {
     ActivityPanelUpdatedEventName,
+    AssistanceRequestUpdatedEventName,
     NotificationSocket,
 } from "../utils/socketIo";
 import { FiBell, FiX } from "react-icons/fi";
@@ -54,9 +56,17 @@ const ActivityPanel = () => {
             fetchActivityPanel
         );
 
+        NotificationSocket.on(
+            AssistanceRequestUpdatedEventName,
+            fetchActivityPanel
+        );
+
         return () => {
             NotificationSocket.disconnect();
             NotificationSocket.removeListener(ActivityPanelUpdatedEventName);
+            NotificationSocket.removeListener(
+                AssistanceRequestUpdatedEventName
+            );
         };
     }, []);
 
@@ -73,7 +83,10 @@ const ActivityPanel = () => {
 
     // Get the apporpriate colour for the assistance request status
     function getAssistanceRequestColour(item: TableActivityResponse) {
-        console.log(item.current_session?.assistance_requests.current);
+        if (item == null) {
+            return "white";
+        }
+
         if (
             item.current_session?.assistance_requests.current?.status ==
             AssistanceRequestStatus.OPEN
@@ -109,7 +122,15 @@ const ActivityPanel = () => {
         await staffUpdateAssistanceRequest({
             session_id: dto.current_session!.id!,
             status: status,
-        }).then(() => getActivityPanel());
+        }).then(fetchActivityPanel);
+    };
+    const formatDateForHoursAndMinutes = (date: Date) => {
+        const hrs = date.getHours();
+        const mins = date.getMinutes();
+        return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(
+            2,
+            "0"
+        )}`;
     };
 
     const OrderItemRadioGroup = ({
@@ -235,6 +256,7 @@ const ActivityPanel = () => {
             </div>
         );
     };
+
     const SessionDialog = ({
         dto,
         showDialog,
@@ -308,7 +330,7 @@ const ActivityPanel = () => {
                                                 onUpdateAssistanceRequestStatus(
                                                     dto,
                                                     AssistanceRequestStatus.HANDLING
-                                                )
+                                                ).then(closeSessionDialog)
                                             }
                                         />
                                     </div>
@@ -325,7 +347,7 @@ const ActivityPanel = () => {
                                                 onUpdateAssistanceRequestStatus(
                                                     dto,
                                                     AssistanceRequestStatus.OPEN
-                                                )
+                                                ).then(closeSessionDialog)
                                             }
                                         />
                                         <Chip
@@ -340,16 +362,16 @@ const ActivityPanel = () => {
                                                 onUpdateAssistanceRequestStatus(
                                                     dto,
                                                     AssistanceRequestStatus.CLOSED
-                                                )
+                                                ).then(closeSessionDialog)
                                             }
                                         />
                                     </div>
                                 )}
                             </Box>
                         )}
-                        <Box className="flex flex-col pb-2 divide-y-2">
+                        <Box className="flex flex-col divide-y-2 pb-2">
                             {dto.current_session.orders.length > 0 && (
-                                <div className={`py-2`}>
+                                <div>
                                     <div className="flex flex-col gap-3 divide-y-2 divide-gray-300">
                                         {dto.current_session.orders.map(
                                             (order, index) => (
@@ -400,6 +422,79 @@ const ActivityPanel = () => {
                                                 </div>
                                             )
                                         )}
+                                    </div>
+                                </div>
+                            )}
+                        </Box>
+                        <Box>
+                            {dto.current_session.assistance_requests.handled
+                                .length > 0 && (
+                                <div className="py-2 border-t border-gray-300">
+                                    <Typography>
+                                        Assistance Request History
+                                    </Typography>
+                                    <div>
+                                        {dto.current_session.assistance_requests.handled
+                                            .sort(
+                                                (
+                                                    a,
+                                                    b // Sort oldest first
+                                                ) =>
+                                                    a.start_time < b.start_time
+                                                        ? 1
+                                                        : -1
+                                            )
+                                            .map((item, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="grid grid-cols-3 gap-2 items-center justify-between"
+                                                >
+                                                    <section className="font-bold">
+                                                        {index == 0
+                                                            ? "LATEST"
+                                                            : String(index)}
+                                                    </section>
+                                                    <section className="py-1">
+                                                        {`From ${formatDateForHoursAndMinutes(
+                                                            new Date(
+                                                                item.start_time
+                                                            )
+                                                        )} to ${formatDateForHoursAndMinutes(
+                                                            new Date(
+                                                                item.end_time!
+                                                            )
+                                                        )}`}
+                                                    </section>
+                                                    {index == 0 &&
+                                                        dto.current_session
+                                                            .assistance_requests
+                                                            .current ==
+                                                            null && (
+                                                            <Chip
+                                                                label="HANDLING"
+                                                                className="select-none"
+                                                                sx={{
+                                                                    cursor: "pointer",
+                                                                }}
+                                                                onClick={() =>
+                                                                    staffReopenAssistanceRequest(
+                                                                        {
+                                                                            session_id:
+                                                                                dto.current_session!
+                                                                                    .id,
+                                                                        }
+                                                                    )
+                                                                        .then(
+                                                                            fetchActivityPanel
+                                                                        )
+                                                                        .then(
+                                                                            closeSessionDialog
+                                                                        )
+                                                                }
+                                                            />
+                                                        )}
+                                                </div>
+                                            ))}
                                     </div>
                                 </div>
                             )}

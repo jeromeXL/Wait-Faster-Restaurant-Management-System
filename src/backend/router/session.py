@@ -1,9 +1,17 @@
+from functools import reduce
 from beanie import PydanticObjectId
 from fastapi import APIRouter, HTTPException, Depends
 from models.menuItem import MenuItem
 from models.order import Order
 from router.orders import OrderItemResponse, OrderResponse
-from models.session import AssistanceRequest, AssistanceRequestsDetails, AssistanceRequestStatus, SessionStatus, Session, valid_request_state_transitions
+from models.session import (
+    AssistanceRequest,
+    AssistanceRequestsDetails,
+    AssistanceRequestStatus,
+    SessionStatus,
+    Session,
+    valid_request_state_transitions,
+)
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import List, Optional
@@ -13,6 +21,7 @@ from utils.user_authentication import (
     manager_or_waitstaff_user,
 )
 from beanie.operators import In
+from socket_io import sio
 
 router = APIRouter()
 
@@ -72,10 +81,7 @@ async def start_session(
     new_session = Session(
         status=SessionStatus.OPEN,
         session_start_time=datetime.now().isoformat(),
-        assistance_requests=AssistanceRequestsDetails(
-            current=None,
-            handled=[]
-        )
+        assistance_requests=AssistanceRequestsDetails(current=None, handled=[]),
     )
     await new_session.create()
 
@@ -160,8 +166,7 @@ async def get_table_session(
 
     session = await Session.get(customer_table.active_session)
     if session is None:
-        raise HTTPException(
-            status_code=404, detail="404 Not Found: Session not found.")
+        raise HTTPException(status_code=404, detail="404 Not Found: Session not found.")
 
     return await generate_session_response(session)
 
@@ -171,11 +176,15 @@ class CreateAssistanceRequest(BaseModel):
 
 
 @router.put("/session/assistance-request/create")
-async def raise_assistance_request(req: CreateAssistanceRequest = CreateAssistanceRequest(notes=None), customer_tablet: User = Depends(customer_tablet_user)) -> SessionResponse:
+async def raise_assistance_request(
+    req: CreateAssistanceRequest = CreateAssistanceRequest(notes=None),
+    customer_tablet: User = Depends(customer_tablet_user),
+) -> SessionResponse:
 
     if customer_tablet.active_session is None:
         raise HTTPException(
-            status_code=404, detail="404 Not Found: The user does not have a session.")
+            status_code=404, detail="404 Not Found: The user does not have a session."
+        )
 
     session = await Session.get(customer_tablet.active_session)
     if session is None:
@@ -187,17 +196,20 @@ async def raise_assistance_request(req: CreateAssistanceRequest = CreateAssistan
     # Check if the session already has an active help request.
     if session.assistance_requests.current is not None:
         raise HTTPException(
-            status_code=400, detail="400 Bad Request: Customer tablet already has an active help request.")
+            status_code=400,
+            detail="400 Bad Request: Customer tablet already has an active help request.",
+        )
 
     # Set the current assistance request.
     session.assistance_requests.current = AssistanceRequest(
         start_time=datetime.now().isoformat(),
         end_time=None,
         notes=req.notes,
-        status=AssistanceRequestStatus.OPEN
+        status=AssistanceRequestStatus.OPEN,
     )
 
     await session.save()
+    await sio.emit("assistance_request_update", session.model_dump())
 
     return await generate_session_response(session)
 
@@ -208,7 +220,9 @@ class StaffUpdateAssistanceRequest(BaseModel):
 
 
 @router.put("/session/assistance-request/staff-update")
-async def staff_update_assistance_request(req: StaffUpdateAssistanceRequest, user: User = Depends(manager_or_waitstaff_user)) -> SessionResponse:
+async def staff_update_assistance_request(
+    req: StaffUpdateAssistanceRequest, user: User = Depends(manager_or_waitstaff_user)
+) -> SessionResponse:
 
     # Fetch Session
     id: PydanticObjectId
@@ -216,7 +230,8 @@ async def staff_update_assistance_request(req: StaffUpdateAssistanceRequest, use
         id = PydanticObjectId(req.session_id)
     except Exception:
         raise HTTPException(
-            status_code=400, detail="Could not parse session_id to a valid object id.")
+            status_code=400, detail="Could not parse session_id to a valid object id."
+        )
 
     session = await Session.get(id)
     if session is None:
@@ -225,12 +240,16 @@ async def staff_update_assistance_request(req: StaffUpdateAssistanceRequest, use
     # Check there is an active help request to update.
     if session.assistance_requests.current is None:
         raise HTTPException(
-            status_code=404, detail="The session currently does not have a help request.")
+            status_code=404,
+            detail="The session currently does not have a help request.",
+        )
 
     # Check the update is valid.
     if req.status not in valid_request_state_transitions:
         raise HTTPException(
-            status_code=422, detail="Cannot transition assistance request to the given status.")
+            status_code=422,
+            detail="Cannot transition assistance request to the given status.",
+        )
 
     # Update the status.
     session.assistance_requests.current.status = req.status
@@ -238,21 +257,81 @@ async def staff_update_assistance_request(req: StaffUpdateAssistanceRequest, use
     if session.assistance_requests.current.status == AssistanceRequestStatus.CLOSED:
         # Close this assistance request, to be ready for the next one to start.
         session.assistance_requests.current.end_time = datetime.now().isoformat()
-        session.assistance_requests.handled.append(
-            session.assistance_requests.current)
+        session.assistance_requests.handled.append(session.assistance_requests.current)
         session.assistance_requests.current = None
 
     await session.save()
 
+    await sio.emit("assistance_request_update", session.model_dump())
+    return await generate_session_response(session)
+
+
+class StaffReopenAssistanceRequest(BaseModel):
+    session_id: str
+
+
+@router.put("/session/assistance-request/staff-reopen")
+async def staff_reopen_assistance_request(
+    req: StaffReopenAssistanceRequest, user: User = Depends(manager_or_waitstaff_user)
+) -> SessionResponse:
+
+    # Fetch Session
+    id: PydanticObjectId
+    try:
+        id = PydanticObjectId(req.session_id)
+    except Exception:
+        raise HTTPException(
+            status_code=400, detail="Could not parse session_id to a valid object id."
+        )
+
+    session = await Session.get(id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found.")
+
+    # Check there is an active help request to update.
+    if session.assistance_requests.current is not None:
+        raise HTTPException(
+            status_code=404,
+            detail="Cannot reopen an assistance request for this session because there is a new assistance request.",
+        )
+
+    # Check there is at least one assistance request.
+    if len(session.assistance_requests.handled) == 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot reopen an assistance request because there are none.",
+        )
+
+    # Extract the oldest help request.
+    most_recent_request = reduce(
+        lambda a, b: a if a.end_time > b.end_time else b,  # type: ignore
+        session.assistance_requests.handled,
+    )
+
+    # Remove the most recent request from the handled list and add it to the current value.
+    session.assistance_requests.handled = [
+        item
+        for item in session.assistance_requests.handled
+        if item.end_time != most_recent_request.end_time
+    ]
+    most_recent_request.end_time = None
+    most_recent_request.status = AssistanceRequestStatus.HANDLING
+    session.assistance_requests.current = most_recent_request
+
+    await session.save()
+    await sio.emit("assistance_request_update", session.model_dump())
     return await generate_session_response(session)
 
 
 @router.put("/session/assistance-request/tablet-resolve")
-async def tablet_resolve_assistance_request(customer_tablet: User = Depends(customer_tablet_user)) -> SessionResponse:
+async def tablet_resolve_assistance_request(
+    customer_tablet: User = Depends(customer_tablet_user),
+) -> SessionResponse:
 
     if customer_tablet.active_session is None:
         raise HTTPException(
-            status_code=404, detail="404 Not Found: The user does not have a session.")
+            status_code=404, detail="404 Not Found: The user does not have a session."
+        )
 
     session = await Session.get(customer_tablet.active_session)
     if session is None:
@@ -264,15 +343,20 @@ async def tablet_resolve_assistance_request(customer_tablet: User = Depends(cust
     # Check there is an active help request to update.
     if session.assistance_requests.current is None:
         raise HTTPException(
-            status_code=404, detail="The session currently does not have a help request.")
+            status_code=404,
+            detail="The session currently does not have a help request.",
+        )
 
     # Close the assistance request.
-    session.assistance_requests.current.status = AssistanceRequestStatus.CANCELLED if session.assistance_requests.current.status == AssistanceRequestStatus.OPEN else AssistanceRequestStatus.CLOSED
+    session.assistance_requests.current.status = (
+        AssistanceRequestStatus.CANCELLED
+        if session.assistance_requests.current.status == AssistanceRequestStatus.OPEN
+        else AssistanceRequestStatus.CLOSED
+    )
     session.assistance_requests.current.end_time = datetime.now().isoformat()
-    session.assistance_requests.handled.append(
-        session.assistance_requests.current)
+    session.assistance_requests.handled.append(session.assistance_requests.current)
     session.assistance_requests.current = None
 
     await session.save()
-
+    await sio.emit("assistance_request_update", session.model_dump())
     return await generate_session_response(session)

@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 from models.order import OrderStatus
 
 
-class AssistanceRequestStatus(Enum):
+class AssistanceRequestStatus(int, Enum):
     OPEN = 0
     HANDLING = 1
     CLOSED = 2
@@ -26,13 +26,19 @@ class AssistanceRequestsDetails(BaseModel):
 
 
 valid_request_state_transitions = {
-    AssistanceRequestStatus.OPEN: [AssistanceRequestStatus.HANDLING, AssistanceRequestStatus.CANCELLED],
-    AssistanceRequestStatus.HANDLING: [AssistanceRequestStatus.OPEN, AssistanceRequestStatus.CLOSED],
-    AssistanceRequestStatus.CLOSED: []
+    AssistanceRequestStatus.OPEN: [
+        AssistanceRequestStatus.HANDLING,
+        AssistanceRequestStatus.CANCELLED,
+    ],
+    AssistanceRequestStatus.HANDLING: [
+        AssistanceRequestStatus.OPEN,
+        AssistanceRequestStatus.CLOSED,
+    ],
+    AssistanceRequestStatus.CLOSED: [],
 }
 
 
-class SessionStatus(Enum):
+class SessionStatus(int, Enum):
     OPEN = 0
     AWAITING_PAYMENT = 1
     CLOSED = 2

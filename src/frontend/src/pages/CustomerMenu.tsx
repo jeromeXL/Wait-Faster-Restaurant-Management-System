@@ -46,6 +46,10 @@ import {
 } from "../utils/api";
 import { getAxios } from "../utils/useAxios";
 import axios from "axios";
+import {
+    AssistanceRequestUpdatedEventName,
+    NotificationSocket,
+} from "../utils/socketIo";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -80,9 +84,30 @@ const CustomerMenu = () => {
     }
 
     useEffect(() => {
-        fetchTableSession().catch((err) =>
-            console.log("Failed to fetch session", err)
-        );
+        fetchTableSession()
+            .catch((err) => console.log("Failed to fetch session", err))
+            .then(() => {
+                if (!NotificationSocket.connected) {
+                    NotificationSocket.connect();
+                }
+
+                NotificationSocket.on(
+                    AssistanceRequestUpdatedEventName,
+                    async (data) => {
+                        console.log("HERE!!");
+                        if (data.id == session?.id) {
+                            await fetchTableSession();
+                        }
+                    }
+                );
+            });
+
+        return () => {
+            NotificationSocket.disconnect();
+            NotificationSocket.removeListener(
+                AssistanceRequestUpdatedEventName
+            );
+        };
     }, []);
 
     const Search = styled("div")(() => ({
@@ -707,9 +732,11 @@ const CustomerMenu = () => {
                             fontWeight: "bold",
                         }}
                     >
-                        Welcome To The Menu
+                        Welcome To The Menu{" "}
                     </Typography>
+
                     <Button
+                        key={session?.assistance_requests.current ?? "NONE"}
                         variant="contained"
                         disableElevation
                         style={{
@@ -721,7 +748,7 @@ const CustomerMenu = () => {
                             marginInline: "20px",
                         }}
                         color={
-                            session?.assistance_requests.current
+                            session?.assistance_requests.current != null
                                 ? "success"
                                 : "primary"
                         }

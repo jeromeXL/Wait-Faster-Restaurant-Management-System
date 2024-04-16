@@ -217,6 +217,16 @@ export const staffUpdateAssistanceRequest = async (
         .put("/session/assistance-request/staff-update", request)
         .then((resp) => resp.data as SessionResponse);
 
+export type StaffReopenAssistanceRequest = {
+    session_id: string;
+};
+export const staffReopenAssistanceRequest = async (
+    req: StaffReopenAssistanceRequest
+) =>
+    await getAxios()
+        .put("/session/assistance-request/staff-reopen", req)
+        .then((resp) => resp.data as SessionResponse);
+
 export const tabletResolveAssistanceRequest = async () =>
     await getAxios()
         .put("/session/assistance-request/tablet-resolve")
