@@ -356,6 +356,22 @@ const CustomerMenu = () => {
         session_id: sessionID,
         items: itemsToSend
       });
+      const itemsToSend = [];
+      Object.entries(pendingCart).forEach(([itemId, quantity]) => {
+        for (let i = 0; i < quantity; i++) {
+          itemsToSend.push({
+            menu_item_id: itemId,
+            is_free: false,
+            preferences: [],
+            additional_notes: '',
+          });
+        }
+      });
+  
+      const response = await MakeOrder({
+        session_id: sessionID,
+        items: itemsToSend
+      });
 
             const updatedPendingCart = {};
             Object.keys(pendingCart).forEach((itemId) => {
