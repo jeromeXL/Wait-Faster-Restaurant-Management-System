@@ -40,12 +40,10 @@ import {
     SessionResponse,
     getSession,
     getMenu,
-    getMenuItems,
     createAssistanceRequest,
     tabletResolveAssistanceRequest,
+    CreateOrderItemRequest,
 } from "../utils/api";
-import { getAxios } from "../utils/useAxios";
-import axios from "axios";
 import {
     AssistanceRequestUpdatedEventName,
     NotificationSocket,
@@ -205,7 +203,7 @@ const CustomerMenu = () => {
     const id = open ? "filter-popover" : undefined;
     const dietaryRequirements = Object.values(DietaryDetail);
 
-    const initialFilterOptions = dietaryRequirements.reduce(
+    const initialFilterOptions: { [key: string]: boolean } = dietaryRequirements.reduce(
         (options, requirement) => {
             return { ...options, [requirement]: false };
         },
@@ -214,7 +212,7 @@ const CustomerMenu = () => {
 
     const [filterOptions, setFilterOptions] = useState(initialFilterOptions);
 
-    const openFilters = (event) => {
+    const openFilters = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -222,7 +220,7 @@ const CustomerMenu = () => {
         setAnchorEl(null);
     };
 
-    const checkFilter = (event, option) => {
+    const checkFilter = (event: React.ChangeEvent<HTMLInputElement>, option: string) => {
         const isChecked = event.target.checked;
         setFilterOptions({
             ...filterOptions,
@@ -239,7 +237,7 @@ const CustomerMenu = () => {
     };
 
     const clearFilters = () => {
-        const updatedFilterOptions = {};
+        const updatedFilterOptions: { [key: string]: boolean } = {};
         for (const option in filterOptions) {
             updatedFilterOptions[option] = false;
         }
@@ -254,10 +252,10 @@ const CustomerMenu = () => {
         );
     };
 
-    const [quantities, setQuantities] = useState({});
+    const [quantities, setQuantities] = useState<{ [itemId: string]: number }>({});
     const [cartCounter, setCartCounter] = useState(0);
 
-    const decrementQuantity = (itemId) => {
+    const decrementQuantity = (itemId: string) => {
         const updatedQuantities = { ...quantities };
         if (updatedQuantities[itemId] && updatedQuantities[itemId] > 0) {
             updatedQuantities[itemId] -= 1;
@@ -265,15 +263,15 @@ const CustomerMenu = () => {
         }
     };
 
-    const incrementQuantity = (itemId) => {
+    const incrementQuantity = (itemId: string) => {
         const updatedQuantities = { ...quantities };
         updatedQuantities[itemId] = (updatedQuantities[itemId] || 0) + 1;
         setQuantities(updatedQuantities);
     };
 
-    const [pendingCart, setPendingCart] = useState({});
+    const [pendingCart, setPendingCart] = useState<{ [itemId: string]: number }>({});
 
-    const addToCart = (itemId) => {
+    const addToCart = (itemId: string) => {
         if (quantities[itemId] > 0) {
             const updatedQuantities = { ...quantities };
             const updatedPendingCart = { ...pendingCart };
@@ -286,7 +284,7 @@ const CustomerMenu = () => {
         }
     };
 
-    const decrementCart = (itemId) => {
+    const decrementCart = (itemId: string) => {
         const updatedPendingCart = { ...pendingCart };
         if (updatedPendingCart[itemId] && updatedPendingCart[itemId] > 0) {
             updatedPendingCart[itemId] -= 1;
@@ -294,13 +292,13 @@ const CustomerMenu = () => {
             setPendingCart(updatedPendingCart);
         }
     };
-    const incrementCart = (itemId) => {
+    const incrementCart = (itemId: string) => {
         const updatedPendingCart = { ...pendingCart };
         setCartCounter(cartCounter + 1);
         updatedPendingCart[itemId] = (updatedPendingCart[itemId] || 0) + 1;
         setPendingCart(updatedPendingCart);
     };
-    const setZeroCart = (itemId) => {
+    const setZeroCart = (itemId: string) => {
         const updatedPendingCart = { ...pendingCart };
         setCartCounter(cartCounter - updatedPendingCart[itemId]);
         updatedPendingCart[itemId] = 0;
@@ -320,33 +318,35 @@ const CustomerMenu = () => {
 
     const [error, setError] = useState<string | null>(null);
 
-    const sendItems = async (event) => {
+    const sendItems = async (event: { preventDefault: () => void; }) => {
         event.preventDefault();
+        
         try {
-          const itemsToSend = [];
-          Object.entries(pendingCart).forEach(([itemId, quantity]) => {
-            for (let i = 0; i < quantity; i++) {
-              itemsToSend.push({
-                menu_item_id: itemId,
-                is_free: false,
-                preferences: [],
-                additional_notes: '',
-              });
-            }
-          });
-          
-          const response = await MakeOrder({
-            session_id: session.id,
+            const itemsToSend: CreateOrderItemRequest[] = [];
+            Object.entries(pendingCart).forEach(([itemId, quantity]) => {
+                for (let i = 0; i < quantity; i++) {
+                    const orderItem: CreateOrderItemRequest = {
+                        menu_item_id: itemId,
+                        is_free: false,
+                        preferences: [],
+                        additional_notes: "",
+                    };
+                    itemsToSend.push(orderItem);
+                }
+            });
+            
+            const response = await MakeOrder({
+            session_id: session?.id,
             items: itemsToSend
-          });
-    
-        const updatedPendingCart = {};
+            });
+
+        const updatedPendingCart: { [key: string]: number } = {};
         Object.keys(pendingCart).forEach((itemId) => {
             updatedPendingCart[itemId] = 0;
         });
         setPendingCart(updatedPendingCart);
         setCartCounter(0);
-    
+
         console.log("Order created successfully:", response.data);
         } catch (error) {
             console.error("Error creating order:", error);
