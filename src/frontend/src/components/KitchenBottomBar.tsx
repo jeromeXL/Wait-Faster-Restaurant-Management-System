@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { FiLogOut, FiRefreshCw } from 'react-icons/fi';
+import { FiClipboard, FiLogOut, FiRefreshCw } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
 
 const KitchenBottomBar = ({
@@ -15,6 +15,11 @@ const KitchenBottomBar = ({
         transition={{ duration: 0.5 }}
         className="bg-white text-black shadow-lg flex rounded-lg overflow-hidden"
       >
+        <NavItem
+          to="/notice-board"
+          text="Notice Board"
+          Icon={FiClipboard}
+        />
         <div onClick={refreshOrders} className="flex items-center justify-center gap-2 p-4 hover:bg-gray-100 text-black transition-colors cursor-pointer">
           <FiRefreshCw className="text-lg" />
           <span className="text-base">Refresh</span>

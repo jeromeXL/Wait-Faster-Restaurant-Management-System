@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { FiPlus, FiTrash } from "react-icons/fi";
 import { FaFire } from "react-icons/fa";
@@ -13,7 +13,14 @@ export const TodoBoard = () => {
 };
 
 const Board = () => {
-  const [cards, setCards] = useState(DEFAULT_CARDS);
+  const [cards, setCards] = useState(() => {
+    const savedCards = localStorage.getItem("cards");
+    return savedCards ? JSON.parse(savedCards) : DEFAULT_CARDS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("cards", JSON.stringify(cards));
+  }, [cards]);
 
   return (
     <div className="flex flex-col md:flex-row max-w-6xl w-full gap-3 overflow-auto p-4 md:p-12">
