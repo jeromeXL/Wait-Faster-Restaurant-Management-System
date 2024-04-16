@@ -769,6 +769,30 @@ const CustomerMenu = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            fontWeight: "bold",
+                            color: "#F0F0F0",
+                            marginBottom: "20px",
+                        }}
+                    >
+                        Total:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {currencyFormatter.format(
+                            session?.orders.reduce((total, order) => {
+                                return total + order.items.reduce((subtotal, item) => {
+                                    return subtotal + menuItems[item.menu_item_id].price;
+                                }, 0);
+                            }, 0) ?? 0
+                        )}
+                    </Typography>
+                </div>
             </Box>
             <div
                 style={{
