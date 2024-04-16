@@ -320,34 +320,34 @@ const CustomerMenu = () => {
 
     const [error, setError] = useState<string | null>(null);
 
-  const sendItems = async (event) => {
-    event.preventDefault();
-    try {
-      const itemsToSend = [];
-      Object.entries(pendingCart).forEach(([itemId, quantity]) => {
-        for (let i = 0; i < quantity; i++) {
-          itemsToSend.push({
-            menu_item_id: itemId,
-            is_free: false,
-            preferences: [],
-            additional_notes: '',
+    const sendItems = async (event) => {
+        event.preventDefault();
+        try {
+          const itemsToSend = [];
+          Object.entries(pendingCart).forEach(([itemId, quantity]) => {
+            for (let i = 0; i < quantity; i++) {
+              itemsToSend.push({
+                menu_item_id: itemId,
+                is_free: false,
+                preferences: [],
+                additional_notes: '',
+              });
+            }
           });
-        }
-      });
-  
-      const response = await MakeOrder({
-        session_id: session.id,
-        items: itemsToSend
-      });
-
-            const updatedPendingCart = {};
-            Object.keys(pendingCart).forEach((itemId) => {
-                updatedPendingCart[itemId] = 0;
-            });
-            setPendingCart(updatedPendingCart);
-            setCartCounter(0);
-
-            console.log("Order created successfully:", response.data);
+          
+          const response = await MakeOrder({
+            session_id: session.id,
+            items: itemsToSend
+          });
+    
+        const updatedPendingCart = {};
+        Object.keys(pendingCart).forEach((itemId) => {
+            updatedPendingCart[itemId] = 0;
+        });
+        setPendingCart(updatedPendingCart);
+        setCartCounter(0);
+    
+        console.log("Order created successfully:", response.data);
         } catch (error) {
             console.error("Error creating order:", error);
             setError(
