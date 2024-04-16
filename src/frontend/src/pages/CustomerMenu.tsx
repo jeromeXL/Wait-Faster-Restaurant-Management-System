@@ -34,7 +34,11 @@ import {
     DialogContentText,
     DialogActions,
 } from "@mui/material";
-
+import { 
+    Send,
+    OutdoorGrill,
+    RoomService
+} from '@mui/icons-material';
 import { DietaryDetail, Menu, MenuItem } from "../utils/menu";
 import {
     MakeOrder,
@@ -381,6 +385,15 @@ const CustomerMenu = () => {
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpenDrawer(newOpen);
     };
+
+    const statusIconMap: Record<OrderStatus, JSX.Element> = {
+        [OrderStatus.ORDERED]: <Send />,
+        [OrderStatus.PREPARING]: <OutdoorGrill />,
+        [OrderStatus.READY]: <OutdoorGrill />,
+        [OrderStatus.DELIVERING]: <OutdoorGrill />,
+        [OrderStatus.DELIVERED]: <RoomService />,
+    };
+    
 
     const DrawerList = (
         <Box
@@ -747,6 +760,7 @@ const CustomerMenu = () => {
                                         <TableCell 
                                             style={{ color: 'white'}}
                                         >
+                                            <span style={{ paddingRight: '15px' }}>{statusIconMap[item.status]}</span>
                                             {OrderStatus[item.status]}
                                         </TableCell>
                                     </TableRow>
