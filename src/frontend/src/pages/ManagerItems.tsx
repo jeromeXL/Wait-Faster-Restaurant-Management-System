@@ -16,8 +16,6 @@ import ManagerMenuCreateItemDialog from "../components/ManagerItemsCreateItemDia
 import ManagerBottomBar from "../components/ManagerBottomBar";
 import currencyFormatter from "../utils/currencyFormatter";
 
-
-
 const ManagerItems = () => {
     // MAIN PAGE
     const [menuItems, setMenuItems] = useState<MenuItem[] | null>([]);
@@ -82,7 +80,7 @@ const ManagerItems = () => {
                     gap: "0.5em",
                 }}
             >
-                <div class="grid grid-cols-3 py-1">
+                <div className="grid grid-cols-3 py-1">
                     <div>
                         <Button
                             sx={{
@@ -93,10 +91,10 @@ const ManagerItems = () => {
                             Create Menu Item
                         </Button>
                     </div>
-                    <div class="flex justify-center">
+                    <div className="flex justify-center">
                         <Typography variant="h5">Menu Items</Typography>
                     </div>
-                    <div class="flex justify-end"></div>
+                    <div className="flex justify-end"></div>
                 </div>
                 {menuItems?.map((menuItem, index) => (
                     <Card
@@ -111,7 +109,7 @@ const ManagerItems = () => {
                                 flex: "1",
                             }}
                         >
-                            <ol class="grid grid-cols-4 gap-2 w-full">
+                            <ol className="grid grid-cols-4 gap-2 w-full">
                                 <li>{menuItem.name}</li>
                                 <li>
                                     {currencyFormatter.format(menuItem.price)}
@@ -122,7 +120,7 @@ const ManagerItems = () => {
                                 </li>
                             </ol>
                         </CardContent>
-                        <CardActions class="grid grid-cols-3">
+                        <CardActions className="grid grid-cols-3">
                             <Button
                                 sx={{
                                     gridColumnStart: 3,
