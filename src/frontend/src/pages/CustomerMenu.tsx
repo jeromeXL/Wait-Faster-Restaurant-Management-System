@@ -34,18 +34,22 @@ import {
     DialogContentText,
     DialogActions,
 } from "@mui/material";
+import { 
+    Send,
+    OutdoorGrill,
+    RoomService
+} from '@mui/icons-material';
 import { DietaryDetail, Menu, MenuItem } from "../utils/menu";
 import {
     MakeOrder,
     SessionResponse,
     getSession,
     getMenu,
-    getMenuItems,
     createAssistanceRequest,
     tabletResolveAssistanceRequest,
+    CreateOrderItemRequest,
+    OrderStatus
 } from "../utils/api";
-import { getAxios } from "../utils/useAxios";
-import axios from "axios";
 import {
     AssistanceRequestUpdatedEventName,
     NotificationSocket,
@@ -205,7 +209,7 @@ const CustomerMenu = () => {
     const id = open ? "filter-popover" : undefined;
     const dietaryRequirements = Object.values(DietaryDetail);
 
-    const initialFilterOptions = dietaryRequirements.reduce(
+    const initialFilterOptions: { [key: string]: boolean } = dietaryRequirements.reduce(
         (options, requirement) => {
             return { ...options, [requirement]: false };
         },
@@ -214,7 +218,7 @@ const CustomerMenu = () => {
 
     const [filterOptions, setFilterOptions] = useState(initialFilterOptions);
 
-    const openFilters = (event) => {
+    const openFilters = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -222,7 +226,7 @@ const CustomerMenu = () => {
         setAnchorEl(null);
     };
 
-    const checkFilter = (event, option) => {
+    const checkFilter = (event: React.ChangeEvent<HTMLInputElement>, option: string) => {
         const isChecked = event.target.checked;
         setFilterOptions({
             ...filterOptions,
@@ -239,7 +243,7 @@ const CustomerMenu = () => {
     };
 
     const clearFilters = () => {
-        const updatedFilterOptions = {};
+        const updatedFilterOptions: { [key: string]: boolean } = {};
         for (const option in filterOptions) {
             updatedFilterOptions[option] = false;
         }
@@ -254,10 +258,10 @@ const CustomerMenu = () => {
         );
     };
 
-    const [quantities, setQuantities] = useState({});
+    const [quantities, setQuantities] = useState<{ [itemId: string]: number }>({});
     const [cartCounter, setCartCounter] = useState(0);
 
-    const decrementQuantity = (itemId) => {
+    const decrementQuantity = (itemId: string) => {
         const updatedQuantities = { ...quantities };
         if (updatedQuantities[itemId] && updatedQuantities[itemId] > 0) {
             updatedQuantities[itemId] -= 1;
@@ -265,15 +269,15 @@ const CustomerMenu = () => {
         }
     };
 
-    const incrementQuantity = (itemId) => {
+    const incrementQuantity = (itemId: string) => {
         const updatedQuantities = { ...quantities };
         updatedQuantities[itemId] = (updatedQuantities[itemId] || 0) + 1;
         setQuantities(updatedQuantities);
     };
 
-    const [pendingCart, setPendingCart] = useState({});
+    const [pendingCart, setPendingCart] = useState<{ [itemId: string]: number }>({});
 
-    const addToCart = (itemId) => {
+    const addToCart = (itemId: string) => {
         if (quantities[itemId] > 0) {
             const updatedQuantities = { ...quantities };
             const updatedPendingCart = { ...pendingCart };
@@ -286,7 +290,7 @@ const CustomerMenu = () => {
         }
     };
 
-    const decrementCart = (itemId) => {
+    const decrementCart = (itemId: string) => {
         const updatedPendingCart = { ...pendingCart };
         if (updatedPendingCart[itemId] && updatedPendingCart[itemId] > 0) {
             updatedPendingCart[itemId] -= 1;
@@ -294,13 +298,13 @@ const CustomerMenu = () => {
             setPendingCart(updatedPendingCart);
         }
     };
-    const incrementCart = (itemId) => {
+    const incrementCart = (itemId: string) => {
         const updatedPendingCart = { ...pendingCart };
         setCartCounter(cartCounter + 1);
         updatedPendingCart[itemId] = (updatedPendingCart[itemId] || 0) + 1;
         setPendingCart(updatedPendingCart);
     };
-    const setZeroCart = (itemId) => {
+    const setZeroCart = (itemId: string) => {
         const updatedPendingCart = { ...pendingCart };
         setCartCounter(cartCounter - updatedPendingCart[itemId]);
         updatedPendingCart[itemId] = 0;
@@ -320,27 +324,36 @@ const CustomerMenu = () => {
 
     const [error, setError] = useState<string | null>(null);
 
-    const sendItems = async (event) => {
+    const sendItems = async (event: { preventDefault: () => void; }) => {
         event.preventDefault();
+        
         try {
+            const itemsToSend: CreateOrderItemRequest[] = [];
+            Object.entries(pendingCart).forEach(([itemId, quantity]) => {
+                for (let i = 0; i < quantity; i++) {
+                    const orderItem: CreateOrderItemRequest = {
+                        menu_item_id: itemId,
+                        is_free: false,
+                        preferences: [],
+                        additional_notes: "",
+                    };
+                    itemsToSend.push(orderItem);
+                }
+            });
+            
             const response = await MakeOrder({
-                session_id: session?.id,
-                items: Object.keys(pendingCart).map((itemId) => ({
-                    menu_item_id: itemId,
-                    is_free: false,
-                    preferences: [],
-                    additional_notes: "",
-                })),
+            session_id: session?.id,
+            items: itemsToSend
             });
 
-            const updatedPendingCart = {};
-            Object.keys(pendingCart).forEach((itemId) => {
-                updatedPendingCart[itemId] = 0;
-            });
-            setPendingCart(updatedPendingCart);
-            setCartCounter(0);
+        const updatedPendingCart: { [key: string]: number } = {};
+        Object.keys(pendingCart).forEach((itemId) => {
+            updatedPendingCart[itemId] = 0;
+        });
+        setPendingCart(updatedPendingCart);
+        setCartCounter(0);
 
-            console.log("Order created successfully:", response.data);
+        console.log("Order created successfully:", response.data);
         } catch (error) {
             console.error("Error creating order:", error);
             setError(
@@ -372,6 +385,15 @@ const CustomerMenu = () => {
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpenDrawer(newOpen);
     };
+
+    const statusIconMap: Record<OrderStatus, JSX.Element> = {
+        [OrderStatus.ORDERED]: <Send />,
+        [OrderStatus.PREPARING]: <OutdoorGrill />,
+        [OrderStatus.READY]: <OutdoorGrill />,
+        [OrderStatus.DELIVERING]: <OutdoorGrill />,
+        [OrderStatus.DELIVERED]: <RoomService />,
+    };
+    
 
     const DrawerList = (
         <Box
@@ -460,7 +482,7 @@ const CustomerMenu = () => {
                         paddingBottom: "20px",
                     }}
                 >
-                    <Table aria-label="simple table">
+                    <Table aria-label="cart">
                         <TableHead>
                             <TableRow>
                                 <TableCell
@@ -654,6 +676,122 @@ const CustomerMenu = () => {
                             </button>
                         </div>
                     )}
+                </div>
+            </Box>
+            <Box
+            sx={{
+                display: 'flex', 
+                flexDirection: 'column',
+                alignItems: 'left', 
+            }}
+            >
+                <Typography 
+                    variant="h6" 
+                    component="div" 
+                    sx={{
+                        color: '#F0F0F0',
+                        textAlign: 'left', 
+                        paddingTop: '40px'
+                    }}
+                >
+                    Ordered Items
+                </Typography>
+                <TableContainer
+                    component={Paper}
+                    elevation={0}
+                    sx={{
+                        backgroundColor: "transparent",
+                        paddingBottom: "20px",
+                    }}
+                >
+                    <Table aria-label="ordered_items">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell 
+                                    style={{
+                                        fontWeight: 'bold', 
+                                        color: 'white' 
+                                    }}
+                                >
+                                    Item
+                                </TableCell>
+                                <TableCell 
+                                    align="left" 
+                                    style={{ 
+                                        fontWeight: 'bold', 
+                                        color: 'white' 
+                                    }}
+                                >
+                                    Price
+                                </TableCell>
+                                {/* <TableCell align="right" style={{ fontWeight: 'bold', color: 'white' }}>Quantity</TableCell>
+                                <TableCell align="right" style={{ fontWeight: 'bold', color: 'white' }}>Subtotal</TableCell> */}
+                                <TableCell 
+                                    style={{ 
+                                        fontWeight: 'bold', 
+                                        color: 'white' 
+                                    }}
+                                >
+                                    Status
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {session?.orders.map((order) => (
+                                order.items.map((item) => (
+                                    <TableRow
+                                        key={item.id}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row" style={{ fontWeight: 'bold', color: 'white'}}>
+                                            {item.menu_item_name}
+                                        </TableCell>
+                                        <TableCell 
+                                            align="left" 
+                                            style={{ 
+                                                color: 'white'
+                                            }}
+                                        >
+                                            {currencyFormatter.format(
+                                                menuItems[item.menu_item_id].price
+                                            )}
+                                        </TableCell>
+                                        {/* quantity? */}
+                                        <TableCell 
+                                            style={{ color: 'white'}}
+                                        >
+                                            <span style={{ paddingRight: '15px' }}>{statusIconMap[item.status]}</span>
+                                            {OrderStatus[item.status]}
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <div
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                    }}
+                >
+                    <Typography
+                        sx={{
+                            fontWeight: "bold",
+                            color: "#F0F0F0",
+                            marginBottom: "20px",
+                        }}
+                    >
+                        Total:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {currencyFormatter.format(
+                            session?.orders.reduce((total, order) => {
+                                return total + order.items.reduce((subtotal, item) => {
+                                    return subtotal + menuItems[item.menu_item_id].price;
+                                }, 0);
+                            }, 0) ?? 0
+                        )}
+                    </Typography>
                 </div>
             </Box>
             <div
