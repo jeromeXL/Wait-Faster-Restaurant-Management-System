@@ -83,6 +83,7 @@ export type MenuItemRequest = {
     description: string;
     health_requirements: string[];
     ingredients: string[];
+    photo_url?: string | null
 };
 export type MenuItemResponse = {
     id: string;
@@ -91,6 +92,7 @@ export type MenuItemResponse = {
     description: string;
     health_requirements: string[];
     ingredients: string[];
+    photo_url?: string | null
 };
 
 export const createMenuItem = async (req: MenuItemRequest) =>

@@ -14,6 +14,8 @@ export type MenuItem = {
     price: number;
     health_requirements: DietaryDetail[];
     description: string;
+    ingredients: string[];
+    photo_url?: string | null;
 };
 
 export type Category = {

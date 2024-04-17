@@ -1,6 +1,6 @@
 // Menu page for customers
 import * as React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Box,
@@ -895,7 +895,7 @@ const CustomerMenu = () => {
     );
 
     return (
-        <Box sx={{ bgcolor: "#38353A" }}>
+        <Box sx={{ bgcolor: "#38353A", height: '100vh'}}>
             <AppBar
                 id="app-bar"
                 position="fixed"
@@ -1185,11 +1185,14 @@ const CustomerMenu = () => {
                                     return (
                                         <Card key={itemId} sx={{ width: 300 }}>
                                             <CardHeader title={item?.name} />
-                                            {/* <CardMedia
-                        component="img"
-                        height="200"
-                        sx={{height:'200px'}}
-                      /> */}
+                                            {item?.photo_url && (
+                                                <CardMedia
+                                                    component="img"
+                                                    height="200"
+                                                    image={item.photo_url}
+                                                    sx={{ height: '200px' }}
+                                                />
+                                            )}
                                             <CardContent>
                                                 <Typography
                                                     variant="body1"
