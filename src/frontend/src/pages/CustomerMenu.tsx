@@ -54,6 +54,7 @@ import {
     AssistanceRequestUpdatedEventName,
     NotificationSocket,
 } from "../utils/socketIo";
+import Typewriter from 'typewriter-effect';
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -62,6 +63,30 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 
 const CustomerMenu = () => {
     const navigate = useNavigate();
+
+    const [appBarHeight, setAppBarHeight] = useState(64); // Initial height of the app bar
+
+    useEffect(() => {
+        // Function to update the appBarHeight state with the actual height of the app bar
+        const updateAppBarHeight = () => {
+            const appBar = document.getElementById("app-bar");
+            if (appBar) {
+                const height = appBar.offsetHeight; // Get the height of the app bar
+                setAppBarHeight(height); // Update the appBarHeight state
+            }
+        };
+
+        // Call the updateAppBarHeight function when the window is resized
+        window.addEventListener("resize", updateAppBarHeight);
+
+        // Initial call to updateAppBarHeight when the component mounts
+        updateAppBarHeight();
+
+        // Clean up the event listener when the component unmounts
+        return () => {
+            window.removeEventListener("resize", updateAppBarHeight);
+        };
+    }, []);
 
     // menu object initialised with empty array for categories
     const [menu, setMenu] = useState<Menu | null>({ categories: [] });
@@ -848,6 +873,7 @@ const CustomerMenu = () => {
     return (
         <Box sx={{ bgcolor: "#38353A" }}>
             <AppBar
+                id="app-bar"
                 position="fixed"
                 elevation={1}
                 style={{
@@ -870,7 +896,19 @@ const CustomerMenu = () => {
                             fontWeight: "bold",
                         }}
                     >
-                        Welcome To The Menu{" "}
+                        <Typewriter
+                            options={{
+                            strings: [
+                                "Welcome To The Menu.",
+                                "Discover Our Selection.",
+                                "Treat Yourself To Something Special.",
+                                "Savor The Deliciousness."
+                            ],
+                            autoStart: true,
+                            loop: true,
+                            deleteSpeed: 80,
+                            }}
+                        />
                     </Typography>
 
                     <Button
@@ -1077,13 +1115,14 @@ const CustomerMenu = () => {
                     }}
                 >
                     {menu?.categories.map((category) => (
-                        <TypeButton key={category.name}>
-                            {category.name}
-                        </TypeButton>
+                        // Add anchor links to category buttons
+                        <a key={category.name} href={`#${category.name}`} style={{ textDecoration: 'none' }}>
+                            <TypeButton>{category.name}</TypeButton>
+                        </a>
                     ))}
                 </Box>
             </AppBar>
-            <Box sx={{ marginTop: "230px", paddingX: "20px" }}>
+            <Box sx={{ marginTop: `calc(${appBarHeight}px)`, paddingX: "20px", height: '100%' }}>
                 {menu?.categories.map((category) => (
                     <React.Fragment key={category.name}>
                         <Typography
@@ -1093,6 +1132,7 @@ const CustomerMenu = () => {
                                 color: "#F0F0F0",
                                 paddingY: "15px",
                             }}
+                            id={category.name}
                         >
                             {category.name}
                         </Typography>
