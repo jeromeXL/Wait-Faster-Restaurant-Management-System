@@ -4,14 +4,16 @@ import { jwtDecode } from "jwt-decode";
 import { Menu, MenuItem } from "./menu";
 import { AxiosError } from "axios";
 
-export function isAxiosError(err: Error): err is AxiosError {
+export function isAxiosError(
+    err: Error
+): err is AxiosError<{ detail: string }> {
     return err.name == "AxiosError";
 }
 
 export function stringifyApiError(err: Error): string {
     if (isAxiosError(err)) {
         return (
-            err.response?.data?.detail ??
+            err.response?.data["detail"] ??
             "Something went wrong while trying to contact the database."
         );
     }
@@ -103,7 +105,7 @@ export const editMenuItem = async (id: string, req: MenuItemRequest) =>
         .then((resp) => resp.data as MenuItemResponse);
 export const deleteMenuItem = async (id: string) =>
     await getAxios().delete(`/menu-item/${id}`);
-export const getMenuItem = async(id: string) =>
+export const getMenuItem = async (id: string) =>
     await getAxios().get(`/menu-item/${id}`);
 
 export type ReorderMenuRequest = {
@@ -202,7 +204,7 @@ export const getSession = async () =>
         .get("/table/session")
         .then((resp) => resp.data as SessionResponse);
 
-export const lockSession = async() => 
+export const lockSession = async () =>
     await getAxios()
         .post("/session/lock")
         .then((resp) => resp.data as SessionResponse);

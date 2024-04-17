@@ -72,9 +72,11 @@ const ManagerMenu = () => {
         setLastClickedCategoryForEidt(category);
         setShowEditCategoryDialog(true);
     };
-    const handleCategoriesChanged = async (resp: CategoryResponse) => {
+    const handleCategoriesChanged = async (
+        resp: CategoryResponse | undefined = undefined
+    ) => {
         setShowEditCategoryDialog(false);
-        setExpandedCategoryId(resp.id);
+        setExpandedCategoryId(resp?.id);
         await fetchMenu();
     };
 
@@ -364,7 +366,7 @@ const ManagerMenu = () => {
                 onClose={() => setShowEditCategoryDialog(false)}
                 category={lastClickedCategoryForEdit!}
                 onEditCategory={handleCategoriesChanged}
-                onDeleteCategory={handleCategoriesChanged}
+                onDeleteCategory={() => handleCategoriesChanged()}
                 menuItems={menuItems}
             />
             <ManagerMenuCreateCategoryDialog

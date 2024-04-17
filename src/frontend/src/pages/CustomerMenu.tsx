@@ -1,6 +1,6 @@
 // Menu page for customers
 import * as React from "react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Box,
@@ -14,7 +14,6 @@ import {
     Toolbar,
     Card,
     CardHeader,
-    CardMedia,
     CardContent,
     Checkbox,
     FormControlLabel,
@@ -34,11 +33,7 @@ import {
     DialogContentText,
     DialogActions,
 } from "@mui/material";
-import { 
-    Send,
-    OutdoorGrill,
-    RoomService
-} from '@mui/icons-material';
+import { Send, OutdoorGrill, RoomService } from "@mui/icons-material";
 import { DietaryDetail, Menu, MenuItem } from "../utils/menu";
 import {
     MakeOrder,
@@ -48,14 +43,14 @@ import {
     createAssistanceRequest,
     tabletResolveAssistanceRequest,
     CreateOrderItemRequest,
-    OrderStatus, 
-    lockSession
+    OrderStatus,
+    lockSession,
 } from "../utils/api";
 import {
     AssistanceRequestUpdatedEventName,
     NotificationSocket,
 } from "../utils/socketIo";
-import Typewriter from 'typewriter-effect';
+import Typewriter from "typewriter-effect";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -229,18 +224,16 @@ const CustomerMenu = () => {
         </React.Fragment>
     );
 
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [selectedFilters, setSelectedFilters] = useState([]);
+    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+    const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
     const open = Boolean(anchorEl);
     const id = open ? "filter-popover" : undefined;
     const dietaryRequirements = Object.values(DietaryDetail);
 
-    const initialFilterOptions: { [key: string]: boolean } = dietaryRequirements.reduce(
-        (options, requirement) => {
+    const initialFilterOptions: { [key: string]: boolean } =
+        dietaryRequirements.reduce((options, requirement) => {
             return { ...options, [requirement]: false };
-        },
-        {}
-    );
+        }, {});
 
     const [filterOptions, setFilterOptions] = useState(initialFilterOptions);
 
@@ -252,7 +245,10 @@ const CustomerMenu = () => {
         setAnchorEl(null);
     };
 
-    const checkFilter = (event: React.ChangeEvent<HTMLInputElement>, option: string) => {
+    const checkFilter = (
+        event: React.ChangeEvent<HTMLInputElement>,
+        option: string
+    ) => {
         const isChecked = event.target.checked;
         setFilterOptions({
             ...filterOptions,
@@ -285,27 +281,27 @@ const CustomerMenu = () => {
     };
 
     const [quantities, setQuantities] = useState<{ [itemId: string]: number }>(
-        JSON.parse(localStorage.getItem('quantities') || '{}')
-      );
-      const [cartCounter, setCartCounter] = useState<number>(
-        parseInt(localStorage.getItem('cartCounter') || '0')
-      );
-      const [pendingCart, setPendingCart] = useState<{ [itemId: string]: number }>(
-        JSON.parse(localStorage.getItem('pendingCart') || '{}')
-      );
-    
-      // Update localStorage whenever quantities, cartCounter, or pendingCart change
-      useEffect(() => {
-        localStorage.setItem('quantities', JSON.stringify(quantities));
-      }, [quantities]);
-    
-      useEffect(() => {
-        localStorage.setItem('cartCounter', cartCounter.toString());
-      }, [cartCounter]);
-    
-      useEffect(() => {
-        localStorage.setItem('pendingCart', JSON.stringify(pendingCart));
-      }, [pendingCart]);
+        JSON.parse(localStorage.getItem("quantities") || "{}")
+    );
+    const [cartCounter, setCartCounter] = useState<number>(
+        parseInt(localStorage.getItem("cartCounter") || "0")
+    );
+    const [pendingCart, setPendingCart] = useState<{
+        [itemId: string]: number;
+    }>(JSON.parse(localStorage.getItem("pendingCart") || "{}"));
+
+    // Update localStorage whenever quantities, cartCounter, or pendingCart change
+    useEffect(() => {
+        localStorage.setItem("quantities", JSON.stringify(quantities));
+    }, [quantities]);
+
+    useEffect(() => {
+        localStorage.setItem("cartCounter", cartCounter.toString());
+    }, [cartCounter]);
+
+    useEffect(() => {
+        localStorage.setItem("pendingCart", JSON.stringify(pendingCart));
+    }, [pendingCart]);
 
     const decrementQuantity = (itemId: string) => {
         const updatedQuantities = { ...quantities };
@@ -368,9 +364,9 @@ const CustomerMenu = () => {
 
     const [error, setError] = useState<string | null>(null);
 
-    const sendItems = async (event: { preventDefault: () => void; }) => {
+    const sendItems = async (event: { preventDefault: () => void }) => {
         event.preventDefault();
-        
+
         try {
             const itemsToSend: CreateOrderItemRequest[] = [];
             Object.entries(pendingCart).forEach(([itemId, quantity]) => {
@@ -384,20 +380,20 @@ const CustomerMenu = () => {
                     itemsToSend.push(orderItem);
                 }
             });
-            
+
             const response = await MakeOrder({
-            session_id: session?.id,
-            items: itemsToSend
+                session_id: session!.id!,
+                items: itemsToSend,
             });
 
-        const updatedPendingCart: { [key: string]: number } = {};
-        Object.keys(pendingCart).forEach((itemId) => {
-            updatedPendingCart[itemId] = 0;
-        });
-        setPendingCart(updatedPendingCart);
-        setCartCounter(0);
+            const updatedPendingCart: { [key: string]: number } = {};
+            Object.keys(pendingCart).forEach((itemId) => {
+                updatedPendingCart[itemId] = 0;
+            });
+            setPendingCart(updatedPendingCart);
+            setCartCounter(0);
 
-        console.log("Order created successfully:", response.data);
+            console.log("Order created successfully:", response.data);
         } catch (error) {
             console.error("Error creating order:", error);
             setError(
@@ -442,7 +438,6 @@ const CustomerMenu = () => {
         [OrderStatus.DELIVERING]: <OutdoorGrill />,
         [OrderStatus.DELIVERED]: <RoomService />,
     };
-    
 
     const DrawerList = (
         <Box
@@ -728,19 +723,19 @@ const CustomerMenu = () => {
                 </div>
             </Box>
             <Box
-            sx={{
-                display: 'flex', 
-                flexDirection: 'column',
-                alignItems: 'left', 
-            }}
+                sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "left",
+                }}
             >
-                <Typography 
-                    variant="h6" 
-                    component="div" 
+                <Typography
+                    variant="h6"
+                    component="div"
                     sx={{
-                        color: '#F0F0F0',
-                        textAlign: 'left', 
-                        paddingTop: '40px'
+                        color: "#F0F0F0",
+                        textAlign: "left",
+                        paddingTop: "40px",
                     }}
                 >
                     Ordered Items
@@ -756,29 +751,29 @@ const CustomerMenu = () => {
                     <Table aria-label="ordered_items">
                         <TableHead>
                             <TableRow>
-                                <TableCell 
+                                <TableCell
                                     style={{
-                                        fontWeight: 'bold', 
-                                        color: 'white' 
+                                        fontWeight: "bold",
+                                        color: "white",
                                     }}
                                 >
                                     Item
                                 </TableCell>
-                                <TableCell 
-                                    align="left" 
-                                    style={{ 
-                                        fontWeight: 'bold', 
-                                        color: 'white' 
+                                <TableCell
+                                    align="left"
+                                    style={{
+                                        fontWeight: "bold",
+                                        color: "white",
                                     }}
                                 >
                                     Price
                                 </TableCell>
                                 {/* <TableCell align="right" style={{ fontWeight: 'bold', color: 'white' }}>Quantity</TableCell>
                                 <TableCell align="right" style={{ fontWeight: 'bold', color: 'white' }}>Subtotal</TableCell> */}
-                                <TableCell 
-                                    style={{ 
-                                        fontWeight: 'bold', 
-                                        color: 'white' 
+                                <TableCell
+                                    style={{
+                                        fontWeight: "bold",
+                                        color: "white",
                                     }}
                                 >
                                     Status
@@ -786,35 +781,48 @@ const CustomerMenu = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {session?.orders.map((order) => (
+                            {session?.orders.map((order) =>
                                 order.items.map((item) => (
                                     <TableRow
                                         key={item.id}
-                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                        sx={{
+                                            "&:last-child td, &:last-child th":
+                                                { border: 0 },
+                                        }}
                                     >
-                                        <TableCell component="th" scope="row" style={{ fontWeight: 'bold', color: 'white'}}>
+                                        <TableCell
+                                            component="th"
+                                            scope="row"
+                                            style={{
+                                                fontWeight: "bold",
+                                                color: "white",
+                                            }}
+                                        >
                                             {item.menu_item_name}
                                         </TableCell>
-                                        <TableCell 
-                                            align="left" 
-                                            style={{ 
-                                                color: 'white'
+                                        <TableCell
+                                            align="left"
+                                            style={{
+                                                color: "white",
                                             }}
                                         >
                                             {currencyFormatter.format(
-                                                menuItems[item.menu_item_id].price
+                                                menuItems[item.menu_item_id]
+                                                    .price
                                             )}
                                         </TableCell>
                                         {/* quantity? */}
-                                        <TableCell 
-                                            style={{ color: 'white'}}
-                                        >
-                                            <span style={{ paddingRight: '15px' }}>{statusIconMap[item.status]}</span>
+                                        <TableCell style={{ color: "white" }}>
+                                            <span
+                                                style={{ paddingRight: "15px" }}
+                                            >
+                                                {statusIconMap[item.status]}
+                                            </span>
                                             {OrderStatus[item.status]}
                                         </TableCell>
                                     </TableRow>
                                 ))
-                            ))}
+                            )}
                         </TableBody>
                     </Table>
                 </TableContainer>
@@ -835,9 +843,15 @@ const CustomerMenu = () => {
                         Total:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         {currencyFormatter.format(
                             session?.orders.reduce((total, order) => {
-                                return total + order.items.reduce((subtotal, item) => {
-                                    return subtotal + menuItems[item.menu_item_id].price;
-                                }, 0);
+                                return (
+                                    total +
+                                    order.items.reduce((subtotal, item) => {
+                                        return (
+                                            subtotal +
+                                            menuItems[item.menu_item_id].price
+                                        );
+                                    }, 0)
+                                );
                             }, 0) ?? 0
                         )}
                     </Typography>
@@ -922,21 +936,24 @@ const CustomerMenu = () => {
                     >
                         <Typewriter
                             options={{
-                            strings: [
-                                "Welcome To The Menu.",
-                                "Discover Our Selection.",
-                                "Treat Yourself To Something Special.",
-                                "Savor The Deliciousness."
-                            ],
-                            autoStart: true,
-                            loop: true,
-                            deleteSpeed: 80,
+                                strings: [
+                                    "Welcome To The Menu.",
+                                    "Discover Our Selection.",
+                                    "Treat Yourself To Something Special.",
+                                    "Savor The Deliciousness.",
+                                ],
+                                autoStart: true,
+                                loop: true,
+                                deleteSpeed: 80,
                             }}
                         />
                     </Typography>
 
                     <Button
-                        key={session?.assistance_requests.current ?? "NONE"}
+                        key={
+                            session?.assistance_requests.current?.start_time ??
+                            "NONE"
+                        }
                         variant="contained"
                         disableElevation
                         style={{
@@ -1140,13 +1157,23 @@ const CustomerMenu = () => {
                 >
                     {menu?.categories.map((category) => (
                         // Add anchor links to category buttons
-                        <a key={category.name} href={`#${category.name}`} style={{ textDecoration: 'none' }}>
+                        <a
+                            key={category.name}
+                            href={`#${category.name}`}
+                            style={{ textDecoration: "none" }}
+                        >
                             <TypeButton>{category.name}</TypeButton>
                         </a>
                     ))}
                 </Box>
             </AppBar>
-            <Box sx={{ marginTop: `calc(${appBarHeight}px)`, paddingX: "20px", height: '100%' }}>
+            <Box
+                sx={{
+                    marginTop: `calc(${appBarHeight}px)`,
+                    paddingX: "20px",
+                    height: "100%",
+                }}
+            >
                 {menu?.categories.map((category) => (
                     <React.Fragment key={category.name}>
                         <Typography

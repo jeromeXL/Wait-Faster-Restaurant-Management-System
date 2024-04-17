@@ -76,11 +76,10 @@ app.include_router(OrderRouter)
 app.include_router(ActivityPanelRouter)
 
 cors = CONFIG.cors.split(",")
-print(cors)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins="*",
+    allow_origins=cors,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

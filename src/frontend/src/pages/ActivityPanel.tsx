@@ -467,7 +467,7 @@ const ActivityPanel = () => {
                                                     </section>
                                                     {index == 0 &&
                                                         dto.current_session
-                                                            .assistance_requests
+                                                            ?.assistance_requests
                                                             .current ==
                                                             null && (
                                                             <Chip

@@ -14,7 +14,6 @@ import {
     createCategory,
     stringifyApiError,
 } from "../utils/api";
-import { AxiosError } from "axios";
 
 // Edit Category Dialog
 const CreateCategoryDialog = ({
