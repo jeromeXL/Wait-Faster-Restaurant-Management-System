@@ -909,7 +909,7 @@ const CustomerMenu = () => {
     );
 
     return (
-        <Box sx={{ bgcolor: "#38353A", height: '100vh'}}>
+        <Box sx={{ bgcolor: "#38353A", height: "100vh" }}>
             <AppBar
                 id="app-bar"
                 position="fixed"
@@ -1217,7 +1217,7 @@ const CustomerMenu = () => {
                                                     component="img"
                                                     height="200"
                                                     image={item.photo_url}
-                                                    sx={{ height: '200px' }}
+                                                    sx={{ height: "200px" }}
                                                 />
                                             )}
                                             <CardContent>

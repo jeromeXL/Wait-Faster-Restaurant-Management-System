@@ -109,13 +109,18 @@ const ManagerItems = () => {
                                 flex: "1",
                             }}
                         >
-                            <ol className="grid grid-cols-4 gap-2 w-full">
+                            <ol className="grid grid-cols-5 gap-2 w-full">
                                 <li>{menuItem.name}</li>
-                                <li>
+                                <li className="truncate">
                                     {currencyFormatter.format(menuItem.price)}
                                 </li>
-                                <li>{menuItem.description}</li>
-                                <li>
+                                <li className="truncate">
+                                    {menuItem.description}
+                                </li>
+                                <li className="truncate">
+                                    {menuItem.ingredients.join(", ")}
+                                </li>
+                                <li className="truncate">
                                     {menuItem.health_requirements.join(", ")}
                                 </li>
                             </ol>

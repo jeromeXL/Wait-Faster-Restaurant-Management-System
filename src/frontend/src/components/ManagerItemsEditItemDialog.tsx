@@ -16,6 +16,7 @@ import {
     editMenuItem,
     stringifyApiError,
 } from "../utils/api";
+import TextListInput from "./Inputs/TextListInput";
 
 // Edit Category Dialog
 const ManagerMenuEditItemDialog = ({
@@ -35,6 +36,9 @@ const ManagerMenuEditItemDialog = ({
     const [itemName, setItemName] = useState<string | undefined>("");
     const [description, setDescription] = useState<string | undefined>("");
     const [price, setPrice] = useState<number | undefined>(undefined);
+    const [image, setImage] = useState<string | null>(null);
+    const [healthRequirements, setHealthRequirements] = useState<string[]>([]);
+    const [ingredients, setIngredients] = useState<string[]>([]);
 
     const onSubmit = async () => {
         // Construct a new category object
@@ -42,8 +46,9 @@ const ManagerMenuEditItemDialog = ({
             name: itemName ?? "",
             description: description ?? "",
             price: price ?? 0,
-            health_requirements: [],
-            ingredients: [],
+            health_requirements: healthRequirements,
+            ingredients: ingredients,
+            photo_url: image,
         };
 
         // Make a request to the create category api
@@ -66,6 +71,9 @@ const ManagerMenuEditItemDialog = ({
         setItemName(menuItem?.name);
         setDescription(menuItem?.description);
         setPrice(menuItem?.price);
+        setImage(menuItem?.photo_url ?? "");
+        setHealthRequirements(menuItem?.health_requirements ?? []);
+        setIngredients(menuItem?.ingredients ?? []);
         setFormError("");
     }, [menuItem?.id]);
 
@@ -102,6 +110,26 @@ const ManagerMenuEditItemDialog = ({
                     variant="outlined"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
+                />
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    label="Image Url"
+                    type="text"
+                    fullWidth
+                    variant="outlined"
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                />
+                <TextListInput
+                    label="Ingredients"
+                    values={ingredients}
+                    onUpdate={(values) => setIngredients(values)}
+                />
+                <TextListInput
+                    label="Dietary Details"
+                    values={healthRequirements}
+                    onUpdate={(values) => setHealthRequirements(values)}
                 />
                 <Typography color="error"> {formError}</Typography>
             </DialogContent>

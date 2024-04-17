@@ -81,7 +81,8 @@ async def start_session(
     new_session = Session(
         status=SessionStatus.OPEN,
         session_start_time=datetime.now().isoformat(),
-        assistance_requests=AssistanceRequestsDetails(current=None, handled=[]),
+        assistance_requests=AssistanceRequestsDetails(
+            current=None, handled=[]),
     )
     await new_session.create()
 
@@ -166,7 +167,8 @@ async def get_table_session(
 
     session = await Session.get(customer_table.active_session)
     if session is None:
-        raise HTTPException(status_code=404, detail="404 Not Found: Session not found.")
+        raise HTTPException(
+            status_code=404, detail="404 Not Found: Session not found.")
 
     return await generate_session_response(session)
 
@@ -257,7 +259,8 @@ async def staff_update_assistance_request(
     if session.assistance_requests.current.status == AssistanceRequestStatus.CLOSED:
         # Close this assistance request, to be ready for the next one to start.
         session.assistance_requests.current.end_time = datetime.now().isoformat()
-        session.assistance_requests.handled.append(session.assistance_requests.current)
+        session.assistance_requests.handled.append(
+            session.assistance_requests.current)
         session.assistance_requests.current = None
 
     await session.save()
@@ -354,7 +357,8 @@ async def tablet_resolve_assistance_request(
         else AssistanceRequestStatus.CLOSED
     )
     session.assistance_requests.current.end_time = datetime.now().isoformat()
-    session.assistance_requests.handled.append(session.assistance_requests.current)
+    session.assistance_requests.handled.append(
+        session.assistance_requests.current)
     session.assistance_requests.current = None
 
     await session.save()

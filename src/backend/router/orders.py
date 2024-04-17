@@ -131,7 +131,8 @@ async def update_order_status(
             item_to_update = item
             break
     if not item_to_update:
-        raise HTTPException(status_code=404, detail="Item not found in the order")
+        raise HTTPException(
+            status_code=404, detail="Item not found in the order")
 
     current_status = item_to_update.status
     new_status = request.status
@@ -186,7 +187,8 @@ async def get_orders(
         )
     ).to_list()
 
-    menu_item_ids = [item.menu_item_id for order in orders for item in order.items]
+    menu_item_ids = [
+        item.menu_item_id for order in orders for item in order.items]
     menu_items = {
         item.id: item
         for item in await MenuItem.find(In(MenuItem.id, menu_item_ids)).to_list()
