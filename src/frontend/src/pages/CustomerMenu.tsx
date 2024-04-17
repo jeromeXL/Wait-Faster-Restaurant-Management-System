@@ -380,7 +380,7 @@ const CustomerMenu = () => {
     const handleConfirmBill = async () => {
         try {
             await lockSession();
-            navigate(`/end?session=${JSON.stringify(session)}`);
+            navigate(`/end`);
         } catch (error) {
             console.error("Failed to lock session:", error);
         }

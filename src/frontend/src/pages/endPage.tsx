@@ -1,34 +1,56 @@
 import { Box, Container, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { SessionResponse, getMenu, getSession } from '../utils/api';
+import { MenuItem } from '../utils/menu';
+import { AssistanceRequestUpdatedEventName, NotificationSocket } from '../utils/socketIo';
 import currencyFormatter from '../utils/currencyFormatter';
 
 const EndPage = () => {
+  
+  const [session, setSession] = useState<SessionResponse>();
 
-  const location = useLocation();
-  const [session, setSession] = useState(null);
+  async function fetchTableSession() {
+      await getSession().then(setSession);
+  }
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const sessionParam = searchParams.get('session');
-    const sessionFromParams = sessionParam ? JSON.parse(sessionParam) : null;
-    setSession(sessionFromParams);
-  }, [location.search]);
+      fetchTableSession()
+          .catch((err) => console.log("Failed to fetch session", err))
+          .then(() => {
+              if (!NotificationSocket.connected) {
+                  NotificationSocket.connect();
+              }
 
-  // fetch menu data
-  const [menu, setMenu] = useState<Menu | null>({ categories: [] });
+              NotificationSocket.on(
+                  AssistanceRequestUpdatedEventName,
+                  async (data) => {
+                      console.log("HERE!!");
+                      if (data.id == session?.id) {
+                          await fetchTableSession();
+                      }
+                  }
+              );
+          });
 
+      return () => {
+          NotificationSocket.disconnect();
+          NotificationSocket.removeListener(
+              AssistanceRequestUpdatedEventName
+          );
+      };
+  }, []);
+
+  // fetch menu items 
   const [menuItems, setMenuItems] = useState<Record<string, MenuItem>>({});
 
   async function fetchMenu() {
       // fetches menu data and stores in fetched menu
       const fetchedMenu = await getMenu();
-      setMenu(fetchedMenu.Menu);
       setMenuItems(fetchedMenu.Items);
   }
 
   useEffect(() => {
-      fetchMenu().catch((err) => console.log("Failed to fetch menu", err));
+      fetchMenu().catch((err) => console.log("Failed to fetch menu items", err));
   }, []);
 
   // get aggregate list of ordered items and quantity ordered 
@@ -60,7 +82,7 @@ const EndPage = () => {
     return itemsWithCounts;
   };
 
-  const itemsWithCounts = getOrderItemCounts(session);
+  const itemsWithCounts = session ? getOrderItemCounts(session) : [];
 
   const total = itemsWithCounts.reduce((acc, itemWithCount) => {
     const itemTotal = itemWithCount.item.price * itemWithCount.count;
@@ -72,9 +94,10 @@ const EndPage = () => {
       sx={{
         minHeight: '100vh',
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+        background: 'linear-gradient(45deg, hsla(276, 5%, 22%, 1) 0%, hsla(242, 23%, 40%, 1) 48%, hsla(255, 21%, 59%, 1) 100%)',
       }}
     >
       <Container
@@ -98,7 +121,8 @@ const EndPage = () => {
         elevation={0}
         sx={{
             backgroundColor: "transparent",
-            paddingBottom: "20px",
+            paddingX: "200px",
+            paddingY: "20px"
         }}
       >
         <Table aria-label="bill">
@@ -113,7 +137,7 @@ const EndPage = () => {
                         Item
                     </TableCell>
                     <TableCell 
-                        align="left" 
+                        align="right" 
                         style={{ 
                             fontWeight: 'bold', 
                             color: 'white' 
@@ -133,17 +157,17 @@ const EndPage = () => {
               {itemsWithCounts.map((itemWithCount) => (
                 <TableRow key={itemWithCount.item.id}>
                   <TableCell component="th" scope="row" style={{ fontWeight: 'bold', color: 'white'}}>
-                    {itemWithCount.item.menu_item_name}
+                    {itemWithCount.item.name}
                   </TableCell>
-                  <TableCell align="right" style={{ color: 'white'}}>{itemWithCount.item.price}</TableCell>
+                  <TableCell align="right" style={{ color: 'white'}}>{currencyFormatter.format(itemWithCount.item.price)}</TableCell>
                   <TableCell align="right" style={{ color: 'white'}}>{itemWithCount.count}</TableCell>
-                  <TableCell align="right" style={{ color: 'white'}}>{itemWithCount.count*itemWithCount.item.price}</TableCell>
+                  <TableCell align="right" style={{ color: 'white'}}>{currencyFormatter.format(itemWithCount.count*itemWithCount.item.price)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
         </Table>
     </TableContainer>
-    <div>Total Price: {total}</div>
+    <div style={{ color: 'white', fontWeight: 'bold' }}>Bill Total: {currencyFormatter.format(total)}</div>
     </Box>
   );
 };
