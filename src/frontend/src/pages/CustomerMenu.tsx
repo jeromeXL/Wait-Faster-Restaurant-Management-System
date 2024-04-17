@@ -1131,7 +1131,7 @@ const CustomerMenu = () => {
                     sx={{
                         maxWidth: "100%",
                         paddingX: "20px",
-                        paddingBottom: "10px",
+                        paddingBottom: "5px",
                         display: "flex",
                         flexWrap: "wrap",
                         gap: "10px",
