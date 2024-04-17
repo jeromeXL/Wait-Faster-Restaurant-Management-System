@@ -32,6 +32,7 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
+    CardMedia,
 } from "@mui/material";
 import { Send, OutdoorGrill, RoomService } from "@mui/icons-material";
 import { DietaryDetail, Menu, MenuItem } from "../utils/menu";
