@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+    mongo:
+        image: mongo:latest
+        container_name: wait-faster-db
+        ports:
+            - 27017:27017
+        restart: always
+    api:
+        image: wait-faster-api
+        build:
+            context: ./src/backend/
+            dockerfile: ./dockerfile
+        container_name: wait-faster-api
+        ports:
+            - "5000:80"
+        environment:
+            - "WF_SALT=$2b$12$1D.Xxdgt4W5AlqtfNRsD2u"
+            - "WF_MONGO_DB_CONNECTION_STRING=mongodb://mongo:27017"
+            - "WF_JWT_SECRET=LSJDFLKSJDFLJSDFOIOSHPLONBHPOBEPGIOUBPB"
+            - "CORS=*"
+        restart: always
+    web:
+        image: wait-faster-web
+        build:
+            context: ./src/frontend
+            dockerfile: ./dockerfile
+        container_name: wait-faster-web
+        ports:
+            - "3000:5173"
+        environment:
+            - "VITE_API_URL=http://localhost:5000"
+        restart: always

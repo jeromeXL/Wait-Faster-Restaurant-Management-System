@@ -2,7 +2,6 @@ import "./App.css";
 import { CssBaseline } from "@mui/material";
 import { Routes, Route, BrowserRouter as Router } from "react-router-dom";
 import Login from "./pages/Login";
-import Cart from "./pages/Cart";
 import Admin from "./pages/Admin";
 import ManagerMenu from "./pages/ManagerMenu";
 import AdminRoute from "./components/AdminRoute";
@@ -24,7 +23,6 @@ function App() {
                     <Route path="/" element={<Login />} />
                     <Route path="/start" element={<StartSession />} />
                     <Route path="/menu" element={<CustomerMenu />} />
-                    <Route path="/cart" element={<Cart />} />
                     <Route
                         path="/admin"
                         element={

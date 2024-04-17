@@ -12,7 +12,7 @@ export type MenuItem = {
     id: string;
     name: string;
     price: number;
-    health_requirements: DietaryDetail[];
+    health_requirements: string[];
     description: string;
     ingredients: string[];
     photo_url?: string | null;
