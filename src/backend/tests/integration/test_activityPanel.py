@@ -16,7 +16,7 @@ from tests.integration.client import get_client
 from config import CONFIG
 from models.user import User, UserRole
 from utils.password import hash_password
-from models.session import Session
+from models.session import AssistanceRequestsDetails, Session
 import pytest
 from tests.integration.client import get_client
 from config import CONFIG
@@ -162,6 +162,10 @@ async def test_activity_panel_returns_correct_users(
                     orders=[order_response],
                     session_start_time=session.session_start_time,
                     session_end_time=session.session_end_time,
+                    assistance_requests=AssistanceRequestsDetails(
+                        current=None,
+                        handled=[]
+                    )
                 ),
             )
         ]

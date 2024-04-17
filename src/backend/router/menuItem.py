@@ -33,14 +33,16 @@ async def get_menu_items(current_user=Depends(current_user)):
     return [MenuItemResponse(**item.model_dump()) for item in filtered_items]
 
 
-@router.put("/menu-item/", response_model=MenuItemResponse)
+@router.put("/menu-item", response_model=MenuItemResponse)
 async def create_menu_item(
     menu_item: MenuItemRequest, user=Depends(manager_user)
 ):
+
     validated_menu_item = MenuItem.model_validate(menu_item.model_dump())
     # Menu Item Create Validation Checks
     if not validated_menu_item.name.strip():
-        raise HTTPException(status_code=400, detail="Menu Item Name cannot be empty")
+        raise HTTPException(
+            status_code=400, detail="Menu Item Name cannot be empty")
     if not validated_menu_item.description.strip():
         raise HTTPException(
             status_code=400, detail="Menu Item Description cannot be empty"
@@ -82,6 +84,7 @@ async def delete_menu_item(menu_item_id: str, user=Depends(manager_user)):
         raise HTTPException(status_code=404, detail="Menu item not found")
     await menu_item.delete()
     return {"message": "Menu item deleted successfully"}
+
 
 @router.get("/menu-item/{menu_item_id}")
 async def get_menu_item(menu_item_id: str, user=Depends(manager_user)):

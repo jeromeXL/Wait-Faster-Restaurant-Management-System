@@ -32,6 +32,7 @@ import {
     DialogContent,
     DialogContentText,
     DialogActions,
+    CardMedia,
 } from "@mui/material";
 import { Send, OutdoorGrill, RoomService } from "@mui/icons-material";
 import { DietaryDetail, Menu, MenuItem } from "../utils/menu";
@@ -909,7 +910,7 @@ const CustomerMenu = () => {
     );
 
     return (
-        <Box sx={{ bgcolor: "#38353A" }}>
+        <Box sx={{ bgcolor: "#38353A", height: "100vh" }}>
             <AppBar
                 id="app-bar"
                 position="fixed"
@@ -1148,7 +1149,7 @@ const CustomerMenu = () => {
                     sx={{
                         maxWidth: "100%",
                         paddingX: "20px",
-                        paddingBottom: "10px",
+                        paddingBottom: "5px",
                         display: "flex",
                         flexWrap: "wrap",
                         gap: "10px",
@@ -1212,11 +1213,14 @@ const CustomerMenu = () => {
                                     return (
                                         <Card key={itemId} sx={{ width: 300 }}>
                                             <CardHeader title={item?.name} />
-                                            {/* <CardMedia
-                        component="img"
-                        height="200"
-                        sx={{height:'200px'}}
-                      /> */}
+                                            {item?.photo_url && (
+                                                <CardMedia
+                                                    component="img"
+                                                    height="200"
+                                                    image={item.photo_url}
+                                                    sx={{ height: "200px" }}
+                                                />
+                                            )}
                                             <CardContent>
                                                 <Typography
                                                     variant="body1"
