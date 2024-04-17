@@ -202,6 +202,11 @@ export const getSession = async () =>
         .get("/table/session")
         .then((resp) => resp.data as SessionResponse);
 
+export const lockSession = async() => 
+    await getAxios()
+        .post("/session/lock")
+        .then((resp) => resp.data as SessionResponse);
+
 // Sessions - Help requests.
 export const createAssistanceRequest = async () =>
     await getAxios()

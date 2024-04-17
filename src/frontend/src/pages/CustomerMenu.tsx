@@ -48,7 +48,8 @@ import {
     createAssistanceRequest,
     tabletResolveAssistanceRequest,
     CreateOrderItemRequest,
-    OrderStatus
+    OrderStatus, 
+    lockSession
 } from "../utils/api";
 import {
     AssistanceRequestUpdatedEventName,
@@ -401,8 +402,13 @@ const CustomerMenu = () => {
         setOpenBill(false);
     };
 
-    const handleConfirmBill = () => {
-        navigate("/end");
+    const handleConfirmBill = async () => {
+        try {
+            await lockSession();
+            navigate(`/end`);
+        } catch (error) {
+            console.error("Failed to lock session:", error);
+        }
     };
 
     const [openDrawer, setOpenDrawer] = React.useState(false);
