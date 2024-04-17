@@ -258,8 +258,28 @@ const CustomerMenu = () => {
         );
     };
 
-    const [quantities, setQuantities] = useState<{ [itemId: string]: number }>({});
-    const [cartCounter, setCartCounter] = useState(0);
+    const [quantities, setQuantities] = useState<{ [itemId: string]: number }>(
+        JSON.parse(localStorage.getItem('quantities') || '{}')
+      );
+      const [cartCounter, setCartCounter] = useState<number>(
+        parseInt(localStorage.getItem('cartCounter') || '0')
+      );
+      const [pendingCart, setPendingCart] = useState<{ [itemId: string]: number }>(
+        JSON.parse(localStorage.getItem('pendingCart') || '{}')
+      );
+    
+      // Update localStorage whenever quantities, cartCounter, or pendingCart change
+      useEffect(() => {
+        localStorage.setItem('quantities', JSON.stringify(quantities));
+      }, [quantities]);
+    
+      useEffect(() => {
+        localStorage.setItem('cartCounter', cartCounter.toString());
+      }, [cartCounter]);
+    
+      useEffect(() => {
+        localStorage.setItem('pendingCart', JSON.stringify(pendingCart));
+      }, [pendingCart]);
 
     const decrementQuantity = (itemId: string) => {
         const updatedQuantities = { ...quantities };
@@ -274,8 +294,6 @@ const CustomerMenu = () => {
         updatedQuantities[itemId] = (updatedQuantities[itemId] || 0) + 1;
         setQuantities(updatedQuantities);
     };
-
-    const [pendingCart, setPendingCart] = useState<{ [itemId: string]: number }>({});
 
     const addToCart = (itemId: string) => {
         if (quantities[itemId] > 0) {
@@ -525,7 +543,7 @@ const CustomerMenu = () => {
                         <TableBody>
                             {Object.keys(pendingCart).map((itemId) => {
                                 const item = menuItems[itemId];
-                                if (pendingCart[itemId] == 0) {
+                                if (!item || pendingCart[itemId] == 0) {
                                     return null;
                                 }
                                 return (
