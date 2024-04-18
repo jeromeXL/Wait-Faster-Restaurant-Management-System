@@ -462,7 +462,7 @@ localStorage.removeItem("pendingCart");
     <Box
       sx={{
         width: "60vw",
-        height: "100vh",
+        minheight: "100vh",
         bgcolor: "#38353A",
         paddingX: "20px",
       }}
@@ -881,7 +881,8 @@ localStorage.removeItem("pendingCart");
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          marginTop: "40px",
+          paddingBottom: "20px",
+          paddingTop: "40px",
         }}
       >
         <Button
@@ -1055,7 +1056,7 @@ localStorage.removeItem("pendingCart");
                         </svg>
                         Cart ({cartCounter})
                     </Button>
-                    <Drawer open={openDrawer} onClose={toggleDrawer(false)}>
+                    <Drawer className="bg-#35383A" open={openDrawer} onClose={toggleDrawer(false)}>
                         {DrawerList}
                     </Drawer>
                 </Toolbar>
