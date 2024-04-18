@@ -98,34 +98,36 @@ const CustomerMenu = () => {
         setMenuItems(fetchedMenu.Items);
     }
 
-    useEffect(() => {
-        fetchMenu().catch((err) => console.log("Failed to fetch menu", err));
-    }, []);
-
     // Fetching Customer's Session.
     const [session, setSession] = useState<SessionResponse>();
 
-    async function fetchTableSession() {
-        await getSession().then(setSession);
+    async function fetchTableSession(): Promise<SessionResponse> {
+        return await getSession().then((s) => {
+            setSession(s);
+            return s;
+        });
     }
 
     useEffect(() => {
-        fetchTableSession()
-            .catch((err) => console.log("Failed to fetch session", err))
-            .then(() => {
-                if (!NotificationSocket.connected) {
-                    NotificationSocket.connect();
-                }
+        async function fetch() {
+            const session = await fetchTableSession();
+            await fetchMenu();
 
-                NotificationSocket.on(
-                    AssistanceRequestUpdatedEventName,
-                    async (data) => {
-                        if (data.id == session?.id) {
-                            await fetchTableSession();
-                        }
+            if (!NotificationSocket.connected) {
+                NotificationSocket.connect();
+            }
+
+            NotificationSocket.on(
+                AssistanceRequestUpdatedEventName,
+                async (data) => {
+                    if (data.id == session?.id) {
+                        await fetchTableSession();
                     }
-                );
-            });
+                }
+            );
+        }
+
+        fetch();
 
         return () => {
             NotificationSocket.removeListener(
@@ -807,7 +809,7 @@ const CustomerMenu = () => {
                                         >
                                             {currencyFormatter.format(
                                                 menuItems[item.menu_item_id]
-                                                    .price
+                                                    ?.price
                                             )}
                                         </TableCell>
                                         {/* quantity? */}
@@ -847,7 +849,7 @@ const CustomerMenu = () => {
                                     order.items.reduce((subtotal, item) => {
                                         return (
                                             subtotal +
-                                            menuItems[item.menu_item_id].price
+                                            menuItems[item.menu_item_id]?.price
                                         );
                                     }, 0)
                                 );
