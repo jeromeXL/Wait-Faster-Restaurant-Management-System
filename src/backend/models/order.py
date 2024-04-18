@@ -12,6 +12,7 @@ class OrderStatus(int, Enum):
     READY = 2
     DELIVERING = 3
     DELIVERED = 4
+    CANCELLED = 5
 
 
 class OrderItem(BaseModel):
@@ -30,8 +31,9 @@ class Order(Document):
 
 
 valid_transitions = {
-    OrderStatus.ORDERED: [OrderStatus.PREPARING],
+    OrderStatus.ORDERED: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
     OrderStatus.PREPARING: [OrderStatus.READY, OrderStatus.ORDERED],
     OrderStatus.READY: [OrderStatus.DELIVERING, OrderStatus.PREPARING],
     OrderStatus.DELIVERING: [OrderStatus.READY, OrderStatus.DELIVERED],
+    OrderStatus.CANCELLED: [OrderStatus.ORDERED, OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.DELIVERING]
 }
