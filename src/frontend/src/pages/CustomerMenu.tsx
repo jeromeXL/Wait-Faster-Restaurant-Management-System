@@ -34,7 +34,7 @@ import {
   DialogActions,
   CardMedia,
 } from "@mui/material";
-import { Send, OutdoorGrill, RoomService } from "@mui/icons-material";
+import { Send, OutdoorGrill, RoomService, DoDisturbOff } from "@mui/icons-material";
 import { DietaryDetail, Menu, MenuItem } from "../utils/menu";
 import {
   MakeOrder,
@@ -372,6 +372,7 @@ localStorage.removeItem("pendingCart");
     setPendingCart(updatedPendingCart);
   };
 
+  // calculate total of cart 
   const calculateTotal = () => {
     let total = 0;
     for (const itemId in pendingCart) {
@@ -467,6 +468,7 @@ localStorage.removeItem("pendingCart");
     [OrderStatus.READY]: <OutdoorGrill />,
     [OrderStatus.DELIVERING]: <OutdoorGrill />,
     [OrderStatus.DELIVERED]: <RoomService />,
+    [OrderStatus.CANCELLED]: <DoDisturbOff />,
   };
 
   const DrawerList = (
@@ -834,6 +836,7 @@ localStorage.removeItem("pendingCart");
                       align="left"
                       style={{
                         color: "white",
+                        textDecoration: item.status == OrderStatus.CANCELLED ? "line-through" : "none"
                       }}
                     >
                       {currencyFormatter.format(
@@ -876,10 +879,14 @@ localStorage.removeItem("pendingCart");
                 return (
                   total +
                   order.items.reduce((subtotal, item) => {
-                    return (
-                      subtotal +
-                      menuItems[item.menu_item_id]?.price
-                    );
+                    if (item.status != OrderStatus.CANCELLED) {
+                      return (
+                        subtotal +
+                        menuItems[item.menu_item_id]?.price
+                      );
+                    } else {
+                      return subtotal;
+                    }
                   }, 0)
                 );
               }, 0) ?? 0
