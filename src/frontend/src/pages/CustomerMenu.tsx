@@ -256,7 +256,15 @@ const CustomerMenu = () => {
             ...filterOptions,
             [option]: isChecked,
         });
-
+// Reset state variables
+setQuantities({});
+setCartCounter(0);
+setPendingCart({});
+// Clear localStorage
+localStorage.removeItem("quantities");
+localStorage.removeItem("cartCounter");
+localStorage.removeItem("pendingCart");
+// Navigate to '/end'
         if (isChecked) {
             setSelectedFilters([...selectedFilters, option]);
         } else {
@@ -421,6 +429,15 @@ const CustomerMenu = () => {
     const handleConfirmBill = async () => {
         try {
             await lockSession();
+            // Reset state variables
+            setQuantities({});
+            setCartCounter(0);
+            setPendingCart({});
+            // Clear localStorage
+            localStorage.removeItem("quantities");
+            localStorage.removeItem("cartCounter");
+            localStorage.removeItem("pendingCart");
+            // Navigate to '/end'
             navigate(`/end`);
         } catch (error) {
             console.error("Failed to lock session:", error);
@@ -1240,19 +1257,22 @@ const CustomerMenu = () => {
                                                     }}
                                                 >
                                                     <Box>
-                                                        {item?.health_requirements.map(
-                                                            (detail) => (
+                                                      {item.health_requirements.map(
+                                                          (detail) => {
+                                                            if (detail && detail.trim() !== "") {
+                                                              return (
                                                                 <Chip
+                                                                    key={detail}
                                                                     size="small"
                                                                     sx={{
-                                                                        marginRight:
-                                                                            "5px",
+                                                                        marginRight: "5px",
                                                                     }}
-                                                                    label={
-                                                                        detail
-                                                                    }
+                                                                    label={detail}
                                                                 />
-                                                            )
+                                                            ) ;
+                                                            }
+                                                            return null;
+                                                          }
                                                         )}
                                                     </Box>
                                                     <Typography>
