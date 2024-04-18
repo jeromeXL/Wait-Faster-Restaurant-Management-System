@@ -18,6 +18,7 @@ import {
     OrderStatus,
     SessionStatus,
     TableActivityResponse,
+    completeSession,
     getActivityPanel,
     staffReopenAssistanceRequest,
     staffUpdateAssistanceRequest,
@@ -29,7 +30,7 @@ import {
     AssistanceRequestUpdatedEventName,
     NotificationSocket,
 } from "../utils/socketIo";
-import { FiBell, FiX } from "react-icons/fi";
+import { FiBell, FiX, FiCheck } from "react-icons/fi";
 
 const ActivityPanel = () => {
     const [activityPanel, setActivityPanel] =
@@ -81,26 +82,31 @@ const ActivityPanel = () => {
     };
 
     // Get the apporpriate colour for the assistance request status
-    function getAssistanceRequestColour(item: TableActivityResponse) {
+    function getCardHeaderColour(item: TableActivityResponse) {
         if (item == null) {
-            return "white";
+            return "bg-white text-black";
+        }
+
+        console.log(item);
+        if (item.current_session?.status == SessionStatus.AWAITING_PAYMENT) {
+            return "bg-info-light text-black";
         }
 
         if (
             item.current_session?.assistance_requests.current?.status ==
             AssistanceRequestStatus.OPEN
         ) {
-            return "error";
+            return "bg-error-dark text-white";
         }
 
         if (
             item.current_session?.assistance_requests.current?.status ==
             AssistanceRequestStatus.HANDLING
         ) {
-            return "secondary";
+            return "bg-secondary text-white";
         }
 
-        return "white";
+        return "bg-white text-black";
     }
 
     // Session Dialog
@@ -274,12 +280,7 @@ const ActivityPanel = () => {
                         justifyContent="space-between"
                         alignItems="center"
                         p={2}
-                        className={`${
-                            dto.current_session?.assistance_requests.current &&
-                            `bg-${getAssistanceRequestColour(
-                                dto
-                            )} text-white rounded-t-sm`
-                        }`}
+                        className={`${getCardHeaderColour(dto)} rounded-t-sm`}
                     >
                         <Typography variant="h6">{`Table ${dto?.table_number}`}</Typography>
                         <Button
@@ -298,7 +299,7 @@ const ActivityPanel = () => {
                             />
                         </Button>
                     </Box>
-                    <div className={`px-4`}>
+                    <div className={`px-4 pt-2`}>
                         {"Started: "}
                         {new Date(
                             dto.current_session?.session_start_time
@@ -499,41 +500,23 @@ const ActivityPanel = () => {
                             )}
                         </Box>
                     </DialogContent>
-                    <DialogActions></DialogActions>
+                    <DialogActions>
+                        {dto.current_session.status ==
+                            SessionStatus.AWAITING_PAYMENT && (
+                            <Button
+                                onClick={() => {
+                                    completeSession(`Table${dto.table_number}`)
+                                        .then(fetchActivityPanel)
+                                        .then(closeSessionDialog);
+                                }}
+                            >
+                                Reset Table
+                            </Button>
+                        )}
+                    </DialogActions>
                 </Dialog>
             )
         );
-    };
-
-    // Display functions
-    const getTableBackgroundColour = (dto: TableActivityResponse) => {
-        if (dto.current_session == null) {
-            return "bg-white brightness-75";
-        }
-
-        switch (dto.current_session?.status) {
-            case SessionStatus.OPEN:
-                return "bg-white";
-            case SessionStatus.AWAITING_PAYMENT:
-                return "bg-blue-200";
-            case SessionStatus.CLOSED:
-                return "bg-white";
-        }
-    };
-
-    const getTableTextColour = (dto: TableActivityResponse) => {
-        if (dto.current_session == null) {
-            return "text-black";
-        }
-
-        switch (dto.current_session?.status) {
-            case SessionStatus.OPEN:
-                return "text-black";
-            case SessionStatus.AWAITING_PAYMENT:
-                return "text-white";
-            case SessionStatus.CLOSED:
-                return "text-black";
-        }
     };
 
     const ordersInKitchen = () =>
@@ -553,6 +536,11 @@ const ActivityPanel = () => {
                     x?.status == OrderStatus.READY ||
                     x?.status == OrderStatus.DELIVERING
             ).length;
+
+    const helpRequests = () =>
+        activityPanel?.tables
+            .map((x) => x.current_session?.assistance_requests.current)
+            .filter((x) => x != null).length;
 
     return (
         <Box
@@ -578,21 +566,18 @@ const ActivityPanel = () => {
                 ) : (
                     <div className="flex flex-col w-full gap-2">
                         <div className="flex gap-4">
-                            <Box className="w-full text-black p-2 rounded-md text-center bg-info">
+                            <Box className="w-full text-white p-2 rounded-md text-center  bg-info-dark">
                                 <p className="text-xl">{ordersInKitchen()}</p>
                                 {`Orders in the kitchen`}
                             </Box>
-                            <Box className="w-full text-black p-2 rounded-md text-center bg-warning-light">
+                            <Box className="w-full text-white p-2 rounded-md text-center bg-warning-dark">
                                 <p className="text-xl">
                                     {ordersToBeDeliveredOrDelivering()}
                                 </p>
                                 {`Orders to be delivered`}
                             </Box>
-                            <Box
-                                className="w-full text-black p-2 rounded-md text-center"
-                                sx={{ bgcolor: "white" }}
-                            >
-                                <p className="text-xl">0</p>
+                            <Box className="w-full text-white p-2 rounded-md text-center bg-error-dark">
+                                <p className="text-xl">{helpRequests()}</p>
                                 {`Assistance requests`}
                             </Box>
                         </div>
@@ -600,10 +585,11 @@ const ActivityPanel = () => {
                             {activityPanel.tables.map((table) => (
                                 <Box
                                     key={table.table_number}
-                                    className={`rounded-md text-gray-800 ${
-                                        table.current_session != null &&
-                                        "cursor-pointer hover:brightness-95"
-                                    } ${getTableBackgroundColour(table)}`}
+                                    className={`rounded-md text-gray-800 bg-white  ${
+                                        table.current_session == null
+                                            ? "brightness-75 hover:brightness-95 "
+                                            : "cursor-pointer"
+                                    }`}
                                     onClick={() => {
                                         if (table.current_session != null)
                                             onClickTableWithSession(table);
@@ -611,16 +597,10 @@ const ActivityPanel = () => {
                                 >
                                     <Typography
                                         variant="h6"
-                                        className={`p-4 flex justify-between ${getTableTextColour(
+                                        className={`p-4 flex justify-between   
+                                        ${getCardHeaderColour(
                                             table
-                                        )}  
-                                        ${
-                                            table.current_session
-                                                ?.assistance_requests.current &&
-                                            `bg-${getAssistanceRequestColour(
-                                                table
-                                            )} text-white rounded-t-md`
-                                        }`}
+                                        )} rounded-t-md`}
                                     >
                                         <div>{`Table ${table.table_number}`}</div>
                                         <div className="flex items-center ">
@@ -631,15 +611,17 @@ const ActivityPanel = () => {
                                                     className={`text-2xl`}
                                                 />
                                             )}
+                                            {table.current_session?.status ==
+                                                SessionStatus.AWAITING_PAYMENT && (
+                                                <FiCheck
+                                                    className={`text-2xl`}
+                                                />
+                                            )}
                                         </div>
                                     </Typography>
                                     {table.current_session != null ? (
                                         <Box className="flex flex-col py-2">
-                                            <div
-                                                className={`${getTableTextColour(
-                                                    table
-                                                )} px-4`}
-                                            >
+                                            <div className="text-black px-4">
                                                 {"Started: "}
                                                 {new Date(
                                                     table.current_session?.session_start_time
@@ -654,11 +636,7 @@ const ActivityPanel = () => {
                                             />
                                             {table.current_session.orders
                                                 .length > 0 && (
-                                                <div
-                                                    className={`px-4 py-2 flex flex-col gap-2 ${getTableTextColour(
-                                                        table
-                                                    )}`}
-                                                >
+                                                <div className="px-4 py-2 flex flex-col gap-2 text-black">
                                                     {"Orders: "}
                                                     <div className="flex flex-col gap-3 divide-y-2 divide-gray-300">
                                                         {table.current_session.orders.map(

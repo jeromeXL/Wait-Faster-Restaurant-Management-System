@@ -211,6 +211,9 @@ export const lockSession = async () =>
         .post("/session/lock")
         .then((resp) => resp.data as SessionResponse);
 
+export const completeSession = async (tableName: string) =>
+    await getAxios().post(`/session/complete/${tableName}`);
+
 // Sessions - Help requests.
 export const createAssistanceRequest = async () =>
     await getAxios()
