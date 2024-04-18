@@ -147,6 +147,7 @@ export enum OrderStatus {
     READY = 2,
     DELIVERING = 3,
     DELIVERED = 4,
+    CANCELLED = 5,
 }
 export type OrderItemResponse = {
     id: string;
