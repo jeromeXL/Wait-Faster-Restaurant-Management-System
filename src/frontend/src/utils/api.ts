@@ -130,7 +130,7 @@ export type CategoryResponse = {
 };
 export const createCategory = async (req: CreateCategoryRequest) =>
     await getAxios()
-        .post("/category", req)
+        .post("/category/", req)
         .then((resp) => resp.data as CategoryResponse);
 
 export const updateCategory = async (id: string, req: CreateCategoryRequest) =>
