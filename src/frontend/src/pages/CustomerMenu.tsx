@@ -992,433 +992,432 @@ localStorage.removeItem("pendingCart");
               }}
             />
           </Typography>
-
-                    <Button
-                        key={
-                            session?.assistance_requests.current?.start_time ??
-                            "NONE"
-                        }
-                        variant="contained"
-                        disableElevation
-                        style={{
-                            borderRadius: 3,
-                            fontSize: "medium",
-                            borderColor: "#38353A",
-                            borderWidth: "1.5px",
-                            paddingInline: "15px",
-                            marginInline: "20px",
-                        }}
-                        color={
-                            session?.assistance_requests.current != null
-                                ? "success"
-                                : "primary"
-                        }
-                        onClick={clickCallStaff}
-                    >
-                        {session?.assistance_requests.current == null
-                            ? "Call Staff"
-                            : "Staff Called"}
-                    </Button>
-                    <Snackbar
-                        open={snackbarOpen}
-                        autoHideDuration={6000}
-                        onClose={handleClose}
-                        message="Staff has been called"
-                        action={action}
-                        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-                    >
-                        <SnackbarContent
-                            sx={{
-                                height: "70px",
-                                borderRadius: "3px",
-                                backgroundColor: "#F0F0F0",
-                                color: "#38353A",
-                                paddingX: "30px",
-                            }}
-                            message={
-                                <Typography variant="h6" paddingRight="40px">
-                                    Staff has been called
-                                </Typography>
-                            }
-                            action={action}
-                        />
-                    </Snackbar>
-                    <Button
-                        variant="outlined"
-                        sx={{
-                            borderRadius: 0.5,
-                            borderColor: "transparent",
-                            color: "#F0F0F0",
-                            fontSize: "medium",
-                            "&:hover": {
-                                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                                borderColor: "#F0F0F0",
-                            },
-                        }}
-                        onClick={toggleDrawer(true)}
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="#F0F0F0"
-                            className="w-6 h-6"
-                            style={{ marginRight: "5px" }}
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
-                            />
-                        </svg>
-                        Cart ({cartCounter})
-                    </Button>
-                    <Drawer className="bg-#35383A" open={openDrawer} onClose={toggleDrawer(false)}>
-                        {DrawerList}
-                    </Drawer>
-                </Toolbar>
-                <Box
-                    sx={{
-                        display: "flex",
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginInline: "20px",
-                        marginBottom: "10px",
-                    }}
-                >
-                    <Search>
-                        {selectedFilters.length === 0 && (
-                            <StyledInputBase
-                                placeholder="e.g. Vegetarian, Spicy"
-                                inputProps={{ "aria-label": "search" }}
-                                sx={{ color: "white" }}
-                            />
-                        )}
-                        {selectedFilters.map((filter) => (
-                            <Chip
-                                key={filter}
-                                label={filter}
-                                onDelete={() => clearFilterChip(filter)}
-                                style={{
-                                    marginInline: "5px",
-                                    backgroundColor: "#F0F0F0",
-                                    height: "25px",
-                                }}
-                            />
-                        ))}
-                        {selectedFilters.length > 0 && (
-                            <Button
-                                onClick={clearFilters}
-                                sx={{
-                                    color: "#F0F0F0",
-                                }}
-                            >
-                                Clear Filters
-                            </Button>
-                        )}
-                    </Search>
-                    <Button
-                        variant="outlined"
-                        style={{
-                            borderRadius: 5,
-                            height: "40px",
-                            borderColor: "#F0F0F0",
-                            borderWidth: "1.5px",
-                            marginLeft: "20px",
-                        }}
-                        onClick={openFilters}
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            strokeWidth={1.5}
-                            stroke="#F0F0F0"
-                            className="w-6 h-6"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
-                            />
-                        </svg>
-                    </Button>
-                    <Popover
-                        id={id}
-                        open={open}
-                        anchorEl={anchorEl}
-                        onClose={closeFilters}
-                        anchorOrigin={{
-                            vertical: "bottom",
-                            horizontal: "left",
-                        }}
-                    >
-                        <Box sx={{ padding: "20px" }}>
-                            <Typography
-                                variant="h6"
-                                sx={{ fontWeight: "bold" }}
-                            >
-                                Filter Options
-                            </Typography>
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    flexDirection: "row",
-                                    flexWrap: "wrap",
-                                    width: "500px",
-                                }}
-                            >
-                                {Object.keys(filterOptions).map((option) => (
-                                    <FormControlLabel
-                                        key={option}
-                                        control={
-                                            <Checkbox
-                                                checked={filterOptions[option]}
-                                                onChange={(event) =>
-                                                    checkFilter(event, option)
-                                                }
-                                            />
-                                        }
-                                        label={option}
-                                    />
-                                ))}
-                            </Box>
-                        </Box>
-                    </Popover>
-                </Box>
-                <Box
-                    sx={{
-                        maxWidth: "100%",
-                        paddingX: "20px",
-                        paddingBottom: "5px",
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: "10px",
-                        justifyContent: "space-evenly",
-                    }}
-                >
-                    {menu?.categories.map((category) => (
-                        // Add anchor links to category buttons
-                        <a
-                            key={category.name}
-                            href={`#${category.name}`}
-                            style={{ textDecoration: "none" }}
-                        >
-                            <TypeButton>{category.name}</TypeButton>
-                        </a>
-                    ))}
-                </Box>
-            </AppBar>
-            <Box
-                sx={{
-                    marginTop: `calc(${appBarHeight}px)`,
-                    paddingX: "20px",
-                    height: "100%",
-                }}
+          <Button
+            key={
+                session?.assistance_requests.current?.start_time ??
+                "NONE"
+            }
+            variant="contained"
+            disableElevation
+            style={{
+                borderRadius: 3,
+                fontSize: "medium",
+                borderColor: "#38353A",
+                borderWidth: "1.5px",
+                paddingInline: "15px",
+                marginInline: "20px",
+            }}
+            color={
+                session?.assistance_requests.current != null
+                    ? "success"
+                    : "primary"
+            }
+            onClick={clickCallStaff}
+          >
+            {session?.assistance_requests.current == null
+              ? "Call Staff"
+              : "Staff Called"}
+          </Button>
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleClose}
+            message="Staff has been called"
+            action={action}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <SnackbarContent
+              sx={{
+                height: "70px",
+                borderRadius: "3px",
+                backgroundColor: "#F0F0F0",
+                color: "#38353A",
+                paddingX: "30px",
+              }}
+              message={
+                <Typography variant="h6" paddingRight="40px">
+                    Staff has been called
+                </Typography>
+              }
+              action={action}
+            />
+          </Snackbar>
+          <Button
+            variant="outlined"
+            sx={{
+                borderRadius: 0.5,
+                borderColor: "transparent",
+                color: "#F0F0F0",
+                fontSize: "medium",
+                "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    borderColor: "#F0F0F0",
+                },
+            }}
+            onClick={toggleDrawer(true)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="#F0F0F0"
+              className="w-6 h-6"
+              style={{ marginRight: "5px" }}
             >
-                {menu?.categories.map((category) => (
-                    <React.Fragment key={category.name}>
-                      <span className="anchor-offset" style={{ top: `-${appBarHeight}px` }} id={category.name}></span>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
+              />
+            </svg>
+            Cart ({cartCounter})
+          </Button>
+          <Drawer className="bg-#35383A" open={openDrawer} onClose={toggleDrawer(false)}>
+              {DrawerList}
+          </Drawer>
+        </Toolbar>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginInline: "20px",
+            marginBottom: "10px",
+          }}
+        >
+          <Search>
+            {selectedFilters.length === 0 && (
+              <StyledInputBase
+                placeholder="e.g. Vegetarian, Spicy"
+                inputProps={{ "aria-label": "search" }}
+                sx={{ color: "white" }}
+              />
+            )}
+            {selectedFilters.map((filter) => (
+              <Chip
+                key={filter}
+                label={filter}
+                onDelete={() => clearFilterChip(filter)}
+                style={{
+                  marginInline: "5px",
+                  backgroundColor: "#F0F0F0",
+                  height: "25px",
+                }}
+              />
+            ))}
+              {selectedFilters.length > 0 && (
+                <Button
+                  onClick={clearFilters}
+                  sx={{
+                    color: "#F0F0F0",
+                  }}
+                >
+                  Clear Filters
+                </Button>
+              )}
+          </Search>
+          <Button
+            variant="outlined"
+            style={{
+                borderRadius: 5,
+                height: "40px",
+                borderColor: "#F0F0F0",
+                borderWidth: "1.5px",
+                marginLeft: "20px",
+            }}
+            onClick={openFilters}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="#F0F0F0"
+              className="w-6 h-6"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+              />
+            </svg>
+          </Button>
+          <Popover
+            id={id}
+            open={open}
+            anchorEl={anchorEl}
+            onClose={closeFilters}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+          >
+            <Box sx={{ padding: "20px" }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: "bold" }}
+              >
+                Filter Options
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  flexWrap: "wrap",
+                  width: "500px",
+                }}
+              >
+                {Object.keys(filterOptions).map((option) => (
+                  <FormControlLabel
+                    key={option}
+                    control={
+                      <Checkbox
+                        checked={filterOptions[option]}
+                        onChange={(event) =>
+                          checkFilter(event, option)
+                        }
+                      />
+                    }
+                    label={option}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Popover>
+        </Box>
+        <Box
+          sx={{
+            maxWidth: "100%",
+            paddingX: "20px",
+            paddingBottom: "5px",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "10px",
+            justifyContent: "space-evenly",
+          }}
+        >
+          {menu?.categories.map((category) => (
+            // Add anchor links to category buttons
+            <a
+              key={category.name}
+              href={`#${category.name}`}
+              style={{ textDecoration: "none" }}
+            >
+              <TypeButton>{category.name}</TypeButton>
+            </a>
+          ))}
+        </Box>
+      </AppBar>
+      <Box
+        sx={{
+          marginTop: `calc(${appBarHeight}px)`,
+          paddingX: "20px",
+          height: "100%",
+        }}
+      >
+        {menu?.categories.map((category) => (
+          <React.Fragment key={category.name}>
+            <span className="anchor-offset" style={{ top: `-${appBarHeight}px` }} id={category.name}></span>
+            <Typography
+              variant="h5"
+              sx={{
+                  fontWeight: "bold",
+                  color: "#F0F0F0",
+                  paddingY: "35px",
+              }}
+            >
+              {category.name}
+            </Typography>
+            <Box
+              sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  flexDirection: "row",
+                  justifyContent: "flex-start",
+                  columnGap: "10px",
+                  rowGap: "15px",
+              }}
+            >
+              {category.menu_items.map((itemId) => {
+                const item = menuItems[itemId];
+                const matchesFilters = selectedFilters.every(
+                  (filter) =>
+                    item.health_requirements.includes(
+                      filter
+                    )
+                );
+                if (
+                  matchesFilters ||
+                  selectedFilters.length === 0
+                ) {
+                  return (
+                    <Card key={itemId} sx={{ width: 300 }}>
+                      <CardHeader title={item?.name} />
+                      {item?.photo_url && (
+                        <CardMedia
+                          component="img"
+                          height="200"
+                          image={item.photo_url}
+                          sx={{ height: "200px" }}
+                        />
+                      )}
+                      <CardContent>
                         <Typography
-                            variant="h5"
-                            sx={{
-                                fontWeight: "bold",
-                                color: "#F0F0F0",
-                                paddingY: "35px",
-                            }}
+                          variant="body1"
+                          height="50px"
+                          sx={{ overflowY: "auto" }}
                         >
-                            {category.name}
+                          {item?.description}
                         </Typography>
                         <Box
-                            sx={{
-                                display: "flex",
-                                flexWrap: "wrap",
-                                flexDirection: "row",
-                                justifyContent: "flex-start",
-                                columnGap: "10px",
-                                rowGap: "15px",
-                            }}
+                          sx={{
+                            display: "flex",
+                            justifyContent:
+                                "space-between",
+                            alignItems: "center",
+                            marginTop: "10px",
+                          }}
                         >
-                            {category.menu_items.map((itemId) => {
-                                const item = menuItems[itemId];
-                                const matchesFilters = selectedFilters.every(
-                                    (filter) =>
-                                        item.health_requirements.includes(
-                                            filter
-                                        )
-                                );
-                                if (
-                                    matchesFilters ||
-                                    selectedFilters.length === 0
-                                ) {
-                                    return (
-                                        <Card key={itemId} sx={{ width: 300 }}>
-                                            <CardHeader title={item?.name} />
-                                            {item?.photo_url && (
-                                                <CardMedia
-                                                    component="img"
-                                                    height="200"
-                                                    image={item.photo_url}
-                                                    sx={{ height: "200px" }}
-                                                />
-                                            )}
-                                            <CardContent>
-                                                <Typography
-                                                    variant="body1"
-                                                    height="50px"
-                                                    sx={{ overflowY: "auto" }}
-                                                >
-                                                    {item?.description}
-                                                </Typography>
-                                                <Box
-                                                    sx={{
-                                                        display: "flex",
-                                                        justifyContent:
-                                                            "space-between",
-                                                        alignItems: "center",
-                                                        marginTop: "10px",
-                                                    }}
-                                                >
-                                                    <Box>
-                                                      {item.health_requirements.map(
-                                                          (detail) => {
-                                                            if (detail && detail.trim() !== "") {
-                                                              return (
-                                                                <Chip
-                                                                    key={detail}
-                                                                    size="small"
-                                                                    sx={{
-                                                                        marginRight: "5px",
-                                                                    }}
-                                                                    label={detail}
-                                                                />
-                                                            ) ;
-                                                            }
-                                                            return null;
-                                                          }
-                                                        )}
-                                                    </Box>
-                                                    <Typography>
-                                                        {currencyFormatter.format(
-                                                            item?.price
-                                                        )}
-                                                    </Typography>
-                                                </Box>
-                                                <Box
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexDirection: "row",
-                                                        justifyContent:
-                                                            "space-between",
-                                                        alignItems: "center",
-                                                        marginTop: "10px",
-                                                    }}
-                                                >
-                                                    <div
-                                                        style={{
-                                                            display: "flex",
-                                                            flexDirection:
-                                                                "row",
-                                                            justifyContent:
-                                                                "space-between",
-                                                            alignItems:
-                                                                "center",
-                                                        }}
-                                                    >
-                                                        <Button
-                                                            onClick={() =>
-                                                                decrementQuantity(
-                                                                    itemId
-                                                                )
-                                                            }
-                                                            sx={{
-                                                                minWidth: 0,
-                                                                marginRight:
-                                                                    "5px",
-                                                                color: "#38353A",
-                                                                borderColor:
-                                                                    "white",
-                                                                "&:hover": {
-                                                                    backgroundColor:
-                                                                        "rgba(0, 0, 0 , 0.1)",
-                                                                    borderColor:
-                                                                        "#F0F0F0",
-                                                                },
-                                                            }}
-                                                        >
-                                                            -
-                                                        </Button>
-                                                        <Typography
-                                                            variant="body1"
-                                                            sx={{
-                                                                paddingX:
-                                                                    "10px",
-                                                            }}
-                                                        >
-                                                            {quantities[
-                                                                itemId
-                                                            ] || 0}
-                                                        </Typography>
-                                                        <Button
-                                                            onClick={() =>
-                                                                incrementQuantity(
-                                                                    itemId
-                                                                )
-                                                            }
-                                                            sx={{
-                                                                minWidth: 0,
-                                                                marginLeft:
-                                                                    "5px",
-                                                                color: "#38353A",
-                                                                borderColor:
-                                                                    "white",
-                                                                "&:hover": {
-                                                                    backgroundColor:
-                                                                        "rgba(0, 0, 0 , 0.1)",
-                                                                    borderColor:
-                                                                        "#F0F0F0",
-                                                                },
-                                                            }}
-                                                        >
-                                                            +
-                                                        </Button>
-                                                    </div>
-                                                    <Button
-                                                        variant="outlined"
-                                                        sx={{
-                                                            borderColor:
-                                                                "transparent",
-                                                            color: "#38353A",
-                                                            borderRadius: "1",
-                                                            backgroundColor:
-                                                                "rgba(0, 0, 0 , 0.1)",
-                                                            "&:hover": {
-                                                                backgroundColor:
-                                                                    "rgba(255, 255, 255, 1)",
-                                                                borderColor:
-                                                                    "#38353A",
-                                                            },
-                                                        }}
-                                                        onClick={() =>
-                                                            addToCart(itemId)
-                                                        }
-                                                    >
-                                                        Add To Cart
-                                                    </Button>
-                                                </Box>
-                                            </CardContent>
-                                        </Card>
-                                    );
+                          <Box>
+                            {item.health_requirements.map(
+                              (detail) => {
+                                if (detail && detail.trim() !== "") {
+                                  return (
+                                    <Chip
+                                      key={detail}
+                                      size="small"
+                                      sx={{
+                                          marginRight: "5px",
+                                      }}
+                                      label={detail}
+                                    />
+                                  );
                                 }
-                            })}
+                                return null;
+                              }
+                            )}
+                          </Box>
+                          <Typography>
+                            {currencyFormatter.format(
+                                item?.price
+                            )}
+                          </Typography>
                         </Box>
-                    </React.Fragment>
-                ))}
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "row",
+                            justifyContent:
+                                "space-between",
+                            alignItems: "center",
+                            marginTop: "10px",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              flexDirection:
+                                  "row",
+                              justifyContent:
+                                  "space-between",
+                              alignItems:
+                                  "center",
+                            }}
+                          >
+                            <Button
+                              onClick={() =>
+                                decrementQuantity(
+                                  itemId
+                                )
+                              }
+                              sx={{
+                                minWidth: 0,
+                                marginRight:
+                                  "5px",
+                                color: "#38353A",
+                                borderColor:
+                                  "white",
+                                "&:hover": {
+                                  backgroundColor:
+                                    "rgba(0, 0, 0 , 0.1)",
+                                  borderColor:
+                                    "#F0F0F0",
+                                },
+                              }}
+                            >
+                              -
+                            </Button>
+                            <Typography
+                              variant="body1"
+                              sx={{
+                                paddingX:
+                                  "10px",
+                              }}
+                            >
+                              {quantities[
+                                itemId
+                              ] || 0}
+                            </Typography>
+                            <Button
+                              onClick={() =>
+                                incrementQuantity(
+                                  itemId
+                                )
+                              }
+                              sx={{
+                                minWidth: 0,
+                                marginLeft:
+                                  "5px",
+                                color: "#38353A",
+                                borderColor:
+                                  "white",
+                                "&:hover": {
+                                  backgroundColor:
+                                    "rgba(0, 0, 0 , 0.1)",
+                                  borderColor:
+                                    "#F0F0F0",
+                                },
+                              }}
+                            >
+                                +
+                            </Button>
+                          </div>
+                          <Button
+                              variant="outlined"
+                              sx={{
+                                  borderColor:
+                                      "transparent",
+                                  color: "#38353A",
+                                  borderRadius: "1",
+                                  backgroundColor:
+                                      "rgba(0, 0, 0 , 0.1)",
+                                  "&:hover": {
+                                      backgroundColor:
+                                          "rgba(255, 255, 255, 1)",
+                                      borderColor:
+                                          "#38353A",
+                                  },
+                              }}
+                              onClick={() =>
+                                  addToCart(itemId)
+                              }
+                          >
+                              Add To Cart
+                          </Button>
+                        </Box>
+                      </CardContent>
+                    </Card>
+                  );
+                }
+              })}
             </Box>
-        </Box>
-    );
+          </React.Fragment>
+        ))}
+      </Box>
+    </Box>
+  );
 };
 
 export default CustomerMenu;
