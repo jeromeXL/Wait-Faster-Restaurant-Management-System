@@ -1,0 +1,3 @@
+- Connected the customer menu page with the backend
+- menu items were displayed syncing with backend without picture implementation 
+- cart page made 
