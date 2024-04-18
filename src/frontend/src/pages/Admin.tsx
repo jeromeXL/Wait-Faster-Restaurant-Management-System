@@ -30,7 +30,7 @@ const styles = {
     bgcolor: '#1e1e1e',
     paddingTop: '20px',
     color: '#E0E0E0',
-    background: `linear-gradient(to bottom right, #1e1e1e, #333333)`,
+    background: 'linear-gradient(to bottom right, #0f0f0f, #1a1a1a, #2a1e35, #0f0c33)',
   },
   container: {
     bgcolor: 'background.paper',

@@ -554,7 +554,7 @@ const ActivityPanel = () => {
                 bgcolor: "#121212",
                 paddingTop: "20px",
                 color: "#E0E0E0",
-                background: `linear-gradient(to bottom right, #121212, #2C2C2C)`,
+                background: 'linear-gradient(to bottom right, #0f0f0f, #1a1a1a, #2a1e35, #0f0c33)',
             }}
         >
             <Typography variant="h4" gutterBottom sx={{ color: "#FFF" }}>
