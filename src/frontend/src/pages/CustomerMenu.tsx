@@ -1207,7 +1207,7 @@ localStorage.removeItem("pendingCart");
                             sx={{
                                 fontWeight: "bold",
                                 color: "#F0F0F0",
-                                paddingY: "15px",
+                                paddingY: "35px",
                             }}
                         >
                             {category.name}
