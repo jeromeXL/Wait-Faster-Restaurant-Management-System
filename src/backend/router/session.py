@@ -87,7 +87,7 @@ async def start_session(
 
     customer_table.active_session = str(new_session.id)
     await customer_table.save()
-
+    await sio.emit("activity_panel_updated")
     return await generate_session_response(new_session)
 
 
@@ -105,6 +105,7 @@ async def lock_session(
     session.status = SessionStatus.AWAITING_PAYMENT
     await session.save()
 
+    await sio.emit("activity_panel_updated")
     return await generate_session_response(session)
 
 
@@ -153,6 +154,8 @@ async def complete_session(
         session_start_time=session.session_start_time,
         session_end_time=session.session_end_time,
     )
+    await sio.emit("session_completed", {"session_id": str(session.id)})
+    await sio.emit("activity_panel_updated")
     return complete_session_response
 
 

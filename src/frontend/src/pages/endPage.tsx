@@ -14,62 +14,81 @@ import { useEffect, useState } from "react";
 import { SessionResponse, getMenu, getSession } from "../utils/api";
 import { MenuItem } from "../utils/menu";
 import {
-    AssistanceRequestUpdatedEventName,
     NotificationSocket,
+    SessionCompletedEventName,
 } from "../utils/socketIo";
 import currencyFormatter from "../utils/currencyFormatter";
+import { useNavigate } from "react-router-dom";
 
 const EndPage = () => {
     const [session, setSession] = useState<SessionResponse>();
+    const [itemsWithCount, setItemsWithCount] = useState<
+        { item: MenuItem; count: number }[]
+    >([]);
+    const [total, setTotal] = useState<number>(0);
+    const navigate = useNavigate();
 
-    async function fetchTableSession() {
-        await getSession().then(setSession);
+    async function fetchTableSession(): Promise<SessionResponse> {
+        const _session = await getSession();
+        setSession(_session);
+        console.log("Set session to", _session);
+        return _session;
+    }
+
+    async function fetchMenu(): Promise<Record<string, MenuItem>> {
+        // fetches menu data and stores in fetched menu
+        const fetchedMenu = await getMenu();
+        return fetchedMenu.Items;
     }
 
     useEffect(() => {
-        fetchTableSession()
-            .catch((err) => console.log("Failed to fetch session", err))
-            .then(() => {
-                if (!NotificationSocket.connected) {
-                    NotificationSocket.connect();
-                }
+        const fetchData = async () => {
+            const _session = await fetchTableSession();
+            if (_session == null) {
+                navigate("/start");
+            }
+            const _items = await fetchMenu();
 
-                NotificationSocket.on(
-                    AssistanceRequestUpdatedEventName,
-                    async (data) => {
-                        console.log("HERE!!");
-                        if (data.id == session?.id) {
-                            await fetchTableSession();
-                        }
+            if (!NotificationSocket.connected) {
+                NotificationSocket.connect();
+            }
+
+            NotificationSocket.on(
+                SessionCompletedEventName,
+                async (data: { session_id: string }) => {
+                    console.log(data, _session);
+                    if (data.session_id == _session?.id) {
+                        navigate("/start");
                     }
-                );
-            });
+                }
+            );
+
+            const _itemsWithCount = _session
+                ? getOrderItemCounts(_session, _items)
+                : [];
+
+            setItemsWithCount(_itemsWithCount);
+            setTotal(
+                _itemsWithCount.reduce((acc, itemWithCount) => {
+                    const itemTotal =
+                        itemWithCount.item.price * itemWithCount.count;
+                    return acc + itemTotal;
+                }, 0)
+            );
+        };
+
+        fetchData();
 
         return () => {
-            NotificationSocket.disconnect();
-            NotificationSocket.removeListener(
-                AssistanceRequestUpdatedEventName
-            );
+            NotificationSocket.removeListener(SessionCompletedEventName);
         };
     }, []);
 
-    // fetch menu items
-    const [menuItems, setMenuItems] = useState<Record<string, MenuItem>>({});
-
-    async function fetchMenu() {
-        // fetches menu data and stores in fetched menu
-        const fetchedMenu = await getMenu();
-        setMenuItems(fetchedMenu.Items);
-    }
-
-    useEffect(() => {
-        fetchMenu().catch((err) =>
-            console.log("Failed to fetch menu items", err)
-        );
-    }, []);
-
     // get aggregate list of ordered items and quantity ordered
-    const getOrderItemCounts = (session: SessionResponse) => {
+    const getOrderItemCounts = (
+        session: SessionResponse,
+        menuItems: Record<string, MenuItem>
+    ) => {
         const itemCounts = new Map();
 
         // Iterate over each order in the session
@@ -96,13 +115,6 @@ const EndPage = () => {
 
         return itemsWithCounts;
     };
-
-    const itemsWithCounts = session ? getOrderItemCounts(session) : [];
-
-    const total = itemsWithCounts.reduce((acc, itemWithCount) => {
-        const itemTotal = itemWithCount.item.price * itemWithCount.count;
-        return acc + itemTotal;
-    }, 0);
 
     return (
         <Box
@@ -176,7 +188,7 @@ const EndPage = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {itemsWithCounts.map((itemWithCount) => (
+                        {itemsWithCount.map((itemWithCount) => (
                             <TableRow key={itemWithCount.item.id}>
                                 <TableCell
                                     component="th"
