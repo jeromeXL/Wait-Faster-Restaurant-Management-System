@@ -62,7 +62,6 @@ const ActivityPanel = () => {
         );
 
         return () => {
-            NotificationSocket.disconnect();
             NotificationSocket.removeListener(ActivityPanelUpdatedEventName);
             NotificationSocket.removeListener(
                 AssistanceRequestUpdatedEventName

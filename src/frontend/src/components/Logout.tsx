@@ -1,18 +1,19 @@
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { NotificationSocket } from "../utils/socketIo";
 
 const Logout = () => {
-  const navigate = useNavigate();
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('userRole');
+    useEffect(() => {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("userRole");
+        NotificationSocket.disconnect();
+        navigate("/");
+    }, [navigate]);
 
-    navigate('/');
-  }, [navigate]);
-
-  return null;
+    return null;
 };
 
 export default Logout;

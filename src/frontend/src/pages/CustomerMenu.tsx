@@ -120,7 +120,6 @@ const CustomerMenu = () => {
                 NotificationSocket.on(
                     AssistanceRequestUpdatedEventName,
                     async (data) => {
-                        console.log("HERE!!");
                         if (data.id == session?.id) {
                             await fetchTableSession();
                         }
@@ -129,7 +128,6 @@ const CustomerMenu = () => {
             });
 
         return () => {
-            NotificationSocket.disconnect();
             NotificationSocket.removeListener(
                 AssistanceRequestUpdatedEventName
             );
