@@ -103,7 +103,7 @@ async def create_order(request: CreateOrderRequest, user=Depends(customer_tablet
         items=created_order_items_responses
     )
 
-    await sio.emit("activity_panel_updated")
+    await sio.emit("activity_panel_updated", {"session_id": str(order.session_id)})
     return orderResponse
 
 
@@ -131,7 +131,8 @@ async def update_order_status(
             item_to_update = item
             break
     if not item_to_update:
-        raise HTTPException(status_code=404, detail="Item not found in the order")
+        raise HTTPException(
+            status_code=404, detail="Item not found in the order")
 
     current_status = item_to_update.status
     new_status = request.status
@@ -147,7 +148,7 @@ async def update_order_status(
         order.status = new_status
 
     await order.save()
-    await sio.emit("activity_panel_updated")
+    await sio.emit("activity_panel_updated",  {"session_id": str(order.session_id)})
 
     return order
 
@@ -186,7 +187,8 @@ async def get_orders(
         )
     ).to_list()
 
-    menu_item_ids = [item.menu_item_id for order in orders for item in order.items]
+    menu_item_ids = [
+        item.menu_item_id for order in orders for item in order.items]
     menu_items = {
         item.id: item
         for item in await MenuItem.find(In(MenuItem.id, menu_item_ids)).to_list()

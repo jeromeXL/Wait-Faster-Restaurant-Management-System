@@ -48,11 +48,12 @@ import {
   lockSession,
 } from "../utils/api";
 import {
+    ActivityPanelUpdatedEventName,
   AssistanceRequestUpdatedEventName,
   NotificationSocket,
 } from "../utils/socketIo";
 import Typewriter from "typewriter-effect";
-import './CustomerMenu.css';
+import "./CustomerMenu.css";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -126,6 +127,15 @@ const CustomerMenu = () => {
           }
         }
       );
+
+            NotificationSocket.on(
+                ActivityPanelUpdatedEventName,
+                async (data) => {
+                    if (data.session_id == session?.id) {
+            await fetchTableSession();
+          }
+        }
+      );
     }
 
     fetch();
@@ -134,6 +144,7 @@ const CustomerMenu = () => {
       NotificationSocket.removeListener(
         AssistanceRequestUpdatedEventName
       );
+            NotificationSocket.removeListener(ActivityPanelUpdatedEventName);
     };
   }, []);
 
