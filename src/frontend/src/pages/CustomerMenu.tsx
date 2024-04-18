@@ -52,6 +52,7 @@ import {
     NotificationSocket,
 } from "../utils/socketIo";
 import Typewriter from "typewriter-effect";
+import './CustomerMenu.css';
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -1177,6 +1178,7 @@ const CustomerMenu = () => {
             >
                 {menu?.categories.map((category) => (
                     <React.Fragment key={category.name}>
+                      <span className="anchor-offset" style={{ top: `-${appBarHeight}px` }} id={category.name}></span>
                         <Typography
                             variant="h5"
                             sx={{
@@ -1184,7 +1186,6 @@ const CustomerMenu = () => {
                                 color: "#F0F0F0",
                                 paddingY: "15px",
                             }}
-                            id={category.name}
                         >
                             {category.name}
                         </Typography>

@@ -1,0 +1,5 @@
+.anchor-offset {
+  display: block;
+  position: relative;
+  visibility: hidden;
+}
