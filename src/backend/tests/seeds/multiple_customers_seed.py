@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from httpx import AsyncClient
 import pytest
 import pytest_asyncio
@@ -60,45 +61,6 @@ async def setup_fixture():
 
         await Category.delete_all()
         await MenuItem.delete_all()
-
-        # Create a food item
-        # menu_item_1 = MenuItem(
-        #     name="Hamburger",
-        #     price=10.99,
-        #     health_requirements=[],
-        #     description="Contains Meat",
-        #     ingredients=[],
-        # )
-        # await menu_item_1.create()
-
-        # # Create a food item
-        # menu_item_2 = MenuItem(
-        #     name="Cookie",
-        #     price=5,
-        #     health_requirements=["Nuts"],
-        #     description="Contains nuts",
-        #     ingredients=[],
-        # )
-        # await menu_item_2.create()
-
-        # # Create a food item
-        # menu_item_3 = MenuItem(
-        #     name="Coffee",
-        #     price=3.50,
-        #     health_requirements=[""],
-        #     description="",
-        #     ingredients=[],
-        # )
-        # await menu_item_3.create()
-
-        # # Create a food item
-        # category_1 = Category(
-        #     index=1, menu_items=[str(menu_item_1.id), str(menu_item_2.id)], name="Food"
-        # )
-        # await category_1.create()
-
-        # category_2 = Category(index=2, menu_items=[str(menu_item_3.id)], name="Drink")
-        # await category_2.create()
 
         garlic_bread = MenuItem(
             name="Garlic Bread",
@@ -370,8 +332,42 @@ async def setup_fixture():
         )
         await drinks.create()
 
-        yield (garlic_bread)
-        # Dispose of client
+        yield MenuDTO(
+            garlic_bread,
+            focaccia,
+            truffle_platter,
+            margherita_pizza,
+            hawaiian_pizza,
+            spicy_pepperoni,
+            carbonara,
+            spaghetti_bolognese,
+            fettuccine_alfredo,
+            lasagna,
+            tiramisu,
+            gelato,
+            pina_colada,
+            peach_bellini,
+            chardonnay_white_wine,
+        )
+
+
+@dataclass
+class MenuDTO:
+    garlic_bread: MenuItem
+    focaccia: MenuItem
+    truffle_platter: MenuItem
+    margherita_pizza: MenuItem
+    hawaiian_pizza: MenuItem
+    spicy_pepperoni: MenuItem
+    carbonara: MenuItem
+    spaghetti_bolognese: MenuItem
+    fettuccine_alfredo: MenuItem
+    lasagna: MenuItem
+    tiramisu: MenuItem
+    gelato: MenuItem
+    pina_colada: MenuItem
+    peach_bellini: MenuItem
+    chardonnay_white_wine: MenuItem
 
 
 @pytest_asyncio.fixture()
@@ -393,7 +389,7 @@ async def manager_client(setup_fixture):
 
 @pytest.mark.asyncio
 async def test_multiple_customers_seed(
-    manager_client: AsyncClient, setup_fixture: MenuItem
+    manager_client: AsyncClient, setup_fixture: MenuDTO
 ):
 
     async with await get_client() as client:
@@ -425,15 +421,49 @@ async def test_multiple_customers_seed(
             session_id=session_response.id,
             items=[
                 CreateOrderItemRequest(
-                    menu_item_id=str(setup_fixture.id),
+                    menu_item_id=str(setup_fixture.garlic_bread.id),
                     is_free=False,
-                    preferences=["extra cheese"],
-                    additional_notes="No onions",
-                )
+                    preferences=[""],
+                    additional_notes=None,
+                ),
+                CreateOrderItemRequest(
+                    menu_item_id=str(setup_fixture.margherita_pizza.id),
+                    is_free=False,
+                    preferences=[""],
+                    additional_notes=None,
+                ),
+                CreateOrderItemRequest(
+                    menu_item_id=str(setup_fixture.chardonnay_white_wine.id),
+                    is_free=False,
+                    preferences=[""],
+                    additional_notes=None,
+                ),
             ],
         )
         response = await client.post("/order", json=payload.model_dump())
         assert response.status_code == 200
+        order_response = OrderResponse.model_validate(response.json())
+
+        for item in order_response.items:
+            response = await manager_client.post(
+                f"/order/{order_response.id}/{item.id}",
+                json=OrderUpdateRequest(status=OrderStatus.PREPARING).model_dump(),
+            )
+
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[2].id}",
+            json=OrderUpdateRequest(status=OrderStatus.READY).model_dump(),
+        )
+
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[2].id}",
+            json=OrderUpdateRequest(status=OrderStatus.DELIVERING).model_dump(),
+        )
+
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[2].id}",
+            json=OrderUpdateRequest(status=OrderStatus.DELIVERED).model_dump(),
+        )
 
         ### Login as another user, create the same order but update the state. ###
         # log in as table 1, and start a session.
@@ -458,26 +488,78 @@ async def test_multiple_customers_seed(
             create_session_response.json()
         )
 
-        # Create an order for the only menu item
         payload = CreateOrderRequest(
             session_id=session_response.id,
             items=[
                 CreateOrderItemRequest(
-                    menu_item_id=str(setup_fixture.id),
+                    menu_item_id=str(setup_fixture.focaccia.id),
                     is_free=False,
-                    preferences=["extra cheese"],
-                    additional_notes="No onions",
-                )
+                    preferences=[""],
+                    additional_notes="",
+                ),
+                CreateOrderItemRequest(
+                    menu_item_id=str(setup_fixture.truffle_platter.id),
+                    is_free=False,
+                    preferences=[""],
+                    additional_notes="",
+                ),
+                CreateOrderItemRequest(
+                    menu_item_id=str(setup_fixture.peach_bellini.id),
+                    is_free=False,
+                    preferences=[""],
+                    additional_notes="",
+                ),
+                CreateOrderItemRequest(
+                    menu_item_id=str(setup_fixture.peach_bellini.id),
+                    is_free=False,
+                    preferences=[""],
+                    additional_notes="",
+                ),
             ],
         )
         response = await client.post("/order", json=payload.model_dump())
         assert response.status_code == 200
         order_response = OrderResponse.model_validate(response.json())
 
-        response = await manager_client.post(
-            f"/order/{order_response.id}/{order_response.items[0].id}",
-            json=OrderUpdateRequest(status=OrderStatus.PREPARING).model_dump(),
+        for item in order_response.items:
+            response = await manager_client.post(
+                f"/order/{order_response.id}/{item.id}",
+                json=OrderUpdateRequest(status=OrderStatus.PREPARING).model_dump(),
+            )
+
+            response = await manager_client.post(
+                f"/order/{order_response.id}/{item.id}",
+                json=OrderUpdateRequest(status=OrderStatus.READY).model_dump(),
+            )
+
+            response = await manager_client.post(
+                f"/order/{order_response.id}/{item.id}",
+                json=OrderUpdateRequest(status=OrderStatus.DELIVERING).model_dump(),
+            )
+
+            response = await manager_client.post(
+                f"/order/{order_response.id}/{item.id}",
+                json=OrderUpdateRequest(status=OrderStatus.DELIVERED).model_dump(),
+            )
+
+        payload = CreateOrderRequest(
+            session_id=session_response.id,
+            items=[
+                CreateOrderItemRequest(
+                    menu_item_id=str(setup_fixture.chardonnay_white_wine.id),
+                    is_free=False,
+                    preferences=[""],
+                    additional_notes="",
+                ),
+                CreateOrderItemRequest(
+                    menu_item_id=str(setup_fixture.chardonnay_white_wine.id),
+                    is_free=False,
+                    preferences=[""],
+                    additional_notes="",
+                ),
+            ],
         )
+        response = await client.post("/order", json=payload.model_dump())
         assert response.status_code == 200
 
         # Login as another user, create the same order but update the state.
@@ -508,26 +590,45 @@ async def test_multiple_customers_seed(
             session_id=session_response.id,
             items=[
                 CreateOrderItemRequest(
-                    menu_item_id=str(setup_fixture.id),
+                    menu_item_id=str(setup_fixture.chardonnay_white_wine.id),
                     is_free=False,
-                    preferences=["extra cheese"],
-                    additional_notes="No onions",
+                    preferences=[""],
+                    additional_notes="",
                 )
             ],
         )
         response = await client.post("/order", json=payload.model_dump())
         assert response.status_code == 200
         order_response = OrderResponse.model_validate(response.json())
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[0].id}",
+            json=OrderUpdateRequest(status=OrderStatus.PREPARING).model_dump(),
+        )
+
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[0].id}",
+            json=OrderUpdateRequest(status=OrderStatus.READY).model_dump(),
+        )
+
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[0].id}",
+            json=OrderUpdateRequest(status=OrderStatus.DELIVERING).model_dump(),
+        )
+
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[0].id}",
+            json=OrderUpdateRequest(status=OrderStatus.DELIVERED).model_dump(),
+        )
 
         # Create an order for the only menu item
         payload = CreateOrderRequest(
             session_id=session_response.id,
             items=[
                 CreateOrderItemRequest(
-                    menu_item_id=str(setup_fixture.id),
+                    menu_item_id=str(setup_fixture.lasagna.id),
                     is_free=False,
-                    preferences=["extra cheese"],
-                    additional_notes="No onions",
+                    preferences=[""],
+                    additional_notes="",
                 )
             ],
         )
@@ -539,11 +640,46 @@ async def test_multiple_customers_seed(
             f"/order/{order_response.id}/{order_response.items[0].id}",
             json=OrderUpdateRequest(status=OrderStatus.PREPARING).model_dump(),
         )
-        print(response.json())
-        assert response.status_code == 200
 
         response = await manager_client.post(
             f"/order/{order_response.id}/{order_response.items[0].id}",
             json=OrderUpdateRequest(status=OrderStatus.READY).model_dump(),
         )
+
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[0].id}",
+            json=OrderUpdateRequest(status=OrderStatus.DELIVERING).model_dump(),
+        )
+
+        response = await manager_client.post(
+            f"/order/{order_response.id}/{order_response.items[0].id}",
+            json=OrderUpdateRequest(status=OrderStatus.DELIVERED).model_dump(),
+        )
+
+        # Lock the session
+        response = await client.post("/session/lock")
         assert response.status_code == 200
+
+        # log in as table 4, and start a session.
+        login_response = await client.post(
+            "/auth/login",
+            json={
+                "username": "Table4",
+                "password": "t",
+            },
+        )
+        assert login_response.status_code == 200
+
+        tokens = login_response.json()
+        client.headers = {"Authorization": f"Bearer {tokens['access_token']}"}
+
+        create_session_response = await client.post(
+            "/session/start",
+        )
+        assert create_session_response.status_code == 200
+        session_response = SessionResponse.model_validate(
+            create_session_response.json()
+        )
+
+        resp = await client.put("/session/assistance-request/create")
+        assert resp.status_code == 200

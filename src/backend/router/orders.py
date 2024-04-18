@@ -50,21 +50,21 @@ async def create_order(request: CreateOrderRequest, user=Depends(customer_tablet
     session_id = request.session_id
     order_items = request.items
 
-    print("here")
     # Check if the session exists
     session = await Session.get(PydanticObjectId(session_id))
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
 
     # Get all menu items mentioned as a dictionary
-    menu_item_ids = [
+    menu_item_ids = {
         PydanticObjectId(item_request.menu_item_id) for item_request in order_items
-    ]
+    }
+
     menu_items = {
         item.id: item
         for item in await MenuItem.find(In(MenuItem.id, menu_item_ids)).to_list()
     }
-    print("here2", menu_items)
+
     if len(menu_items) != len(menu_item_ids):
         raise HTTPException(
             status_code=404,
@@ -131,8 +131,7 @@ async def update_order_status(
             item_to_update = item
             break
     if not item_to_update:
-        raise HTTPException(
-            status_code=404, detail="Item not found in the order")
+        raise HTTPException(status_code=404, detail="Item not found in the order")
 
     current_status = item_to_update.status
     new_status = request.status
@@ -187,8 +186,7 @@ async def get_orders(
         )
     ).to_list()
 
-    menu_item_ids = [
-        item.menu_item_id for order in orders for item in order.items]
+    menu_item_ids = [item.menu_item_id for order in orders for item in order.items]
     menu_items = {
         item.id: item
         for item in await MenuItem.find(In(MenuItem.id, menu_item_ids)).to_list()
