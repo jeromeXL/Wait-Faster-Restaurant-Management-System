@@ -32,8 +32,8 @@ class Order(Document):
 
 valid_transitions = {
     OrderStatus.ORDERED: [OrderStatus.PREPARING, OrderStatus.CANCELLED],
-    OrderStatus.PREPARING: [OrderStatus.READY, OrderStatus.ORDERED],
-    OrderStatus.READY: [OrderStatus.DELIVERING, OrderStatus.PREPARING],
-    OrderStatus.DELIVERING: [OrderStatus.READY, OrderStatus.DELIVERED],
+    OrderStatus.PREPARING: [OrderStatus.READY, OrderStatus.ORDERED, OrderStatus.CANCELLED],
+    OrderStatus.READY: [OrderStatus.DELIVERING, OrderStatus.PREPARING, OrderStatus.CANCELLED],
+    OrderStatus.DELIVERING: [OrderStatus.READY, OrderStatus.DELIVERED, OrderStatus.CANCELLED],
     OrderStatus.CANCELLED: [OrderStatus.ORDERED, OrderStatus.PREPARING, OrderStatus.READY, OrderStatus.DELIVERING]
 }

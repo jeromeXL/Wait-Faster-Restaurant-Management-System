@@ -11,7 +11,7 @@ import {
     Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { SessionResponse, getMenu, getSession } from "../utils/api";
+import { OrderStatus, SessionResponse, getMenu, getSession } from "../utils/api";
 import { MenuItem } from "../utils/menu";
 import {
     NotificationSocket,
@@ -95,9 +95,12 @@ const EndPage = () => {
         session.orders.forEach((order) => {
             // Iterate over each item in the order
             order.items.forEach((item) => {
-                // Increment count for the menu item
-                const count = itemCounts.get(item.menu_item_id) || 0;
-                itemCounts.set(item.menu_item_id, count + 1);
+                // Check if the item is not cancelled
+                    if (item.status != OrderStatus.CANCELLED) {
+                        // Increment count for the menu item
+                        const count = itemCounts.get(item.menu_item_id) || 0;
+                        itemCounts.set(item.menu_item_id, count + 1);
+                    }
             });
         });
 
