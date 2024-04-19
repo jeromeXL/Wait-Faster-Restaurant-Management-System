@@ -14,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 import { LoginRequest, login } from "../utils/api";
 import { UserRole } from "../utils/user";
 import Typewriter from "typewriter-effect";
-import { NotificationSocket } from "../utils/socketIo";
 
 const Login = () => {
     const [credentials, setCredentials] = useState<LoginRequest>({
@@ -31,7 +30,6 @@ const Login = () => {
 
     const handleSubmit = async (e: { preventDefault: () => void }) => {
         e.preventDefault();
-        NotificationSocket.connect();
         try {
             const response = await login(credentials);
             console.log(response);

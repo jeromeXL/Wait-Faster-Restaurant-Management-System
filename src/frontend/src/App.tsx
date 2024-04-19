@@ -13,8 +13,19 @@ import Kitchen from "./pages/Kitchen";
 import CustomerMenu from "./pages/CustomerMenu";
 import EndPage from "./pages/endPage";
 import NoticeBoard from "./pages/NoticeBoard";
+import { useEffect } from "react";
+import { NotificationSocket } from "./utils/socketIo";
 
 function App() {
+
+    useEffect(() => {
+        NotificationSocket.connect()
+
+        return () => {
+            NotificationSocket.disconnect()
+        }
+    }, [])
+
     return (
         <>
             <Router>
