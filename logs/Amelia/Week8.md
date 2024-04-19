@@ -1,0 +1,4 @@
+- integrated the filter with the backend
+- updated cart page into drawer on the customer page 
+- implemented sending cart to the backend successfully 
+- partially commited with isaac's account due to git issues 

@@ -1,0 +1,3 @@
+- Drafted presentation script for Demo 1.
+- Helped format slides for Demo 1 
+- Implemented stub data for demo on customer menu page

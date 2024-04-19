@@ -49,7 +49,7 @@ const CreateCategoryDialog = ({
 
     return (
         <Dialog open={showDialog} onClose={onClose}>
-            <DialogTitle>Choose an Item to Add.</DialogTitle>
+            <DialogTitle>Add a New Category.</DialogTitle>
             <DialogContent>
                 <TextField
                     autoFocus

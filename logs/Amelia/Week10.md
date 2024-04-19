@@ -1,0 +1,5 @@
+- fixed bug where category buttons weren't scrolling properly 
+- implemented photo's onto menu item cards 
+- implemented filters to depend on backend data 
+- implemented end session bill display 
+- further minor visual enhancements 
