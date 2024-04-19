@@ -138,6 +138,35 @@ const ActivityPanel = () => {
         )}`;
     };
 
+    const OrderStatusChip = ({status} : {status: OrderStatus}) => {
+        return (
+            <>
+                {status == OrderStatus.ORDERED && (
+                    <Chip label="ORDERED" color="info" />
+                )}
+                {status == OrderStatus.PREPARING && (
+                    <Chip label="PREPARING" color="error" />
+                )}
+                {status == OrderStatus.READY && (
+                    <Chip label="READY" color="warning" />
+                )}
+                {status == OrderStatus.DELIVERING && (
+                    <Chip label="DELIVERING" color="secondary" />
+                )}
+                {status == OrderStatus.DELIVERED && (
+                    <Chip label="DELIVERED" color="success" />
+                )}
+                {status == OrderStatus.CANCELLED && (
+                    <Chip
+                        label="CANCELLED"
+                        color="error"
+                        variant="outlined"
+                    />
+                )}
+            </>
+        );
+    }
+
     const OrderItemRadioGroup = ({
         orderItem,
         setOrderItemToState,
@@ -146,7 +175,7 @@ const ActivityPanel = () => {
         setOrderItemToState: (state: OrderStatus) => Promise<unknown>;
     }) => {
         const can_modify_current_order_status =
-            orderItem.status != OrderStatus.DELIVERED;
+            orderItem.status != OrderStatus.DELIVERED && orderItem.status != OrderStatus.CANCELLED;
 
         return (
             <div>
@@ -166,6 +195,17 @@ const ActivityPanel = () => {
                                         )
                                     }
                                 />
+                                <Chip
+                                    label="CANCELLED"
+                                    sx={{
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.CANCELLED
+                                        )
+                                    }
+                                />
                             </div>
                         )}
 
@@ -179,6 +219,17 @@ const ActivityPanel = () => {
                                     }}
                                     onClick={() =>
                                         setOrderItemToState(OrderStatus.READY)
+                                    }
+                                />
+                                <Chip
+                                    label="CANCELLED"
+                                    sx={{
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.CANCELLED
+                                        )
                                     }
                                 />
                             </div>
@@ -209,6 +260,17 @@ const ActivityPanel = () => {
                                         )
                                     }
                                 />
+                                <Chip
+                                    label="CANCELLED"
+                                    sx={{
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.CANCELLED
+                                        )
+                                    }
+                                />
                             </div>
                         )}
 
@@ -235,29 +297,22 @@ const ActivityPanel = () => {
                                         )
                                     }
                                 />
+                                <Chip
+                                    label="CANCELLED"
+                                    sx={{
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                        setOrderItemToState(
+                                            OrderStatus.CANCELLED
+                                        )
+                                    }
+                                />
                             </div>
                         )}
                     </FormControl>
                 )}
-                {!can_modify_current_order_status && (
-                    <>
-                        {orderItem.status == OrderStatus.ORDERED && (
-                            <Chip label="ORDERED" color="info" />
-                        )}
-                        {orderItem.status == OrderStatus.PREPARING && (
-                            <Chip label="PREPARING" color="error" />
-                        )}
-                        {orderItem.status == OrderStatus.READY && (
-                            <Chip label="READY" color="warning" />
-                        )}
-                        {orderItem.status == OrderStatus.DELIVERING && (
-                            <Chip label="DELIVERING" color="secondary" />
-                        )}
-                        {orderItem.status == OrderStatus.DELIVERED && (
-                            <Chip label="DELIVERED" color="success" />
-                        )}
-                    </>
-                )}
+                {!can_modify_current_order_status && <OrderStatusChip status={orderItem.status}/>}
             </div>
         );
     };
@@ -554,7 +609,8 @@ const ActivityPanel = () => {
                 bgcolor: "#121212",
                 paddingTop: "20px",
                 color: "#E0E0E0",
-                background: 'linear-gradient(to bottom right, #0f0f0f, #1a1a1a, #2a1e35, #0f0c33)',
+                background:
+                    "linear-gradient(to bottom right, #0f0f0f, #1a1a1a, #2a1e35, #0f0c33)",
             }}
         >
             <Typography variant="h4" gutterBottom sx={{ color: "#FFF" }}>
@@ -669,41 +725,7 @@ const ActivityPanel = () => {
                                                                                         }
                                                                                     </div>
                                                                                     <div className="pl-2">
-                                                                                        {item.status ==
-                                                                                            OrderStatus.ORDERED && (
-                                                                                            <Chip
-                                                                                                label="ORDERED"
-                                                                                                color="info"
-                                                                                            />
-                                                                                        )}
-                                                                                        {item.status ==
-                                                                                            OrderStatus.PREPARING && (
-                                                                                            <Chip
-                                                                                                label="PREPARING"
-                                                                                                color="error"
-                                                                                            />
-                                                                                        )}
-                                                                                        {item.status ==
-                                                                                            OrderStatus.READY && (
-                                                                                            <Chip
-                                                                                                label="READY"
-                                                                                                color="warning"
-                                                                                            />
-                                                                                        )}
-                                                                                        {item.status ==
-                                                                                            OrderStatus.DELIVERING && (
-                                                                                            <Chip
-                                                                                                label="DELIVERING"
-                                                                                                color="secondary"
-                                                                                            />
-                                                                                        )}
-                                                                                        {item.status ==
-                                                                                            OrderStatus.DELIVERED && (
-                                                                                            <Chip
-                                                                                                label="DELIVERED"
-                                                                                                color="success"
-                                                                                            />
-                                                                                        )}
+                                                                                       <OrderStatusChip status={item.status}/>
                                                                                     </div>
                                                                                 </section>
                                                                             )

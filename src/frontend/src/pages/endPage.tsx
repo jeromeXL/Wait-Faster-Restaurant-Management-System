@@ -96,11 +96,11 @@ const EndPage = () => {
             // Iterate over each item in the order
             order.items.forEach((item) => {
                 // Check if the item is not cancelled
-                if (item.status != OrderStatus.CANCELLED) {
-                    // Increment count for the menu item
-                    const count = itemCounts.get(item.menu_item_id) || 0;
-                    itemCounts.set(item.menu_item_id, count + 1);
-                }
+                    if (item.status != OrderStatus.CANCELLED) {
+                        // Increment count for the menu item
+                        const count = itemCounts.get(item.menu_item_id) || 0;
+                        itemCounts.set(item.menu_item_id, count + 1);
+                    }
             });
         });
 
