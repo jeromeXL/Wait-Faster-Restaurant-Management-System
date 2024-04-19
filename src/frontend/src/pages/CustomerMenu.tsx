@@ -414,8 +414,6 @@ localStorage.removeItem("pendingCart");
       });
       setPendingCart(updatedPendingCart);
       setCartCounter(0);
-
-      console.log("Order created successfully:", response.data);
     } catch (error) {
       console.error("Error creating order:", error);
       setError(

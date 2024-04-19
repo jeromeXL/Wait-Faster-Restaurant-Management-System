@@ -22,6 +22,7 @@ class OrderItem(BaseModel):
     is_free: bool
     preferences: Optional[List[str]]
     additional_notes: Optional[str]
+    last_updated: int
 
 
 class Order(Document):
