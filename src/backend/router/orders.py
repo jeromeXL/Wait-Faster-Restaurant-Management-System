@@ -1,4 +1,6 @@
+from datetime import datetime
 from itertools import chain
+import time
 from beanie import PydanticObjectId
 from beanie.operators import NE
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -23,6 +25,7 @@ class OrderItemResponse(BaseModel):
     is_free: bool
     preferences: Optional[List[str]] = Field(default=None)
     additional_notes: Optional[str] = Field(default=None)
+    last_updated: int
 
 
 class OrderResponse(BaseModel):
@@ -82,6 +85,7 @@ async def create_order(request: CreateOrderRequest, user=Depends(customer_tablet
             is_free=item_request.is_free,
             additional_notes=item_request.additional_notes,
             preferences=item_request.preferences,
+            last_updated=int(time.time())
         )
         created_order_items.append(order)
         created_order_items_responses.append(
@@ -142,6 +146,7 @@ async def update_order_status(
 
     # Update the status of the item
     item_to_update.status = new_status
+    item_to_update.last_updated = int(time.time())
 
     # Update the order status based on item statuses
     if all(item.status == new_status for item in order.items):

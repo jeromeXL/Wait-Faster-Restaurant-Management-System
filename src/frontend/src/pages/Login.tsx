@@ -32,7 +32,6 @@ const Login = () => {
         e.preventDefault();
         try {
             const response = await login(credentials);
-            console.log(response);
             switch (response.role) {
                 case UserRole.USER_ADMIN:
                     navigate("/admin");

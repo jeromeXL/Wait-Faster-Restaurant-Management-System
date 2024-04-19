@@ -157,6 +157,7 @@ export type OrderItemResponse = {
     is_free: boolean;
     preferences?: string[];
     additional_notes?: string;
+    last_updated: number;
 };
 export type OrderResponse = {
     id: string;
