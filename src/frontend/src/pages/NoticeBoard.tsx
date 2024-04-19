@@ -1,7 +1,15 @@
 import { Box, Typography } from "@mui/material";
 import ActivityPanelBottomBar from "../components/ActivityPanel/ActivityPanelBottomBar";
 import { TodoBoard } from "../components/TodoBoard";
+import { useLocation } from "react-router-dom";
+import KitchenBottomBar from "../components/KitchenBottomBar";
+
 const NoticeBoard = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const source = queryParams.get('source');
+  const refreshOrders = () => {};
+
     return (
         <Box
             sx={{
@@ -21,7 +29,7 @@ const NoticeBoard = () => {
                 Notice Board
             </Typography>
             <TodoBoard />
-            <ActivityPanelBottomBar />
+            {source === 'kitchen' ? <KitchenBottomBar refreshOrders={refreshOrders}/> : <ActivityPanelBottomBar />}
         </Box>
     );
 };

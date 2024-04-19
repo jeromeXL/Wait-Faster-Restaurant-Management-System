@@ -193,16 +193,25 @@ const Admin = () => {
       const response = await getAxios().post('/user/create', newUser);
       setUsers([...users, response.data]);
       handleClose();
-    } catch (error) {
-      setSnackbarMessage("Failed to create user, please ensure all required information is correctly formatted.");
-      setSnackbarOpen(true);
+    } catch (error: any) {
       console.error("Failed to create user:", error);
+      if (error.response && error.response.status === 422) {
+        setSnackbarMessage("Failed to create user, please name tablet users with the following format: 'Table{number}'");
+      } else {
+        setSnackbarMessage("Failed to create user, please try again later.");
+      }
+      setSnackbarOpen(true);
     }
   };
 
-  const handleEditUser = (index: number) => {
-    setSelectedUser(users[index]);
-    setEditIndex(index);
+  const handleEditUser = (userId: string) => {
+    const userToEdit = users.find(user => user.userId === userId);
+    if (userToEdit !== undefined) {
+      setSelectedUser(userToEdit);
+    } else {
+      setSelectedUser(null);
+      console.error("User not found: ", userId);
+    }
     setEditOpen(true);
   };
 
@@ -288,8 +297,8 @@ const Admin = () => {
           <Typography variant="body1" sx={styles.headerItem}><EditIcon sx={{ verticalAlign: 'middle', mr: 1 }} />Edit</Typography>
         </Box>
         <Divider />
-        {filteredUsers.map((user, index) => (
-          <Grid key={index} container alignItems="center" justifyContent="space-between">
+        {filteredUsers.map((user) => (
+          <Grid key={user.userId} container alignItems="center" justifyContent="space-between">
             <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               <Typography variant="body1" sx={styles.gridItem}>{user.username}</Typography>
             </Grid>
@@ -297,7 +306,7 @@ const Admin = () => {
               <Typography variant="body1" sx={styles.gridItem}>{roleName(user.role)}</Typography>
             </Grid>
             <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
-              <Button variant="outlined" size="small" startIcon={<EditIcon />} sx={styles.button} onClick={() => handleEditUser(index)}>Edit</Button>
+              <Button variant="outlined" size="small" startIcon={<EditIcon />} sx={styles.button} onClick={() => handleEditUser(user.userId)}>Edit</Button>
             </Grid>
           </Grid>
         ))}

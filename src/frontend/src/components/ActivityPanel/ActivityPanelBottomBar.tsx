@@ -19,7 +19,7 @@ const ActivityPanelBottomBar: FC = () => {
             >
                 {location.pathname != "/notice-board" && (
                     <NavItem
-                        to="/notice-board"
+                        to="/notice-board?source=activity"
                         text="Notice Board"
                         Icon={FiClipboard}
                     />
