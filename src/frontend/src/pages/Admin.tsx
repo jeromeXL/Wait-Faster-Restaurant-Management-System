@@ -158,6 +158,8 @@ const Admin = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [roleFilter, setRoleFilter] = useState<string | UserRole>('All');
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>('');
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -192,6 +194,8 @@ const Admin = () => {
       setUsers([...users, response.data]);
       handleClose();
     } catch (error) {
+      setSnackbarMessage("Failed to create user, please ensure all required information is correctly formatted.");
+      setSnackbarOpen(true);
       console.error("Failed to create user:", error);
     }
   };
@@ -220,6 +224,8 @@ const Admin = () => {
       setEditIndex(null);
       setEditOpen(false);
     } catch (error) {
+      setSnackbarMessage("Failed to update user, please ensure all required information is correctly formatted.");
+      setSnackbarOpen(true);
       console.error("Failed to update user:", error);
     }
   };
@@ -232,6 +238,7 @@ const Admin = () => {
       setEditIndex(null);
       setEditOpen(false);
     } catch (error) {
+      setSnackbarMessage("Failed to delete user, please try again later.")
       console.error("Failed to delete user:", error);
     }
   };
@@ -306,6 +313,11 @@ const Admin = () => {
         />
       )}
       <FloatingBottomNav handleOpen={handleOpen} />
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
+        <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
